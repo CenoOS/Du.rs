@@ -1,6 +1,6 @@
 # Du.rs (DuLang)
-### just a new vm write in rust
+### just a new computer language project write in rust
 
-### 1. vm
+### 1. VM (register based virtual machine)
 ### 2. REPL
 ### 3. Assembler (next)
