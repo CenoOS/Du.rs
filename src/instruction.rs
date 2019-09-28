@@ -1,4 +1,4 @@
-use crate::instruction::OpCode::{HLT, IGL, LOAD, ADD, MUL, SUB, DIV, JMP, JMP_F, JMP_B, EQ, JEQ};
+use crate::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMP_F, JMP_B, EQ, JEQ, IGL};
 
 #[derive(Debug, PartialEq)]
 pub enum OpCode {

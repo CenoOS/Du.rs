@@ -145,7 +145,6 @@ impl VM {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::intrinsics::transmute;
 
     #[test]
     fn should_create_vm() {

@@ -1,7 +1,6 @@
 use crate::vm::VM;
-use std::io::{Write, Read};
+use std::io::{Write};
 use std::num::ParseIntError;
-use std::any::Any;
 
 pub struct REPL {
     command_buffer: Vec<String>,
