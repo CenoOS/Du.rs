@@ -1,5 +1,7 @@
 use Dulang::vm::VM;
+use Dulang::repl::REPL;
 
 fn main() {
-    let mut vm = VM::new();
+    let mut repl = REPL::new();
+    repl.run();
 }
