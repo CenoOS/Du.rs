@@ -1,5 +1,7 @@
 use crate::vm::VM;
 use std::io::{Write, Read};
+use std::num::ParseIntError;
+use std::any::Any;
 
 pub struct REPL {
     command_buffer: Vec<String>,
@@ -12,6 +14,22 @@ impl REPL {
             command_buffer: Vec::new(),
             vm: VM::new(),
         }
+    }
+
+    fn parse_hex(&mut self, buf: &str) -> Result<Vec<u8>, ParseIntError> {
+        let split = buf.split(" ").collect::<Vec<&str>>();
+        let mut results: Vec<u8> = vec![];
+
+        for hex_str in split {
+            let byte = u8::from_str_radix(&hex_str, 16);
+            match byte {
+                Ok(result) => { results.push(result) }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+        }
+        Ok(results)
     }
 
     pub fn run(&mut self) {
@@ -49,7 +67,18 @@ impl REPL {
                     println!("End of Registers Listing.")
                 }
                 _ => {
-                    println!("Invalid Input.");
+                    let input_instruction = self.parse_hex(buffer);
+                    match input_instruction {
+                        Ok(bytes) => {
+                            for byte in bytes {
+                                self.vm.program.push(byte);
+                            }
+                        }
+                        Err(e) => {
+                            println!("Unable to parse hex string. Please enter 4 group of 2 hex characters.")
+                        }
+                    }
+                    self.vm.run_once();
                 }
             }
         }
