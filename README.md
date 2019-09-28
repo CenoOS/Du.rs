@@ -1,7 +1,7 @@
 # Du.rs (DuLang)
 ### just a new computer language project write in rust
 
-- [ ] ### 1. VM
+### 1. VM
 
   - [ ] instruction
     - [x] hlt
@@ -22,7 +22,7 @@
   - [x] program
   - [x] pc
 
-- [ ] ### 2. REPL
+### 2. REPL
 
   - [x] input
   - [x] .help
@@ -33,7 +33,7 @@
     - [x] .registers
     - [ ] More...
 
-- [ ] ### 3. Assembler 
+### 3. Assembler 
 
   - [ ] lexer
     - [ ] token
