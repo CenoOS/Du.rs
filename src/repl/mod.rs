@@ -1,5 +1,5 @@
 use crate::vm::VM;
-use std::io::{Write};
+use std::io::Write;
 use std::num::ParseIntError;
 
 pub struct REPL {
@@ -32,6 +32,8 @@ impl REPL {
     }
 
     pub fn run(&mut self) {
+        println!("Du.rs 0.0.7 (default, Sep 22 2019, 00:33:15)");
+        println!("Type \"help\" for more information.");
         loop {
             let mut buffer = String::new();
             let stdin = std::io::stdin();
@@ -64,6 +66,14 @@ impl REPL {
                     println!("Listing registers and all contents:");
                     println!("{:#?}", self.vm.registers);
                     println!("End of Registers Listing.")
+                }
+                "help" | "HELP" => {
+                    println!("Command Usage:");
+                    println!("  .exit       : exit");
+                    println!("  .history    : command history");
+                    println!("  .program    : program in current vm");
+                    println!("  .registers  : registers and content in current vm");
+                    println!("Type above commands to debug.");
                 }
                 _ => {
                     let input_instruction = self.parse_hex(buffer);
