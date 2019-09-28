@@ -33,7 +33,7 @@ impl REPL {
 
     pub fn run(&mut self) {
         println!("Du.rs 0.0.7 (default, Sep 22 2019, 00:33:15)");
-        println!("Type \"help\" for more information.");
+        println!("Type \".help\" for more information, \".exit\" to quit.");
         loop {
             let mut buffer = String::new();
             let stdin = std::io::stdin();
@@ -67,9 +67,8 @@ impl REPL {
                     println!("{:#?}", self.vm.registers);
                     println!("End of Registers Listing.")
                 }
-                "help" | "HELP" => {
+                ".help" => {
                     println!("Command Usage:");
-                    println!("  .exit       : exit");
                     println!("  .history    : command history");
                     println!("  .program    : program in current vm");
                     println!("  .registers  : registers and content in current vm");
