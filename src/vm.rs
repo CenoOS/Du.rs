@@ -4,11 +4,11 @@ use crate::instruction::OpCode;
 #[derive(Debug)]
 pub struct VM {
     /* 8bits for opcode , 8bits for register number , 16 bits for numbers just 2<<16 = 65536(unsigned) */
-    registers: [i32; 32],
+    pub registers: [i32; 32],
     /* program counter */
     pc: usize,
     /* program memory */
-    program: Vec<u8>,
+    pub program: Vec<u8>,
     remainder: u32,
     eq_flag: bool,
 }

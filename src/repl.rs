@@ -36,6 +36,18 @@ impl REPL {
                         println!("{}", command);
                     }
                 }
+                ".program" => {
+                    println!("Listing instructions currently in VM's program vector:");
+                    for instruction in &self.vm.program {
+                        println!("{}", instruction);
+                    }
+                    println!("End of Program Listing.")
+                }
+                ".registers" => {
+                    println!("Listing registers and all contents:");
+                    println!("{:#?}", self.vm.registers);
+                    println!("End of Registers Listing.")
+                }
                 _ => {
                     println!("Invalid Input.");
                 }
