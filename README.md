@@ -28,7 +28,7 @@
   - [x] .help
   - [x] .exit
   - [ ] debug
-    - [x] .hiistory
+    - [x] .history
     - [x] .program
     - [x] .registers
     - [ ] More...
@@ -36,6 +36,6 @@
 ### 3. Assembler 
 
   - [ ] lexer
-    - [ ] token
+    - [x] token
   - [ ] parser
-    - [ ] hex
+    - [x] hex
