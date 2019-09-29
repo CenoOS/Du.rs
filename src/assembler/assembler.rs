@@ -24,12 +24,7 @@ impl<'a> InstructionParser<'a> {
             let is_u8 = operand1_str.parse::<u8>();
             match is_u8 {
                 Ok(operand1) => {
-                    return Ok(AssemblerInstruction {
-                        token: Op { opcode: op },
-                        operand1: Some(Register { reg_num: operand1 }),
-                        operand2: None,
-                        operand3: None,
-                    });
+                    return Ok(AssemblerInstruction::new(Op { opcode: op }, Some(Register { reg_num: operand1 }), None, None));
                 }
                 Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
@@ -46,12 +41,7 @@ impl<'a> InstructionParser<'a> {
                 Ok(operand1) => {
                     self.tokens.next();
                     let instruction = self.parse_one_register_instruction(op).unwrap();
-                    return Ok(AssemblerInstruction {
-                        token: instruction.token,
-                        operand1: Some(Register { reg_num: operand1 }),
-                        operand2: instruction.operand1,
-                        operand3: None,
-                    });
+                    return Ok(AssemblerInstruction::new(instruction.token, Some(Register { reg_num: operand1 }), instruction.operand1, None));
                 }
                 Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
@@ -68,12 +58,7 @@ impl<'a> InstructionParser<'a> {
                 Ok(operand1) => {
                     self.tokens.next();
                     let instruction = self.parse_two_register_instruction(op).unwrap();
-                    return Ok(AssemblerInstruction {
-                        token: instruction.token,
-                        operand1: Some(Register { reg_num: operand1 }),
-                        operand2: instruction.operand1,
-                        operand3: instruction.operand2,
-                    });
+                    return Ok(AssemblerInstruction::new(instruction.token, Some(Register { reg_num: operand1 }), instruction.operand1, instruction.operand2));
                 }
                 Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
@@ -84,12 +69,7 @@ impl<'a> InstructionParser<'a> {
 
     pub fn parse_instruction(&mut self) -> Result<AssemblerInstruction, &'static str> {
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "HLT".to_string()) {
-            return Ok(AssemblerInstruction {
-                token: Op { opcode: HLT },
-                operand1: None,
-                operand2: None,
-                operand3: None,
-            });
+            return Ok(AssemblerInstruction::new(Op { opcode: HLT }, None, None, None));
         }
 
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "LOAD".to_string()) {
@@ -105,12 +85,7 @@ impl<'a> InstructionParser<'a> {
                             let is_i32 = operand2_str.parse::<i32>();
                             match is_i32 {
                                 Ok(operand2) => {
-                                    return Ok(AssemblerInstruction {
-                                        token: Op { opcode: LOAD },
-                                        operand1: Some(Register { reg_num: operand1 }),
-                                        operand2: Some(IntegerOperand { value: operand2 }),
-                                        operand3: None,
-                                    });
+                                    return Ok(AssemblerInstruction::new(Op { opcode: LOAD }, Some(Register { reg_num: operand1 }), Some(IntegerOperand { value: operand2 }), None));
                                 }
                                 Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...65536)"); }
                             }
