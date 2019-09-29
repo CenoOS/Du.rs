@@ -1,9 +1,9 @@
 use std::iter::Peekable;
 use std::str::{SplitWhitespace, Lines};
 use crate::assembler::token::Token::{Op, Register, IntegerOperand};
-use crate::instruction::OpCode::*;
+use crate::vm::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
-use crate::instruction::OpCode;
+use crate::vm::instruction::OpCode;
 
 
 pub struct InstructionParser<'a> {

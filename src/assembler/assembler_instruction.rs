@@ -62,7 +62,7 @@ impl AssemblerInstruction {
 mod tests{
     use super::*;
     use crate::assembler::token::Token::{Op, Register, IntegerOperand};
-    use crate::instruction::OpCode::LOAD;
+    use crate::vm::instruction::OpCode::LOAD;
 
     #[test]
     fn should_return_bytes_when_give_an_instruction(){

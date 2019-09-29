@@ -1,5 +1,4 @@
-use crate::instruction::OpCode;
-
+use crate::vm::instruction::OpCode;
 
 #[derive(Debug)]
 pub struct VM {
@@ -9,6 +8,7 @@ pub struct VM {
     pc: usize,
     /* program memory */
     pub program: Vec<u8>,
+    pub heap: Vec<u8>,
     remainder: u32,
     eq_flag: bool,
 }
@@ -19,6 +19,7 @@ impl VM {
             registers: [0; 32],
             pc: 0,
             program: Vec::new(),
+            heap: Vec::new(),
             remainder: 0,
             eq_flag: false,
         }
@@ -120,6 +121,12 @@ impl VM {
                 if self.eq_flag {
                     self.pc = target as usize;
                 }
+            }
+            OpCode::ALOC => {
+                let register = self.next_8_bits() as usize;
+                let bytes = self.registers[register];
+                let new_end = self.heap.len() as i32 + bytes;
+                self.heap.resize(new_end as usize, 0);
             }
             OpCode::HLT => {
                 print!("HLT");
@@ -287,5 +294,16 @@ mod tests {
         vm.run_once(); /*LOAD 2 #3; */
         vm.run_once(); /*JEQ 2; */
         assert_eq!(vm.pc, 3);
+    }
+
+    #[test]
+    fn should_aloc() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
+                          11, 0, 0, 0]; /*ALOC $0; */
+
+        vm.run_once(); /*LOAD 0 #500; */
+        vm.run_once(); /*ALOC $0; */
+        assert_eq!(vm.heap.len(), 500);
     }
 }

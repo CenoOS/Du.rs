@@ -1,4 +1,4 @@
-use Dulang::vm::VM;
+use Dulang::vm::vm::VM;
 use Dulang::repl::repl::REPL;
 
 fn main() {

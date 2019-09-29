@@ -1,7 +1,7 @@
-use crate::vm::VM;
 use std::io::Write;
 use std::num::ParseIntError;
 use crate::assembler::assembler::InstructionParser;
+use crate::vm::vm::VM;
 
 pub struct REPL {
     command_buffer: Vec<String>,

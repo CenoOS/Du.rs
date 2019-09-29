@@ -1,4 +1,4 @@
-use crate::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMP_F, JMP_B, EQ, JEQ, IGL};
+use crate::vm::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMP_F, JMP_B, EQ, JEQ, IGL, ALOC};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum OpCode {
@@ -16,7 +16,9 @@ pub enum OpCode {
     /* backward relative jump */
     EQ = 9,
     JEQ = 10,
-    IGL = 11,
+
+    ALOC = 11,
+    IGL = 12,
 }
 
 #[derive(Debug, PartialEq)]
@@ -38,6 +40,7 @@ impl From<u8> for OpCode {
             8 => return JMP_B,
             9 => return EQ,
             10 => return JEQ,
+            11 => return ALOC,
             _ => return IGL,
         }
     }
@@ -54,7 +57,7 @@ impl Instruction {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::instruction::OpCode::IGL;
+    use crate::vm::instruction::OpCode::IGL;
 
     #[test]
     fn should_create_opcode() {
