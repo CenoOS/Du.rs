@@ -1,24 +1,24 @@
 use std::iter::Peekable;
-use std::str::SplitWhitespace;
+use std::str::{SplitWhitespace, Lines};
 use crate::assembler::token::Token::{Op, Register, IntegerOperand};
 use crate::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::instruction::OpCode;
 
 
-pub struct OpCodeParser<'a> {
+pub struct InstructionParser<'a> {
     tokens: Peekable<SplitWhitespace<'a>>,
 }
 
-impl<'a> OpCodeParser<'a> {
-    pub fn new(str: &str) -> OpCodeParser {
-        OpCodeParser {
+impl<'a> InstructionParser<'a> {
+    pub fn new(str: &str) -> InstructionParser {
+        InstructionParser {
             tokens: str.split_whitespace().peekable()
         }
     }
 
 
-    pub fn parse_one_register_instruction(&mut self, op: OpCode) -> Result<AssemblerInstruction, &'static str> {
+    fn parse_one_register_instruction(&mut self, op: OpCode) -> Result<AssemblerInstruction, &'static str> {
         if self.tokens.peek().map_or(false, |word| word.starts_with("$")) {
             let operand1_str = &(*self.tokens.peek().unwrap().to_string())[1..];
             let is_u8 = operand1_str.parse::<u8>();
@@ -38,7 +38,7 @@ impl<'a> OpCodeParser<'a> {
         }
     }
 
-    pub fn parse_two_register_instruction(&mut self, op: OpCode) -> Result<AssemblerInstruction, &'static str> {
+    fn parse_two_register_instruction(&mut self, op: OpCode) -> Result<AssemblerInstruction, &'static str> {
         if self.tokens.peek().map_or(false, |word| word.starts_with("$")) {
             let operand1_str = &(*self.tokens.peek().unwrap().to_string())[1..];
             let is_u8 = operand1_str.parse::<u8>();
@@ -60,7 +60,7 @@ impl<'a> OpCodeParser<'a> {
         }
     }
 
-    pub fn parse_three_register_instruction(&mut self, op: OpCode) -> Result<AssemblerInstruction, &'static str> {
+    fn parse_three_register_instruction(&mut self, op: OpCode) -> Result<AssemblerInstruction, &'static str> {
         if self.tokens.peek().map_or(false, |word| word.starts_with("$")) {
             let operand1_str = &(*self.tokens.peek().unwrap().to_string())[1..];
             let is_u8 = operand1_str.parse::<u8>();
@@ -125,6 +125,7 @@ impl<'a> OpCodeParser<'a> {
             }
         }
 
+
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "ADD".to_string()) {
             self.tokens.next();
             return self.parse_three_register_instruction(ADD);
@@ -174,6 +175,39 @@ impl<'a> OpCodeParser<'a> {
     }
 }
 
+pub struct AssemblyProgramParser<'a> {
+    instructions: Peekable<Lines<'a>>,
+}
+
+impl<'a> AssemblyProgramParser<'a> {
+    pub fn new(str: &str) -> AssemblyProgramParser {
+        AssemblyProgramParser {
+            instructions: str.lines().peekable()
+        }
+    }
+
+    fn parse_program(&mut self) -> Result<Vec<AssemblerInstruction>, &'static str> {
+        let mut assembler_instructions: Vec<AssemblerInstruction> = Vec::new();
+        while self.instructions.peek().is_some() {
+            match self.instructions.peek() {
+                Some(instruction_str) => {
+                    let mut instruction_parser = InstructionParser::new(instruction_str);
+                    let instruction = instruction_parser.parse_instruction();
+                    match instruction {
+                        Ok(ins) => {
+                            assembler_instructions.push(ins);
+                            self.instructions.next();
+                        }
+                        Err(e) => { return Err(e); }
+                    }
+                }
+                _ => { break; }
+            }
+        }
+        return Ok(assembler_instructions);
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -181,7 +215,7 @@ mod tests {
 
     #[test]
     fn should_return_hlt_when_give_hlt() {
-        let mut tokenParser = OpCodeParser::new("hlt");
+        let mut tokenParser = InstructionParser::new("hlt");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: HLT },
@@ -193,7 +227,7 @@ mod tests {
 
     #[test]
     fn should_return_load_when_give_load() {
-        let mut tokenParser = OpCodeParser::new("load $1 #300");
+        let mut tokenParser = InstructionParser::new("load $1 #300");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: LOAD },
@@ -205,7 +239,7 @@ mod tests {
 
     #[test]
     fn should_return_add_when_give_add() {
-        let mut tokenParser = OpCodeParser::new("add $0 $1 $2");
+        let mut tokenParser = InstructionParser::new("add $0 $1 $2");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: ADD },
@@ -217,7 +251,7 @@ mod tests {
 
     #[test]
     fn should_return_sub_when_give_sub() {
-        let mut tokenParser = OpCodeParser::new("sub $0 $1 $2");
+        let mut tokenParser = InstructionParser::new("sub $0 $1 $2");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: SUB },
@@ -229,7 +263,7 @@ mod tests {
 
     #[test]
     fn should_return_mul_when_give_mul() {
-        let mut tokenParser = OpCodeParser::new("mul $0 $1 $2");
+        let mut tokenParser = InstructionParser::new("mul $0 $1     $2");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: MUL },
@@ -241,7 +275,7 @@ mod tests {
 
     #[test]
     fn should_return_div_when_give_div() {
-        let mut tokenParser = OpCodeParser::new("div $0 $1 $2");
+        let mut tokenParser = InstructionParser::new("div $0 $1 $2");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: DIV },
@@ -253,7 +287,7 @@ mod tests {
 
     #[test]
     fn should_return_jmp_when_give_jmp() {
-        let mut tokenParser = OpCodeParser::new("jmp $1");
+        let mut tokenParser = InstructionParser::new("jmp $1");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: JMP },
@@ -265,7 +299,7 @@ mod tests {
 
     #[test]
     fn should_return_jmp_f_when_give_jmp_f() {
-        let mut tokenParser = OpCodeParser::new("jmp_f $1");
+        let mut tokenParser = InstructionParser::new("jmp_f $1");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: JMP_F },
@@ -277,7 +311,7 @@ mod tests {
 
     #[test]
     fn should_return_jmp_b_when_give_jmp_b() {
-        let mut tokenParser = OpCodeParser::new("jmp_b $1");
+        let mut tokenParser = InstructionParser::new("jmp_b $1");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: JMP_B },
@@ -289,7 +323,7 @@ mod tests {
 
     #[test]
     fn should_return_eq_when_give_eq() {
-        let mut tokenParser = OpCodeParser::new("eq $1 $2");
+        let mut tokenParser = InstructionParser::new("eq $1 $2");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: EQ },
@@ -301,7 +335,7 @@ mod tests {
 
     #[test]
     fn should_return_jeq_when_give_jeq() {
-        let mut tokenParser = OpCodeParser::new("jeq $1");
+        let mut tokenParser = InstructionParser::new("jeq $1");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: JEQ },
@@ -314,8 +348,92 @@ mod tests {
 
     #[test]
     fn should_return_error_when_give_unexpected_token() {
-        let mut tokenParser = OpCodeParser::new("xxx $1");
+        let mut tokenParser = InstructionParser::new("xxx $1");
         let token = tokenParser.parse_instruction();
         assert_eq!(token.is_err(), true);
+    }
+
+
+    #[test]
+    fn should_return_instruction_list_when_give_assembly_code() {
+        let mut assembler = AssemblyProgramParser::new(
+            "hlt\n\
+                load $1 #300\n\
+                add $0 $1 $2\n\
+                sub $0 $1 $2\n\
+                mul $0 $1     $2\n\
+                div $0 $1 $2\n\
+                jmp $1\n\
+                jmp_f $1\n\
+                jmp_b $1\n\
+                eq $1 $2\n\
+                jeq $1");
+        let instructions = assembler.parse_program().unwrap();
+        assert_eq!(instructions[0], AssemblerInstruction {
+            token: Op { opcode: HLT },
+            operand1: None,
+            operand2: None,
+            operand3: None,
+        });
+        assert_eq!(instructions[1], AssemblerInstruction {
+            token: Op { opcode: LOAD },
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(IntegerOperand { value: 300 }),
+            operand3: None,
+        });
+        assert_eq!(instructions[2], AssemblerInstruction {
+            token: Op { opcode: ADD },
+            operand1: Some(Register { reg_num: 0 }),
+            operand2: Some(Register { reg_num: 1 }),
+            operand3: Some(Register { reg_num: 2 }),
+        });
+        assert_eq!(instructions[3], AssemblerInstruction {
+            token: Op { opcode: SUB },
+            operand1: Some(Register { reg_num: 0 }),
+            operand2: Some(Register { reg_num: 1 }),
+            operand3: Some(Register { reg_num: 2 }),
+        });
+        assert_eq!(instructions[4], AssemblerInstruction {
+            token: Op { opcode: MUL },
+            operand1: Some(Register { reg_num: 0 }),
+            operand2: Some(Register { reg_num: 1 }),
+            operand3: Some(Register { reg_num: 2 }),
+        });
+        assert_eq!(instructions[5], AssemblerInstruction {
+            token: Op { opcode: DIV },
+            operand1: Some(Register { reg_num: 0 }),
+            operand2: Some(Register { reg_num: 1 }),
+            operand3: Some(Register { reg_num: 2 }),
+        });
+        assert_eq!(instructions[6], AssemblerInstruction {
+            token: Op { opcode: JMP },
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+        assert_eq!(instructions[7], AssemblerInstruction {
+            token: Op { opcode: JMP_F },
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+        assert_eq!(instructions[8], AssemblerInstruction {
+            token: Op { opcode: JMP_B },
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+        assert_eq!(instructions[9], AssemblerInstruction {
+            token: Op { opcode: EQ },
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+        assert_eq!(instructions[10], AssemblerInstruction {
+            token: Op { opcode: JEQ },
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
     }
 }
