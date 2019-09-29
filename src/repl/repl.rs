@@ -1,6 +1,7 @@
 use crate::vm::VM;
 use std::io::Write;
 use std::num::ParseIntError;
+use crate::assembler::assembler::InstructionParser;
 
 pub struct REPL {
     command_buffer: Vec<String>,
@@ -75,15 +76,16 @@ impl REPL {
                     println!("Type above commands to debug.");
                 }
                 _ => {
-                    let input_instruction = self.parse_hex(buffer);
+                    let mut instruction_parser = InstructionParser::new(buffer);
+                    let input_instruction = instruction_parser.parse_instruction();
                     match input_instruction {
-                        Ok(bytes) => {
-                            for byte in bytes {
+                        Ok(ins) => {
+                            for byte in ins.to_bytes() {
                                 self.vm.program.push(byte);
                             }
                         }
                         Err(e) => {
-                            println!("Unable to parse hex string. Please enter 4 group of 2 hex characters.")
+                            println!("{:?}", e);
                         }
                     }
                     self.vm.run_once();
