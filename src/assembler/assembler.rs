@@ -115,7 +115,7 @@ impl<'a> InstructionParser<'a> {
                                 Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...65536)"); }
                             }
                         } else {
-                            return Err("An # is expected(e.g. #1)");
+                            return Err("An Immediate number is expected(e.g. #1)");
                         }
                     }
                     Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
