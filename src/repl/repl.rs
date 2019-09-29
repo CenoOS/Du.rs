@@ -85,7 +85,7 @@ impl REPL {
                             }
                         }
                         Err(e) => {
-                            println!("{:?}", e);
+                            println!("Error: {:?}", e);
                         }
                     }
                     self.vm.run_once();
