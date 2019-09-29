@@ -1,22 +1,22 @@
 use crate::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMP_F, JMP_B, EQ, JEQ, IGL};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum OpCode {
-    HLT,
-    LOAD,
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    JMP,
+    HLT = 0,
+    LOAD = 1,
+    ADD = 2,
+    SUB = 3,
+    MUL = 4,
+    DIV = 5,
+    JMP = 6,
     /* absolute jump */
-    JMP_F,
+    JMP_F = 7,
     /* forward relative jump */
-    JMP_B,
+    JMP_B = 8,
     /* backward relative jump */
-    EQ,
-    JEQ,
-    IGL,
+    EQ = 9,
+    JEQ = 10,
+    IGL = 11,
 }
 
 #[derive(Debug, PartialEq)]
