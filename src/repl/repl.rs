@@ -42,7 +42,7 @@ impl REPL {
             print!(">>> ");
             std::io::stdout().flush().expect("Unable to flush stdout.");
 
-            std::io::stdin().read_line(&mut buffer).expect("Unable to read line.");
+            stdin.read_line(&mut buffer).expect("Unable to read line.");
             let buffer = buffer.trim();
             self.command_buffer.push(buffer.to_string());
 

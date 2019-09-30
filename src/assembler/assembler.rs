@@ -26,7 +26,7 @@ impl<'a> InstructionParser<'a> {
                 Ok(operand1) => {
                     return Ok(AssemblerInstruction::new(Op { opcode: op }, Some(Register { reg_num: operand1 }), None, None));
                 }
-                Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
+                Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
         } else {
             return Err("An Register is expected(e.g. $1)");
@@ -43,7 +43,7 @@ impl<'a> InstructionParser<'a> {
                     let instruction = self.parse_one_register_instruction(op).unwrap();
                     return Ok(AssemblerInstruction::new(instruction.token, Some(Register { reg_num: operand1 }), instruction.operand1, None));
                 }
-                Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
+                Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
         } else {
             return Err("An Register is expected(e.g. $1)");
@@ -60,7 +60,7 @@ impl<'a> InstructionParser<'a> {
                     let instruction = self.parse_two_register_instruction(op).unwrap();
                     return Ok(AssemblerInstruction::new(instruction.token, Some(Register { reg_num: operand1 }), instruction.operand1, instruction.operand2));
                 }
-                Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
+                Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
         } else {
             return Err("An Register is expected(e.g. $1)");
@@ -87,13 +87,13 @@ impl<'a> InstructionParser<'a> {
                                 Ok(operand2) => {
                                     return Ok(AssemblerInstruction::new(Op { opcode: LOAD }, Some(Register { reg_num: operand1 }), Some(IntegerOperand { value: operand2 }), None));
                                 }
-                                Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...65536)"); }
+                                Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...65536)"); }
                             }
                         } else {
                             return Err("An Immediate number is expected(e.g. #1)");
                         }
                     }
-                    Err(e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
+                    Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
                 }
             } else {
                 return Err("An Register is expected(e.g. $1)");
@@ -190,8 +190,8 @@ mod tests {
 
     #[test]
     fn should_return_hlt_when_give_hlt() {
-        let mut tokenParser = InstructionParser::new("hlt");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("hlt");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: HLT },
             operand1: None,
@@ -202,8 +202,8 @@ mod tests {
 
     #[test]
     fn should_return_load_when_give_load() {
-        let mut tokenParser = InstructionParser::new("load $1 #300");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("load $1 #300");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: LOAD },
             operand1: Some(Register { reg_num: 1 }),
@@ -214,8 +214,8 @@ mod tests {
 
     #[test]
     fn should_return_add_when_give_add() {
-        let mut tokenParser = InstructionParser::new("add $0 $1 $2");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("add $0 $1 $2");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: ADD },
             operand1: Some(Register { reg_num: 0 }),
@@ -226,8 +226,8 @@ mod tests {
 
     #[test]
     fn should_return_sub_when_give_sub() {
-        let mut tokenParser = InstructionParser::new("sub $0 $1 $2");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("sub $0 $1 $2");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: SUB },
             operand1: Some(Register { reg_num: 0 }),
@@ -238,8 +238,8 @@ mod tests {
 
     #[test]
     fn should_return_mul_when_give_mul() {
-        let mut tokenParser = InstructionParser::new("mul $0 $1     $2");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("mul $0 $1     $2");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: MUL },
             operand1: Some(Register { reg_num: 0 }),
@@ -250,8 +250,8 @@ mod tests {
 
     #[test]
     fn should_return_div_when_give_div() {
-        let mut tokenParser = InstructionParser::new("div $0 $1 $2");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("div $0 $1 $2");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: DIV },
             operand1: Some(Register { reg_num: 0 }),
@@ -262,8 +262,8 @@ mod tests {
 
     #[test]
     fn should_return_jmp_when_give_jmp() {
-        let mut tokenParser = InstructionParser::new("jmp $1");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("jmp $1");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: JMP },
             operand1: Some(Register { reg_num: 1 }),
@@ -274,8 +274,8 @@ mod tests {
 
     #[test]
     fn should_return_jmp_f_when_give_jmp_f() {
-        let mut tokenParser = InstructionParser::new("jmp_f $1");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("jmp_f $1");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: JMP_F },
             operand1: Some(Register { reg_num: 1 }),
@@ -286,8 +286,8 @@ mod tests {
 
     #[test]
     fn should_return_jmp_b_when_give_jmp_b() {
-        let mut tokenParser = InstructionParser::new("jmp_b $1");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("jmp_b $1");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: JMP_B },
             operand1: Some(Register { reg_num: 1 }),
@@ -298,8 +298,8 @@ mod tests {
 
     #[test]
     fn should_return_eq_when_give_eq() {
-        let mut tokenParser = InstructionParser::new("eq $1 $2");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("eq $1 $2");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: EQ },
             operand1: Some(Register { reg_num: 1 }),
@@ -310,8 +310,8 @@ mod tests {
 
     #[test]
     fn should_return_jeq_when_give_jeq() {
-        let mut tokenParser = InstructionParser::new("jeq $1");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("jeq $1");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Op { opcode: JEQ },
             operand1: Some(Register { reg_num: 1 }),
@@ -323,8 +323,8 @@ mod tests {
 
     #[test]
     fn should_return_error_when_give_unexpected_token() {
-        let mut tokenParser = InstructionParser::new("xxx $1");
-        let token = tokenParser.parse_instruction();
+        let mut token_parser = InstructionParser::new("xxx $1");
+        let token = token_parser.parse_instruction();
         assert_eq!(token.is_err(), true);
     }
 
