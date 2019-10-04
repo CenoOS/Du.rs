@@ -1,6 +1,6 @@
 use std::iter::Peekable;
 use std::str::{SplitWhitespace, Lines};
-use crate::assembler::token::Token::{Op, Register, IntegerOperand};
+use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, LabelDeclaration};
 use crate::vm::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::vm::instruction::OpCode;
@@ -82,6 +82,47 @@ impl<'a> InstructionParser<'a> {
         }
     }
 
+    pub fn parse_directive(&mut self) -> Result<AssemblerInstruction, &'static str> {
+        // directive : http://web.mit.edu/gnu/doc/html/as_7.html
+        let directive = &(*self.tokens.peek().unwrap().to_string())[1..];
+        match directive {
+            "asciz" => {
+                return Ok(AssemblerInstruction::new(None, None, Option::from(Directive { name: directive.to_string() }), None, None, None));
+            }
+            _ => {
+                return Err("Unsupported directive.");
+            }
+        }
+    }
+
+    pub fn parse_label_declaration(&mut self) -> Result<AssemblerInstruction, &'static str> {
+        let label_declaration_with_tag = *self.tokens.peek().unwrap();
+        let len = &label_declaration_with_tag.len() - 1;
+        let label_declaration = &label_declaration_with_tag[0..len];
+        // todo : need check is alpha.
+        return Ok(AssemblerInstruction::new(None, Option::from(LabelDeclaration { name: label_declaration.to_string() }), None, None, None, None));
+    }
+
+    pub fn parse_label_usage(&mut self) -> Result<AssemblerInstruction, &'static str> {
+        let label_usage = &(*self.tokens.peek().unwrap().to_string())[1..];
+        return Ok(AssemblerInstruction::new(None, Option::from(LabelDeclaration { name: label_usage.to_string() }), None, None, None, None));
+    }
+
+    pub fn parse_assembly_line(&mut self) -> Result<AssemblerInstruction, &'static str> {
+        if self.tokens.peek().map_or(false, |word| word.starts_with(".")) {
+            self.parse_directive();
+        }
+
+        if self.tokens.peek().map_or(false, |word| word.ends_with(':')) {
+            self.parse_label_declaration();
+        }
+
+        if self.tokens.peek().map_or(false, |word| word.starts_with('@')) {
+            self.parse_label_usage();
+        }
+
+        return self.parse_instruction();
+    }
     pub fn parse_instruction(&mut self) -> Result<AssemblerInstruction, &'static str> {
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "HLT".to_string()) {
             return Ok(AssemblerInstruction::new(Some(Op { opcode: HLT }),
