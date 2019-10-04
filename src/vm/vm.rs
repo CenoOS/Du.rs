@@ -132,6 +132,14 @@ impl VM {
                 print!("HLT");
                 return true;
             }
+            OpCode::INC => {
+                /* INC reg */
+                self.registers[self.next_8_bits() as usize] += 1;
+            }
+            OpCode::DEC => {
+                /* INC reg */
+                self.registers[self.next_8_bits() as usize] -= 1;
+            }
             _ => {
                 print!("Unrecognized opcode found! Terminating...");
                 return true;
@@ -295,6 +303,29 @@ mod tests {
         vm.run_once(); /*JEQ 2; */
         assert_eq!(vm.pc, 3);
     }
+
+    #[test]
+    fn should_inc() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
+                          12, 0, 0, 0]; /*INC $0; */
+
+        vm.run_once(); /*LOAD 0 #500; */
+        vm.run_once(); /*INC $0; */
+        assert_eq!(vm.registers[0], 501);
+    }
+
+    #[test]
+    fn should_dec() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
+                          13, 0, 0, 0]; /*DEC $0; */
+
+        vm.run_once(); /*LOAD 0 #500; */
+        vm.run_once(); /*DEC $0; */
+        assert_eq!(vm.registers[0], 499);
+    }
+
 
     #[test]
     fn should_aloc() {

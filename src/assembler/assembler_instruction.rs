@@ -2,16 +2,21 @@ use crate::assembler::token::Token;
 
 #[derive(Debug, PartialEq)]
 pub struct AssemblerInstruction {
-    pub token: Token,
+    pub token: Option<Token>,
+    pub label: Option<Token>,
+    pub directive: Option<Token>,
     pub operand1: Option<Token>,
     pub operand2: Option<Token>,
     pub operand3: Option<Token>,
+
 }
 
 impl AssemblerInstruction {
-    pub fn new(token: Token, operand1: Option<Token>, operand2: Option<Token>, operand3: Option<Token>) -> AssemblerInstruction {
+    pub fn new(token: Option<Token>, label: Option<Token>, directive: Option<Token>, operand1: Option<Token>, operand2: Option<Token>, operand3: Option<Token>) -> AssemblerInstruction {
         AssemblerInstruction {
             token,
+            label,
+            directive,
             operand1,
             operand2,
             operand3,
@@ -21,7 +26,7 @@ impl AssemblerInstruction {
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut results: Vec<u8> = Vec::new();
         match self.token {
-            Token::Op { opcode } => match opcode {
+            Some(Token::Op { opcode }) => match opcode {
                 _ => { results.push(opcode as u8) }
             },
             _ => {
@@ -59,18 +64,22 @@ impl AssemblerInstruction {
 
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
     use crate::assembler::token::Token::{Op, Register, IntegerOperand};
     use crate::vm::instruction::OpCode::LOAD;
 
     #[test]
-    fn should_return_bytes_when_give_an_instruction(){
-        let ins = AssemblerInstruction::new(Op { opcode: LOAD },Some(Register { reg_num: 1 }),Some(IntegerOperand { value: 500 }),None);
+    fn should_return_bytes_when_give_an_instruction() {
+        let ins = AssemblerInstruction::new(Some(Op { opcode: LOAD }),
+                                            None, None,
+                                            Some(Register { reg_num: 1 }),
+                                            Some(IntegerOperand { value: 500 }),
+                                            None);
         let results = ins.to_bytes();
-        assert_eq!(results[0],1);
-        assert_eq!(results[1],1);
-        assert_eq!(results[2],1);
-        assert_eq!(results[3],244);
+        assert_eq!(results[0], 1);
+        assert_eq!(results[1], 1);
+        assert_eq!(results[2], 1);
+        assert_eq!(results[3], 244);
     }
 }

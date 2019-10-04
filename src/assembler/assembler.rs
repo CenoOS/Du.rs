@@ -24,7 +24,12 @@ impl<'a> InstructionParser<'a> {
             let is_u8 = operand1_str.parse::<u8>();
             match is_u8 {
                 Ok(operand1) => {
-                    return Ok(AssemblerInstruction::new(Op { opcode: op }, Some(Register { reg_num: operand1 }), None, None));
+                    return Ok(AssemblerInstruction::new(Some(Op { opcode: op }),
+                                                        None,
+                                                        None,
+                                                        Some(Register { reg_num: operand1 }),
+                                                        None,
+                                                        None));
                 }
                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
@@ -41,7 +46,12 @@ impl<'a> InstructionParser<'a> {
                 Ok(operand1) => {
                     self.tokens.next();
                     let instruction = self.parse_one_register_instruction(op).unwrap();
-                    return Ok(AssemblerInstruction::new(instruction.token, Some(Register { reg_num: operand1 }), instruction.operand1, None));
+                    return Ok(AssemblerInstruction::new(instruction.token,
+                                                        None,
+                                                        None,
+                                                        Some(Register { reg_num: operand1 }),
+                                                        instruction.operand1,
+                                                        None));
                 }
                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
@@ -58,7 +68,12 @@ impl<'a> InstructionParser<'a> {
                 Ok(operand1) => {
                     self.tokens.next();
                     let instruction = self.parse_two_register_instruction(op).unwrap();
-                    return Ok(AssemblerInstruction::new(instruction.token, Some(Register { reg_num: operand1 }), instruction.operand1, instruction.operand2));
+                    return Ok(AssemblerInstruction::new(instruction.token,
+                                                        None,
+                                                        None,
+                                                        Some(Register { reg_num: operand1 }),
+                                                        instruction.operand1,
+                                                        instruction.operand2));
                 }
                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
@@ -69,7 +84,12 @@ impl<'a> InstructionParser<'a> {
 
     pub fn parse_instruction(&mut self) -> Result<AssemblerInstruction, &'static str> {
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "HLT".to_string()) {
-            return Ok(AssemblerInstruction::new(Op { opcode: HLT }, None, None, None));
+            return Ok(AssemblerInstruction::new(Some(Op { opcode: HLT }),
+                                                None,
+                                                None,
+                                                None,
+                                                None,
+                                                None));
         }
 
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "LOAD".to_string()) {
@@ -85,7 +105,12 @@ impl<'a> InstructionParser<'a> {
                             let is_i32 = operand2_str.parse::<i32>();
                             match is_i32 {
                                 Ok(operand2) => {
-                                    return Ok(AssemblerInstruction::new(Op { opcode: LOAD }, Some(Register { reg_num: operand1 }), Some(IntegerOperand { value: operand2 }), None));
+                                    return Ok(AssemblerInstruction::new(Some(Op { opcode: LOAD }),
+                                                                        None,
+                                                                        None,
+                                                                        Some(Register { reg_num: operand1 }),
+                                                                        Some(IntegerOperand { value: operand2 }),
+                                                                        None));
                                 }
                                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...65536)"); }
                             }
@@ -146,6 +171,16 @@ impl<'a> InstructionParser<'a> {
             return self.parse_one_register_instruction(JEQ);
         }
 
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "INC".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(INC);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "DEC".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(DEC);
+        }
+
         Err("Unexpected Assembly Code.")
     }
 }
@@ -193,7 +228,9 @@ mod tests {
         let mut token_parser = InstructionParser::new("hlt");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: HLT },
+            token: Some(Op { opcode: HLT }),
+            label: None,
+            directive: None,
             operand1: None,
             operand2: None,
             operand3: None,
@@ -205,7 +242,9 @@ mod tests {
         let mut token_parser = InstructionParser::new("load $1 #300");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: LOAD },
+            token: Some(Op { opcode: LOAD }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: Some(IntegerOperand { value: 300 }),
             operand3: None,
@@ -217,7 +256,9 @@ mod tests {
         let mut token_parser = InstructionParser::new("add $0 $1 $2");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: ADD },
+            token: Some(Op { opcode: ADD }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 0 }),
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
@@ -229,7 +270,9 @@ mod tests {
         let mut token_parser = InstructionParser::new("sub $0 $1 $2");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: SUB },
+            token: Some(Op { opcode: SUB }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 0 }),
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
@@ -241,7 +284,9 @@ mod tests {
         let mut token_parser = InstructionParser::new("mul $0 $1     $2");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: MUL },
+            token: Some(Op { opcode: MUL }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 0 }),
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
@@ -253,7 +298,9 @@ mod tests {
         let mut token_parser = InstructionParser::new("div $0 $1 $2");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: DIV },
+            token: Some(Op { opcode: DIV }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 0 }),
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
@@ -265,7 +312,9 @@ mod tests {
         let mut token_parser = InstructionParser::new("jmp $1");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: JMP },
+            token: Some(Op { opcode: JMP }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: None,
             operand3: None,
@@ -277,7 +326,9 @@ mod tests {
         let mut token_parser = InstructionParser::new("jmp_f $1");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: JMP_F },
+            token: Some(Op { opcode: JMP_F }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: None,
             operand3: None,
@@ -289,7 +340,9 @@ mod tests {
         let mut token_parser = InstructionParser::new("jmp_b $1");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: JMP_B },
+            token: Some(Op { opcode: JMP_B }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: None,
             operand3: None,
@@ -301,7 +354,9 @@ mod tests {
         let mut token_parser = InstructionParser::new("eq $1 $2");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: EQ },
+            token: Some(Op { opcode: EQ }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: Some(Register { reg_num: 2 }),
             operand3: None,
@@ -313,7 +368,37 @@ mod tests {
         let mut token_parser = InstructionParser::new("jeq $1");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Op { opcode: JEQ },
+            token: Some(Op { opcode: JEQ }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_inc_when_give_inc() {
+        let mut token_parser = InstructionParser::new("inc $1");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: INC }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_dec_when_give_dec() {
+        let mut token_parser = InstructionParser::new("dec $1");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: DEC }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: None,
             operand3: None,
@@ -345,67 +430,89 @@ mod tests {
                 jeq $1");
         let instructions = assembler.parse_program().unwrap();
         assert_eq!(instructions[0], AssemblerInstruction {
-            token: Op { opcode: HLT },
+            token: Some(Op { opcode: HLT }),
+            label: None,
+            directive: None,
             operand1: None,
             operand2: None,
             operand3: None,
         });
         assert_eq!(instructions[1], AssemblerInstruction {
-            token: Op { opcode: LOAD },
+            token: Some(Op { opcode: LOAD }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: Some(IntegerOperand { value: 300 }),
             operand3: None,
         });
         assert_eq!(instructions[2], AssemblerInstruction {
-            token: Op { opcode: ADD },
+            token: Some(Op { opcode: ADD }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 0 }),
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
         });
         assert_eq!(instructions[3], AssemblerInstruction {
-            token: Op { opcode: SUB },
+            token: Some(Op { opcode: SUB }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 0 }),
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
         });
         assert_eq!(instructions[4], AssemblerInstruction {
-            token: Op { opcode: MUL },
+            token: Some(Op { opcode: MUL }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 0 }),
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
         });
         assert_eq!(instructions[5], AssemblerInstruction {
-            token: Op { opcode: DIV },
+            token: Some(Op { opcode: DIV }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 0 }),
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
         });
         assert_eq!(instructions[6], AssemblerInstruction {
-            token: Op { opcode: JMP },
+            token: Some(Op { opcode: JMP }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: None,
             operand3: None,
         });
         assert_eq!(instructions[7], AssemblerInstruction {
-            token: Op { opcode: JMP_F },
+            token: Some(Op { opcode: JMP_F }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: None,
             operand3: None,
         });
         assert_eq!(instructions[8], AssemblerInstruction {
-            token: Op { opcode: JMP_B },
+            token: Some(Op { opcode: JMP_B }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: None,
             operand3: None,
         });
         assert_eq!(instructions[9], AssemblerInstruction {
-            token: Op { opcode: EQ },
+            token: Some(Op { opcode: EQ }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: Some(Register { reg_num: 2 }),
             operand3: None,
         });
         assert_eq!(instructions[10], AssemblerInstruction {
-            token: Op { opcode: JEQ },
+            token: Some(Op { opcode: JEQ }),
+            label: None,
+            directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: None,
             operand3: None,
