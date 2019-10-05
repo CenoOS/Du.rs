@@ -1,4 +1,4 @@
-# Du.rs (DuLang)
+# Du.rs
 ### just a new computer language project write in rust
 
 ### 1. VM
