@@ -100,6 +100,18 @@ impl<'a> InstructionParser<'a> {
         let len = &label_declaration_with_tag.len() - 1;
         let label_declaration = &label_declaration_with_tag[0..len];
         // todo : need check is alpha.
+
+        // hello:
+        self.tokens.next();
+
+        if self.tokens.peekable() {
+            match self.tokens.peek().map_or(false,|word| word.starts_with('.')){
+                let directive = self.parse_directive();
+                return Ok()
+            }
+            // hello: .asciz "Hello, World!"
+            // hello: JMP $0
+        }
         return Ok(AssemblerInstruction::new(None, Option::from(LabelDeclaration { name: label_declaration.to_string() }), None, None, None, None));
     }
 
@@ -110,15 +122,16 @@ impl<'a> InstructionParser<'a> {
 
     pub fn parse_assembly_line(&mut self) -> Result<AssemblerInstruction, &'static str> {
         if self.tokens.peek().map_or(false, |word| word.starts_with(".")) {
-            self.parse_directive();
+            return self.parse_directive();
         }
 
         if self.tokens.peek().map_or(false, |word| word.ends_with(':')) {
-            self.parse_label_declaration();
+            return self.parse_label_declaration();
         }
 
+        // todo: not be here
         if self.tokens.peek().map_or(false, |word| word.starts_with('@')) {
-            self.parse_label_usage();
+            return self.parse_label_usage();
         }
 
         return self.parse_instruction();
