@@ -4,7 +4,6 @@ use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, La
 use crate::vm::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::vm::instruction::OpCode;
-use std::fs::create_dir;
 
 
 pub struct InstructionParser<'a> {
@@ -90,6 +89,12 @@ impl<'a> InstructionParser<'a> {
             "asciz" => {
                 return Ok(AssemblerInstruction::new(None, None, Option::from(Directive { name: directive.to_string() }), None, None, None));
             }
+            "code" => {
+                return Ok(AssemblerInstruction::new(None, None, Option::from(Directive { name: directive.to_string() }), None, None, None));
+            }
+            "data" => {
+                return Ok(AssemblerInstruction::new(None, None, Option::from(Directive { name: directive.to_string() }), None, None, None));
+            }
             _ => {
                 return Err("Unsupported directive.");
             }
@@ -119,7 +124,7 @@ impl<'a> InstructionParser<'a> {
                     }
                     Err(e) => { return Err(e); }
                 }
-            } else if self.tokens.peek().is_some() {// hello: JMP $0
+            } else {// hello: JMP $0
                 let instruction = self.parse_instruction();
                 match instruction {
                     Ok(ins) => {
@@ -202,7 +207,6 @@ impl<'a> InstructionParser<'a> {
             }
         }
 
-
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "ADD".to_string()) {
             self.tokens.next();
             return self.parse_three_register_instruction(ADD);
@@ -279,10 +283,12 @@ impl<'a> AssemblyProgramParser<'a> {
             match self.instructions.peek() {
                 Some(instruction_str) => {
                     let mut instruction_parser = InstructionParser::new(instruction_str);
-                    let instruction = instruction_parser.parse_instruction();
+                    let instruction = instruction_parser.parse_assembly_line();
                     match instruction {
                         Ok(ins) => {
-                            assembler_instructions.push(ins);
+                            if ins.token.is_some() {
+                                assembler_instructions.push(ins);
+                            }
                             self.instructions.next();
                         }
                         Err(e) => { return Err(e); }
@@ -299,6 +305,7 @@ impl<'a> AssemblyProgramParser<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::assembler::token::Token;
 
     #[test]
     fn should_return_hlt_when_give_hlt() {
@@ -490,21 +497,97 @@ mod tests {
         assert_eq!(token.is_err(), true);
     }
 
+    #[test]
+    fn should_return_label_declaration_when_parse_label_declaration() {
+        let mut instruction_parser = InstructionParser::new("hello:");
+        let label = instruction_parser.parse_label_declaration();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: None,
+            label: Option::from(LabelDeclaration { name: "hello".to_string() }),
+            directive: None,
+            operand1: None,
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_label_declaration_when_parse_label_declaration_with_directive() {
+        let mut instruction_parser = InstructionParser::new("hello: .asciz \"Hello, World!\"");
+        let label = instruction_parser.parse_label_declaration();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: None,
+            label: Option::from(LabelDeclaration { name: "hello".to_string() }),
+            directive: Option::from(Directive { name: "asciz".to_string() }),
+            operand1: None,
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_label_declaration_when_parse_label_declaration_with_instruction() {
+        let mut instruction_parser = InstructionParser::new("hello: JMP $0");
+        let label = instruction_parser.parse_label_declaration();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: Option::from(Op { opcode: OpCode::JMP }),
+            label: Option::from(LabelDeclaration { name: "hello".to_string() }),
+            directive: None,
+            operand1: Option::from(Register { reg_num: 0 }),
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+
+    #[test]
+    fn should_return_directive_when_parse_directive() {
+        let mut instruction_parser = InstructionParser::new(".asciz \"Hello, World!\"");
+        let label = instruction_parser.parse_directive();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: None,
+            label: None,
+            directive: Option::from(Directive { name: "asciz".to_string() }),
+            operand1: None,
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+
+    #[test]
+    fn should_return_instructions_when_parse_assembly_line() {
+        let mut instruction_parser = InstructionParser::new("hello: .asciz \"Hello, World!\"");
+        let label = instruction_parser.parse_assembly_line();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: None,
+            label: Option::from(LabelDeclaration { name: "hello".to_string() }),
+            directive: Option::from(Directive { name: "asciz".to_string() }),
+            operand1: None,
+            operand2: None,
+            operand3: None,
+        });
+    }
+
 
     #[test]
     fn should_return_instruction_list_when_give_assembly_code() {
         let mut assembler = AssemblyProgramParser::new(
             "hlt\n\
-                load $1 #300\n\
-                add $0 $1 $2\n\
-                sub $0 $1 $2\n\
-                mul $0 $1     $2\n\
-                div $0 $1 $2\n\
-                jmp $1\n\
-                jmp_f $1\n\
-                jmp_b $1\n\
-                eq $1 $2\n\
-                jeq $1");
+            .code\n\
+                main:\n\
+                    load $1 #300\n\
+                    add $0 $1 $2\n\
+                    sub $0 $1 $2\n\
+                    mul $0 $1     $2\n\
+                    div $0 $1 $2\n\
+                hello: jmp $1\n\
+                    jmp_f $1\n\
+                    jmp_b $1\n\
+                    eq $1 $2\n\
+                    jeq $1\n\
+            .data\n\
+                hw: .asciz \"hello,World\"");
         let instructions = assembler.parse_program().unwrap();
         assert_eq!(instructions[0], AssemblerInstruction {
             token: Some(Op { opcode: HLT }),
@@ -556,7 +639,7 @@ mod tests {
         });
         assert_eq!(instructions[6], AssemblerInstruction {
             token: Some(Op { opcode: JMP }),
-            label: None,
+            label: Option::from(LabelDeclaration { name: "hello".to_string() }),
             directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: None,
