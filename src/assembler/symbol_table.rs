@@ -45,3 +45,24 @@ impl SymbolTable {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::assembler::symbol_table::{SymbolTable, Symbol};
+    use crate::assembler::symbol_table::SymbolType::Label;
+
+    #[test]
+    fn should_save_symbol_to_symbol_table_when_give_a_symbol() {
+        let mut symbol_table = SymbolTable::new();
+        symbol_table.add_symbol(Symbol::new("hello".parse().unwrap(), 12, Label));
+        assert_eq!(symbol_table.symbols.len(), 1);
+    }
+
+    #[test]
+    fn should_get_symbol_from_symbol_table_when_give_a_symbol_name() {
+        let mut symbol_table = SymbolTable::new();
+        symbol_table.add_symbol(Symbol::new("hello".parse().unwrap(), 12, Label));
+        let symbol_value = symbol_table.get_symbol_value("hello").unwrap();
+        assert_eq!(symbol_value, 12);
+    }
+}

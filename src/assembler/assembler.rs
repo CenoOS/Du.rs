@@ -4,7 +4,6 @@ use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, La
 use crate::vm::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::vm::instruction::OpCode;
-use std::f32::consts::E;
 
 
 pub struct InstructionParser<'a> {
@@ -348,7 +347,6 @@ impl<'a> AssemblyProgramParser<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::assembler::token::Token;
 
     #[test]
     fn should_return_hlt_when_give_hlt() {
