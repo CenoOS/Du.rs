@@ -23,8 +23,8 @@
     - [x] registers
     - [x] program
     - [x] pc
-  -[ ] Mem
-    -[ ] heap
+  - [ ] Mem
+    - [ ] heap
         - [ ] malloc 
         - [ ] gc
 
