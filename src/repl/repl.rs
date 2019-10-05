@@ -64,6 +64,12 @@ impl REPL {
                     }
                     println!("End of Program Listing.")
                 }
+                ".clear" => {
+                    println!("Clearing in VM's program vector:");
+                    let len = self.vm.program.len();
+                    self.vm.program.clear();
+                    println!("{} instructions cleared.", len)
+                }
                 ".registers" => {
                     println!("Listing registers and all contents:");
                     println!("{:#?}", self.vm.registers);
