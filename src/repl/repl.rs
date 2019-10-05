@@ -2,6 +2,7 @@ use std::io::Write;
 use std::num::ParseIntError;
 use crate::assembler::assembler::InstructionParser;
 use crate::vm::vm::VM;
+use crate::assembler::token::Token::LabelUsage;
 
 pub struct REPL {
     command_buffer: Vec<String>,
@@ -77,11 +78,13 @@ impl REPL {
                 }
                 _ => {
                     let mut instruction_parser = InstructionParser::new(buffer);
-                    let input_instruction = instruction_parser.parse_instruction();
+                    let input_instruction = instruction_parser.parse_assembly_line();
                     match input_instruction {
                         Ok(ins) => {
-                            for byte in ins.to_bytes() {
-                                self.vm.program.push(byte);
+                            if ins.token.is_some() && ins.label.is_none() {
+                                for byte in ins.to_bytes() {
+                                    self.vm.program.push(byte);
+                                }
                             }
                         }
                         Err(e) => {

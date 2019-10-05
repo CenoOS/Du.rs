@@ -1,9 +1,10 @@
 use std::iter::Peekable;
 use std::str::{SplitWhitespace, Lines};
-use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, LabelDeclaration};
+use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, LabelDeclaration, LabelUsage};
 use crate::vm::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::vm::instruction::OpCode;
+use std::f32::consts::E;
 
 
 pub struct InstructionParser<'a> {
@@ -33,6 +34,19 @@ impl<'a> InstructionParser<'a> {
                 }
                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
+        } else if self.tokens.peek().map_or(false, |word| word.starts_with("@")) {
+            let label_usage = self.parse_label_usage();
+            match label_usage {
+                Ok(label) => {
+                    return Ok(AssemblerInstruction::new(Some(Op { opcode: op }),
+                                                        label.label,
+                                                        None,
+                                                        label.operand1,// todo : operand should find from symbol table
+                                                        None,
+                                                        None));
+                }
+                Err(e) => { return Err(e); }
+            }
         } else {
             return Err("An Register is expected(e.g. $1)");
         }
@@ -55,8 +69,23 @@ impl<'a> InstructionParser<'a> {
                 }
                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
+        } else if self.tokens.peek().map_or(false, |word| word.starts_with("@")) {
+            let label_usage = self.parse_label_usage();
+            match label_usage {
+                Ok(label) => {
+                    self.tokens.next();
+                    let instruction = self.parse_one_register_instruction(op).unwrap();
+                    return Ok(AssemblerInstruction::new(instruction.token,
+                                                        label.label,
+                                                        None,
+                                                        label.operand1, // todo : operand should find from symbol table
+                                                        instruction.operand1,
+                                                        None));
+                }
+                Err(e) => { return Err(e); }
+            }
         } else {
-            return Err("An Register is expected(e.g. $1)");
+            return Err("An Register / Label is expected(e.g. $1 / @hello)");
         }
     }
 
@@ -77,8 +106,23 @@ impl<'a> InstructionParser<'a> {
                 }
                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
+        } else if self.tokens.peek().map_or(false, |word| word.starts_with("@")) {
+            let label_usage = self.parse_label_usage();
+            match label_usage {
+                Ok(label) => {
+                    self.tokens.next();
+                    let instruction = self.parse_two_register_instruction(op).unwrap();
+                    return Ok(AssemblerInstruction::new(instruction.token,
+                                                        label.label,
+                                                        None,
+                                                        label.operand1, // todo : operand should find from symbol table
+                                                        instruction.operand1,
+                                                        instruction.operand2));
+                }
+                Err(e) => { return Err(e); }
+            }
         } else {
-            return Err("An Register is expected(e.g. $1)");
+            return Err("An Register / Label is expected(e.g. $1 / @hello)");
         }
     }
 
@@ -144,7 +188,7 @@ impl<'a> InstructionParser<'a> {
 
     pub fn parse_label_usage(&mut self) -> Result<AssemblerInstruction, &'static str> {
         let label_usage = &(*self.tokens.peek().unwrap().to_string())[1..];
-        return Ok(AssemblerInstruction::new(None, Option::from(LabelDeclaration { name: label_usage.to_string() }), None, None, None, None));
+        return Ok(AssemblerInstruction::new(None, Option::from(LabelUsage { name: label_usage.to_string() }), None, None, None, None));
     }
 
     pub fn parse_assembly_line(&mut self) -> Result<AssemblerInstruction, &'static str> {
@@ -154,11 +198,6 @@ impl<'a> InstructionParser<'a> {
 
         if self.tokens.peek().map_or(false, |word| word.ends_with(':')) {
             return self.parse_label_declaration();
-        }
-
-        // todo: not be here
-        if self.tokens.peek().map_or(false, |word| word.starts_with('@')) {
-            return self.parse_label_usage();
         }
 
         return self.parse_instruction();
@@ -196,12 +235,16 @@ impl<'a> InstructionParser<'a> {
                                 }
                                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...65536)"); }
                             }
+                        } else if self.tokens.peek().map_or(false, |word| word.starts_with("@")) {
+                            return self.parse_label_usage();
                         } else {
                             return Err("An Immediate number is expected(e.g. #1)");
                         }
                     }
                     Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
                 }
+            } else if self.tokens.peek().map_or(false, |word| word.starts_with("@")) {
+                return self.parse_label_usage();
             } else {
                 return Err("An Register is expected(e.g. $1)");
             }
