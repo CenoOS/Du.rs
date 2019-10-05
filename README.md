@@ -25,8 +25,8 @@
     - [x] pc
   -[ ] Mem
     -[ ] heap
-        -[ ] malloc 
-        -[ ] gc
+        - [ ] malloc 
+        - [ ] gc
 
 ### 2. REPL
 
@@ -50,11 +50,11 @@
     - [x] label_declaration
     - [x] label_usage
     - [ ] directive
-        -[x] .asciz
-        -[ ] .ascii
-        -[x] .code
-        -[x] .data
-        -[ ] more
+        - [x] .asciz
+        - [ ] .ascii
+        - [x] .code
+        - [x] .data
+        - [ ] more
   - [ ] symbol table
     - [x] add
     - [x] get value
