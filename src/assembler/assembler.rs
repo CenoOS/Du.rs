@@ -4,6 +4,7 @@ use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, La
 use crate::vm::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::vm::instruction::OpCode;
+use std::fs::create_dir;
 
 
 pub struct InstructionParser<'a> {
@@ -104,13 +105,34 @@ impl<'a> InstructionParser<'a> {
         // hello:
         self.tokens.next();
 
-        if self.tokens.peekable() {
-            match self.tokens.peek().map_or(false,|word| word.starts_with('.')){
+        if self.tokens.peek().is_some() {
+            if self.tokens.peek().map_or(false, |word| word.starts_with('.')) { // hello: .asciz "Hello, World!"
                 let directive = self.parse_directive();
-                return Ok()
+                match directive {
+                    Ok(ins) => {
+                        return Ok(AssemblerInstruction::new(None,
+                                                            Option::from(LabelDeclaration { name: label_declaration.to_string() }),
+                                                            ins.directive,
+                                                            ins.operand1,
+                                                            ins.operand2,
+                                                            ins.operand3));
+                    }
+                    Err(e) => { return Err(e); }
+                }
+            } else if self.tokens.peek().is_some() {// hello: JMP $0
+                let instruction = self.parse_instruction();
+                match instruction {
+                    Ok(ins) => {
+                        return Ok(AssemblerInstruction::new(ins.token,
+                                                            Option::from(LabelDeclaration { name: label_declaration.to_string() }),
+                                                            None,
+                                                            ins.operand1,
+                                                            ins.operand2,
+                                                            ins.operand3));
+                    }
+                    Err(e) => { return Err(e); }
+                }
             }
-            // hello: .asciz "Hello, World!"
-            // hello: JMP $0
         }
         return Ok(AssemblerInstruction::new(None, Option::from(LabelDeclaration { name: label_declaration.to_string() }), None, None, None, None));
     }
@@ -136,6 +158,7 @@ impl<'a> InstructionParser<'a> {
 
         return self.parse_instruction();
     }
+
     pub fn parse_instruction(&mut self) -> Result<AssemblerInstruction, &'static str> {
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "HLT".to_string()) {
             return Ok(AssemblerInstruction::new(Some(Op { opcode: HLT }),
