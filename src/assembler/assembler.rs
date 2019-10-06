@@ -131,12 +131,23 @@ impl<'a> InstructionParser<'a> {
         match directive {
             "asciz" => {
                 self.tokens.next();
-                let str = "";
+                let mut str = String::from("");
                 if self.tokens.peek().map_or(false, |w| w.starts_with("'")) {
+                    let str_part = &(*self.tokens.peek().unwrap().to_string())[1..];
+                    str.push_str(str_part);
+                    self.tokens.next();
                     while self.tokens.peek().map_or(false, |w| !w.ends_with("'")) {
-                        str.push_str(w);
+                        let str_part_middle = &(*self.tokens.peek().unwrap().to_string());
+                        str.push_str(str_part_middle);
                         self.tokens.next();
                     }
+                    if self.tokens.peek().map_or(false, |w| w.ends_with("'")) {
+                        let str_part_last_all = &(*self.tokens.peek().unwrap().to_string());
+                        let len = &str_part_last_all.len() - 1;
+                        let str_part_last = &str_part_last_all[0..len];
+                        str.push_str(str_part_last);
+                    }
+
                     return Ok(AssemblerInstruction::new(None,
                                                  None,
                                                  Option::from(Directive { name: directive.to_string() }),
@@ -370,9 +381,7 @@ impl<'a> AssemblyProgramParser<'a> {
                     let instruction = instruction_parser.parse_assembly_line();
                     match instruction {
                         Ok(ins) => {
-                            if ins.token.is_some() {
-                                assembler_instructions.push(ins);
-                            }
+                            assembler_instructions.push(ins);
                             self.instructions.next();
                         }
                         Err(e) => { return Err(e); }
