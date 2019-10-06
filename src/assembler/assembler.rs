@@ -679,7 +679,7 @@ mod tests {
                     eq $1 $2\n\
                     jeq $1\n\
             .data\n\
-                hw: .asciz \"hello,World\"");
+                hw: .asciz 'hello,World'");
         let instructions = assembler.parse_program().unwrap();
         assert_eq!(instructions[0], AssemblerInstruction {
             token: Some(Op { opcode: HLT }),
