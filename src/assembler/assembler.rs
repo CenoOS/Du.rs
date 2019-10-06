@@ -1,6 +1,6 @@
 use std::iter::Peekable;
 use std::str::{SplitWhitespace, Lines};
-use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, LabelDeclaration, LabelUsage};
+use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, LabelDeclaration, LabelUsage, IrString};
 use crate::vm::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::vm::instruction::OpCode;
@@ -132,35 +132,50 @@ impl<'a> InstructionParser<'a> {
             "asciz" => {
                 self.tokens.next();
                 let mut str = String::from("");
-                if self.tokens.peek().map_or(false, |w| w.starts_with("'")) {
-                    let str_part = &(*self.tokens.peek().unwrap().to_string())[1..];
-                    str.push_str(str_part);
-                    self.tokens.next();
-                    while self.tokens.peek().map_or(false, |w| !w.ends_with("'")) {
-                        let str_part_middle = &(*self.tokens.peek().unwrap().to_string());
-                        str.push_str(str_part_middle);
+                if self.tokens.peek().map_or(false, |w| w.starts_with("\"")) {
+                    if self.tokens.peek().map_or(false, |w| w.ends_with("\"")) {
+                        let str_part = &(*self.tokens.peek().unwrap().to_string());
+                        let len = &str_part.len() - 1;
+                        let str_part_all = &str_part[1..len];
+                        str.push_str(str_part_all);
+                        return Ok(AssemblerInstruction::new(None,
+                                                            None,
+                                                            Some(Directive { name: directive.to_string() }),
+                                                            Some(IrString { name: str }),
+                                                            None,
+                                                            None));
+                    } else {
+                        let str_part = &(*self.tokens.peek().unwrap().to_string())[1..];
+                        str.push_str(str_part);
                         self.tokens.next();
-                    }
-                    if self.tokens.peek().map_or(false, |w| w.ends_with("'")) {
-                        let str_part_last_all = &(*self.tokens.peek().unwrap().to_string());
-                        let len = &str_part_last_all.len() - 1;
-                        let str_part_last = &str_part_last_all[0..len];
-                        str.push_str(str_part_last);
-                    }
+                        while self.tokens.peek().map_or(false, |w| !w.ends_with("\"")) {
+                            let str_part_middle = &(*self.tokens.peek().unwrap().to_string());
+                            str.push_str(" ");
+                            str.push_str(str_part_middle);
+                            self.tokens.next();
+                        }
+                        if self.tokens.peek().map_or(false, |w| w.ends_with("\"")) {
+                            let str_part_last_all = &(*self.tokens.peek().unwrap().to_string());
+                            let len = &str_part_last_all.len() - 1;
+                            let str_part_last = &str_part_last_all[0..len];
+                            str.push_str(" ");
+                            str.push_str(str_part_last);
+                        }
 
-                    return Ok(AssemblerInstruction::new(None,
-                                                 None,
-                                                 Option::from(Directive { name: directive.to_string() }),
-                                                 None,
-                                                 None,
-                                                 None));
+                        return Ok(AssemblerInstruction::new(None,
+                                                            None,
+                                                            Some(Directive { name: directive.to_string() }),
+                                                            Some(IrString { name: str }),
+                                                            None,
+                                                            None));
+                    }
                 }
-                return Err("Expect a string starts with \' and end with \'")
+                return Err("Expect a string starts with \' and end with \'");
             }
             "code" => {
                 return Ok(AssemblerInstruction::new(None,
                                                     None,
-                                                    Option::from(Directive { name: directive.to_string() }),
+                                                    Some(Directive { name: directive.to_string() }),
                                                     None,
                                                     None,
                                                     None));
@@ -168,7 +183,7 @@ impl<'a> InstructionParser<'a> {
             "data" => {
                 return Ok(AssemblerInstruction::new(None,
                                                     None,
-                                                    Option::from(Directive { name: directive.to_string() }),
+                                                    Some(Directive { name: directive.to_string() }),
                                                     None,
                                                     None,
                                                     None));
@@ -194,7 +209,7 @@ impl<'a> InstructionParser<'a> {
                 match directive {
                     Ok(ins) => {
                         return Ok(AssemblerInstruction::new(None,
-                                                            Option::from(LabelDeclaration {
+                                                            Some(LabelDeclaration {
                                                                 name: label_declaration.to_string()
                                                             }),
                                                             ins.directive,
@@ -209,7 +224,7 @@ impl<'a> InstructionParser<'a> {
                 match instruction {
                     Ok(ins) => {
                         return Ok(AssemblerInstruction::new(ins.token,
-                                                            Option::from(LabelDeclaration {
+                                                            Some(LabelDeclaration {
                                                                 name: label_declaration.to_string()
                                                             }),
                                                             None,
@@ -222,7 +237,7 @@ impl<'a> InstructionParser<'a> {
             }
         }
         return Ok(AssemblerInstruction::new(None,
-                                            Option::from(LabelDeclaration {
+                                            Some(LabelDeclaration {
                                                 name: label_declaration.to_string()
                                             }),
                                             None,
@@ -234,7 +249,7 @@ impl<'a> InstructionParser<'a> {
     pub fn parse_label_usage(&mut self) -> Result<AssemblerInstruction, &'static str> {
         let label_usage = &(*self.tokens.peek().unwrap().to_string())[1..];
         return Ok(AssemblerInstruction::new(None,
-                                            Option::from(LabelUsage {
+                                            Some(LabelUsage {
                                                 name: label_usage.to_string()
                                             }),
                                             None,
@@ -595,7 +610,7 @@ mod tests {
         let label = instruction_parser.parse_label_declaration();
         assert_eq!(label.unwrap(), AssemblerInstruction {
             token: None,
-            label: Option::from(LabelDeclaration { name: "hello".to_string() }),
+            label: Some(LabelDeclaration { name: "hello".to_string() }),
             directive: None,
             operand1: None,
             operand2: None,
@@ -609,8 +624,8 @@ mod tests {
         let label = instruction_parser.parse_label_declaration();
         assert_eq!(label.unwrap(), AssemblerInstruction {
             token: None,
-            label: Option::from(LabelDeclaration { name: "hello".to_string() }),
-            directive: Option::from(Directive { name: "asciz".to_string() }),
+            label: Some(LabelDeclaration { name: "hello".to_string() }),
+            directive: Some(Directive { name: "asciz".to_string() }),
             operand1: None,
             operand2: None,
             operand3: None,
@@ -622,10 +637,10 @@ mod tests {
         let mut instruction_parser = InstructionParser::new("hello: JMP $0");
         let label = instruction_parser.parse_label_declaration();
         assert_eq!(label.unwrap(), AssemblerInstruction {
-            token: Option::from(Op { opcode: OpCode::JMP }),
-            label: Option::from(LabelDeclaration { name: "hello".to_string() }),
+            token: Some(Op { opcode: OpCode::JMP }),
+            label: Some(LabelDeclaration { name: "hello".to_string() }),
             directive: None,
-            operand1: Option::from(Register { reg_num: 0 }),
+            operand1: Some(Register { reg_num: 0 }),
             operand2: None,
             operand3: None,
         });
@@ -639,7 +654,7 @@ mod tests {
         assert_eq!(label.unwrap(), AssemblerInstruction {
             token: None,
             label: None,
-            directive: Option::from(Directive { name: "asciz".to_string() }),
+            directive: Some(Directive { name: "asciz".to_string() }),
             operand1: None,
             operand2: None,
             operand3: None,
@@ -653,8 +668,8 @@ mod tests {
         let label = instruction_parser.parse_assembly_line();
         assert_eq!(label.unwrap(), AssemblerInstruction {
             token: None,
-            label: Option::from(LabelDeclaration { name: "hello".to_string() }),
-            directive: Option::from(Directive { name: "asciz".to_string() }),
+            label: Some(LabelDeclaration { name: "hello".to_string() }),
+            directive: Some(Directive { name: "asciz".to_string() }),
             operand1: None,
             operand2: None,
             operand3: None,
@@ -679,7 +694,8 @@ mod tests {
                     eq $1 $2\n\
                     jeq $1\n\
             .data\n\
-                hw: .asciz 'hello,World'");
+                hw: .asciz \"hello,World\"\n\
+                about: .asciz \"hello, I am Nero Yang\"");
         let instructions = assembler.parse_program().unwrap();
         assert_eq!(instructions[0], AssemblerInstruction {
             token: Some(Op { opcode: HLT }),
@@ -690,6 +706,22 @@ mod tests {
             operand3: None,
         });
         assert_eq!(instructions[1], AssemblerInstruction {
+            token: None,
+            label: None,
+            directive: Some(Directive { name: "code".to_string() }),
+            operand1: None,
+            operand2: None,
+            operand3: None,
+        });
+        assert_eq!(instructions[2], AssemblerInstruction {
+            token: None,
+            label: Some(LabelDeclaration { name: "main".to_string() }),
+            directive: None,
+            operand1: None,
+            operand2: None,
+            operand3: None,
+        });
+        assert_eq!(instructions[3], AssemblerInstruction {
             token: Some(Op { opcode: LOAD }),
             label: None,
             directive: None,
@@ -697,7 +729,7 @@ mod tests {
             operand2: Some(IntegerOperand { value: 300 }),
             operand3: None,
         });
-        assert_eq!(instructions[2], AssemblerInstruction {
+        assert_eq!(instructions[4], AssemblerInstruction {
             token: Some(Op { opcode: ADD }),
             label: None,
             directive: None,
@@ -705,7 +737,7 @@ mod tests {
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
         });
-        assert_eq!(instructions[3], AssemblerInstruction {
+        assert_eq!(instructions[5], AssemblerInstruction {
             token: Some(Op { opcode: SUB }),
             label: None,
             directive: None,
@@ -713,7 +745,7 @@ mod tests {
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
         });
-        assert_eq!(instructions[4], AssemblerInstruction {
+        assert_eq!(instructions[6], AssemblerInstruction {
             token: Some(Op { opcode: MUL }),
             label: None,
             directive: None,
@@ -721,7 +753,7 @@ mod tests {
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
         });
-        assert_eq!(instructions[5], AssemblerInstruction {
+        assert_eq!(instructions[7], AssemblerInstruction {
             token: Some(Op { opcode: DIV }),
             label: None,
             directive: None,
@@ -729,15 +761,15 @@ mod tests {
             operand2: Some(Register { reg_num: 1 }),
             operand3: Some(Register { reg_num: 2 }),
         });
-        assert_eq!(instructions[6], AssemblerInstruction {
+        assert_eq!(instructions[8], AssemblerInstruction {
             token: Some(Op { opcode: JMP }),
-            label: Option::from(LabelDeclaration { name: "hello".to_string() }),
+            label: Some(LabelDeclaration { name: "hello".to_string() }),
             directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: None,
             operand3: None,
         });
-        assert_eq!(instructions[7], AssemblerInstruction {
+        assert_eq!(instructions[9], AssemblerInstruction {
             token: Some(Op { opcode: JMP_F }),
             label: None,
             directive: None,
@@ -745,7 +777,7 @@ mod tests {
             operand2: None,
             operand3: None,
         });
-        assert_eq!(instructions[8], AssemblerInstruction {
+        assert_eq!(instructions[10], AssemblerInstruction {
             token: Some(Op { opcode: JMP_B }),
             label: None,
             directive: None,
@@ -753,7 +785,7 @@ mod tests {
             operand2: None,
             operand3: None,
         });
-        assert_eq!(instructions[9], AssemblerInstruction {
+        assert_eq!(instructions[11], AssemblerInstruction {
             token: Some(Op { opcode: EQ }),
             label: None,
             directive: None,
@@ -761,11 +793,35 @@ mod tests {
             operand2: Some(Register { reg_num: 2 }),
             operand3: None,
         });
-        assert_eq!(instructions[10], AssemblerInstruction {
+        assert_eq!(instructions[12], AssemblerInstruction {
             token: Some(Op { opcode: JEQ }),
             label: None,
             directive: None,
             operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+        assert_eq!(instructions[13], AssemblerInstruction {
+            token: None,
+            label: None,
+            directive: Some(Directive { name: "data".to_string() }),
+            operand1: None,
+            operand2: None,
+            operand3: None,
+        });
+        assert_eq!(instructions[14], AssemblerInstruction {
+            token: None,
+            label: Some(LabelDeclaration { name: "hw".to_string() }),
+            directive: Some(Directive { name: "asciz".to_string() }),
+            operand1: Some(IrString { name: "hello,World".to_string() }),
+            operand2: None,
+            operand3: None,
+        });
+        assert_eq!(instructions[15], AssemblerInstruction {
+            token: None,
+            label: Some(LabelDeclaration { name: "about".to_string() }),
+            directive: Some(Directive { name: "asciz".to_string() }),
+            operand1: Some(IrString { name: "hello, I am Nero Yang".to_string() }),
             operand2: None,
             operand3: None,
         });
