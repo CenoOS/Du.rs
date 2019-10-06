@@ -130,6 +130,13 @@ impl<'a> InstructionParser<'a> {
         let directive = &(*self.tokens.peek().unwrap().to_string())[1..];
         match directive {
             "asciz" => {
+                self.tokens.next();
+                if self.tokens.peek().map_or(false, |w| w.starts_with("'")) {
+                    while self.tokens.peek().map_or(false, |w| !w.ends_with("'")) {
+                        self.tokens.next();
+
+                    }
+                }
                 return Ok(AssemblerInstruction::new(None, None, Option::from(Directive { name: directive.to_string() }), None, None, None));
             }
             "code" => {
