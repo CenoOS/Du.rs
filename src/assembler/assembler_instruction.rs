@@ -12,7 +12,9 @@ pub struct AssemblerInstruction {
 }
 
 impl AssemblerInstruction {
-    pub fn new(token: Option<Token>, label: Option<Token>, directive: Option<Token>, operand1: Option<Token>, operand2: Option<Token>, operand3: Option<Token>) -> AssemblerInstruction {
+    pub fn new(token: Option<Token>, label: Option<Token>,
+               directive: Option<Token>, operand1: Option<Token>,
+               operand2: Option<Token>, operand3: Option<Token>) -> AssemblerInstruction {
         AssemblerInstruction {
             token,
             label,

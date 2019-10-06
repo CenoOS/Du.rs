@@ -131,19 +131,36 @@ impl<'a> InstructionParser<'a> {
         match directive {
             "asciz" => {
                 self.tokens.next();
+                let str = "";
                 if self.tokens.peek().map_or(false, |w| w.starts_with("'")) {
                     while self.tokens.peek().map_or(false, |w| !w.ends_with("'")) {
+                        str.push_str(w);
                         self.tokens.next();
-
                     }
+                    return Ok(AssemblerInstruction::new(None,
+                                                 None,
+                                                 Option::from(Directive { name: directive.to_string() }),
+                                                 None,
+                                                 None,
+                                                 None));
                 }
-                return Ok(AssemblerInstruction::new(None, None, Option::from(Directive { name: directive.to_string() }), None, None, None));
+                return Err("Expect a string starts with \' and end with \'")
             }
             "code" => {
-                return Ok(AssemblerInstruction::new(None, None, Option::from(Directive { name: directive.to_string() }), None, None, None));
+                return Ok(AssemblerInstruction::new(None,
+                                                    None,
+                                                    Option::from(Directive { name: directive.to_string() }),
+                                                    None,
+                                                    None,
+                                                    None));
             }
             "data" => {
-                return Ok(AssemblerInstruction::new(None, None, Option::from(Directive { name: directive.to_string() }), None, None, None));
+                return Ok(AssemblerInstruction::new(None,
+                                                    None,
+                                                    Option::from(Directive { name: directive.to_string() }),
+                                                    None,
+                                                    None,
+                                                    None));
             }
             _ => {
                 return Err("Unsupported directive.");
@@ -166,7 +183,9 @@ impl<'a> InstructionParser<'a> {
                 match directive {
                     Ok(ins) => {
                         return Ok(AssemblerInstruction::new(None,
-                                                            Option::from(LabelDeclaration { name: label_declaration.to_string() }),
+                                                            Option::from(LabelDeclaration {
+                                                                name: label_declaration.to_string()
+                                                            }),
                                                             ins.directive,
                                                             ins.operand1,
                                                             ins.operand2,
@@ -179,7 +198,9 @@ impl<'a> InstructionParser<'a> {
                 match instruction {
                     Ok(ins) => {
                         return Ok(AssemblerInstruction::new(ins.token,
-                                                            Option::from(LabelDeclaration { name: label_declaration.to_string() }),
+                                                            Option::from(LabelDeclaration {
+                                                                name: label_declaration.to_string()
+                                                            }),
                                                             None,
                                                             ins.operand1,
                                                             ins.operand2,
@@ -189,12 +210,26 @@ impl<'a> InstructionParser<'a> {
                 }
             }
         }
-        return Ok(AssemblerInstruction::new(None, Option::from(LabelDeclaration { name: label_declaration.to_string() }), None, None, None, None));
+        return Ok(AssemblerInstruction::new(None,
+                                            Option::from(LabelDeclaration {
+                                                name: label_declaration.to_string()
+                                            }),
+                                            None,
+                                            None,
+                                            None,
+                                            None));
     }
 
     pub fn parse_label_usage(&mut self) -> Result<AssemblerInstruction, &'static str> {
         let label_usage = &(*self.tokens.peek().unwrap().to_string())[1..];
-        return Ok(AssemblerInstruction::new(None, Option::from(LabelUsage { name: label_usage.to_string() }), None, None, None, None));
+        return Ok(AssemblerInstruction::new(None,
+                                            Option::from(LabelUsage {
+                                                name: label_usage.to_string()
+                                            }),
+                                            None,
+                                            None,
+                                            None,
+                                            None));
     }
 
     pub fn parse_assembly_line(&mut self) -> Result<AssemblerInstruction, &'static str> {
