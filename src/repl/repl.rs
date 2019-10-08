@@ -3,10 +3,18 @@ use std::num::ParseIntError;
 use crate::assembler::assembler::InstructionParser;
 use crate::vm::vm::VM;
 use crate::assembler::token::Token::LabelUsage;
+use crate::repl::repl::ReplMode::{Assembly, Instruction};
 
 pub struct REPL {
     command_buffer: Vec<String>,
     vm: VM,
+    mode: ReplMode,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum ReplMode {
+    Assembly,
+    Instruction,
 }
 
 impl REPL {
@@ -14,6 +22,7 @@ impl REPL {
         REPL {
             command_buffer: Vec::new(),
             vm: VM::new(),
+            mode: Assembly,
         }
     }
 
@@ -52,6 +61,12 @@ impl REPL {
                     println!("Bye, have a nice day.");
                     std::process::exit(0);
                 }
+                ".load_elf" => {
+                    // todo : load elf file to execute.
+                }
+                ".mode" => {
+                    // todo : change mode to Assembly / Instruction
+                }
                 ".history" => {
                     for command in &self.command_buffer {
                         println!("{}", command);
@@ -83,21 +98,42 @@ impl REPL {
                     println!("Type above commands to debug.");
                 }
                 _ => {
-                    let mut instruction_parser = InstructionParser::new(buffer);
-                    let input_instruction = instruction_parser.parse_assembly_line();
-                    match input_instruction {
-                        Ok(ins) => {
-                            if ins.token.is_some() && ins.label.is_none() {
-                                for byte in ins.to_bytes() {
-                                    self.vm.program.push(byte);
+                    match &self.mode {
+                        ReplMode::Assembly => {
+                            let mut instruction_parser = InstructionParser::new(buffer);
+                            let input_instruction = instruction_parser.parse_assembly_line();
+                            match input_instruction {
+                                Ok(ins) => {
+                                    if ins.token.is_some() && ins.label.is_none() {
+                                        for byte in ins.to_bytes() {
+                                            self.vm.program.push(byte);
+                                        }
+                                    }
+                                    self.vm.run_once();
+                                }
+                                Err(e) => {
+                                    println!("Error: {:?}", e);
                                 }
                             }
                         }
-                        Err(e) => {
-                            println!("Error: {:?}", e);
+                        ReplMode::Instruction => {
+                            let ins_bytes = &self.parse_hex(buffer);
+                            match ins_bytes {
+                                Ok(ins) => {
+                                    for byte in ins {
+                                        self.vm.program.push(*byte);
+                                    }
+                                    self.vm.run_once();
+                                }
+                                Err(e) => {
+                                    println!("Error: {:?}", e);
+                                }
+                            }
+                        }
+                        _ => {
+                            println!("Error: un-support repl mode :{:?}", self.mode);
                         }
                     }
-                    self.vm.run_once();
                 }
             }
         }
