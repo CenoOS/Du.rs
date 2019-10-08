@@ -64,6 +64,9 @@ impl REPL {
                 ".load_elf" => {
                     // todo : load elf file to execute.
                 }
+                ".output_elf" => {
+                    // todo : output elf file.
+                }
                 ".mode" => {
                     // todo : change mode to Assembly / Instruction
                 }
