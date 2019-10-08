@@ -1,5 +1,8 @@
+const ELF_HEADER_PREFIX: [u8; 4] = [0x64, 0x65, 0x6c, 0x66];
+const ELF_HEADER_LENGTH: u32 = 64;
+
 pub struct DELFHeader {
-    identify: u32,
+    identify: [u8; 4],
     version: u32,
     entry: u32,
     program_header_offset: u32,
@@ -13,12 +16,12 @@ pub struct DELFHeader {
 impl DELFHeader {
     fn new() -> DELFHeader {
         DELFHeader {
-            identify: 0x64656c66,//delf
+            identify: ELF_HEADER_PREFIX,
             version: 0,
             entry: 0,
             program_header_offset: 0,
             segment_header_offset: 0,
-            header_size: 64,
+            header_size: ELF_HEADER_LENGTH,
             program_header_length: 0,
             segment_header_length: 0,
             segment_str_table_index: 0,
@@ -30,17 +33,17 @@ impl DELFHeader {
     }
 
     fn decode_from_bytes(headers: Vec<u8>) -> DELFHeader {
-         DELFHeader{
-             identify: 0,
-             version: 0,
-             entry: 0,
-             program_header_offset: 0,
-             segment_header_offset: 0,
-             header_size: 0,
-             program_header_length: 0,
-             segment_header_length: 0,
-             segment_str_table_index: 0
-         }
+        DELFHeader {
+            identify: ELF_HEADER_PREFIX,
+            version: 0,
+            entry: 0,
+            program_header_offset: 0,
+            segment_header_offset: 0,
+            header_size: ELF_HEADER_LENGTH,
+            program_header_length: 0,
+            segment_header_length: 0,
+            segment_str_table_index: 0,
+        }
     }
 }
 
