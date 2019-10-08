@@ -1,6 +1,6 @@
 use std::io::Write;
 use std::num::ParseIntError;
-use crate::assembler::assembler::InstructionParser;
+use crate::assembler::assembly_parser::InstructionParser;
 use crate::vm::vm::VM;
 use crate::assembler::token::Token::LabelUsage;
 use crate::repl::repl::ReplMode::{Assembly, Instruction};
