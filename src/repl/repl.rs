@@ -1,9 +1,9 @@
 use std::io::Write;
 use std::num::ParseIntError;
-use crate::assembler::assembly_parser::InstructionParser;
 use crate::vm::vm::VM;
 use crate::assembler::token::Token::LabelUsage;
 use crate::repl::repl::ReplMode::{Assembly, Instruction};
+use crate::assembler::instructions_parser::InstructionParser;
 
 pub struct REPL {
     command_buffer: Vec<String>,
