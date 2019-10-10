@@ -40,7 +40,7 @@ impl<'a> Assembler<'a> {
     fn process_first_phase(&self, instructions: Vec<AssemblerInstruction>) -> Result<AssemblerPhase, &'static str> {
         let mut offset = 0;
         let phase = AssemblerPhase::new(
-            Vce::new(),
+            Vec::new(),
             SymbolTable::new(),
             DELFHeader::new(),
             Vec::new(),
