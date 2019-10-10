@@ -10,3 +10,17 @@ pub struct AssemblerPhase {
 
     ro_segment: Vec<u8>,
 }
+
+impl AssemblerPhase {
+    pub fn new(instructions: Vec<AssemblerInstruction>,
+               symbol_table: SymbolTable,
+               elf_header: DELFHeader,
+               ro_segment: Vec<u8>) -> AssemblerPhase {
+        AssemblerPhase {
+            instructions,
+            symbol_table,
+            elf_header,
+            ro_segment,
+        }
+    }
+}

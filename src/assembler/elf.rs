@@ -14,7 +14,7 @@ pub struct DELFHeader {
 }
 
 impl DELFHeader {
-    fn new() -> DELFHeader {
+    pub fn new() -> DELFHeader {
         DELFHeader {
             identify: ELF_HEADER_PREFIX,
             version: 0,

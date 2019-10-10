@@ -1,6 +1,8 @@
 use crate::assembler::assembler_phase::AssemblerPhase;
 use crate::assembler::assembly_parser::AssemblyProgramParser;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
+use crate::assembler::symbol_table::SymbolTable;
+use crate::assembler::elf::DELFHeader;
 
 pub struct Assembler<'a> {
     assembly: &'a str
@@ -36,6 +38,20 @@ impl<'a> Assembler<'a> {
     }
 
     fn process_first_phase(&self, instructions: Vec<AssemblerInstruction>) -> Result<AssemblerPhase, &'static str> {
+        let mut offset = 0;
+        let phase = AssemblerPhase::new(
+            Vce::new(),
+            SymbolTable::new(),
+            DELFHeader::new(),
+            Vec::new(),
+        );
+        for ins in instructions {
+            if ins.label.is_some() {
+                // label detective, add to symbol table
+            }
+            offset += 4; // every instruction is 4 byte;
+        }
+
         return Err("Not implemented yet.");
     }
 
