@@ -1,8 +1,9 @@
 use crate::assembler::assembler_phase::AssemblerPhase;
 use crate::assembler::assembly_parser::AssemblyProgramParser;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
-use crate::assembler::symbol_table::SymbolTable;
+use crate::assembler::symbol_table::{SymbolTable, Symbol};
 use crate::assembler::elf::DELFHeader;
+use crate::assembler::token::Token::LabelDeclaration;
 
 pub struct Assembler<'a> {
     assembly: &'a str
@@ -17,7 +18,6 @@ impl<'a> Assembler<'a> {
 
     pub fn process(&self) -> Result<AssemblerPhase, &'static str> {
         let mut parser = AssemblyProgramParser::new(self.assembly);
-        return Err("Need Implement.");
         let instructions = parser.parse_program();
         match instructions {
             Ok(ins) => {
@@ -37,24 +37,27 @@ impl<'a> Assembler<'a> {
         }
     }
 
+    // scan symbol declaration to symbol table
     fn process_first_phase(&self, instructions: Vec<AssemblerInstruction>) -> Result<AssemblerPhase, &'static str> {
         let mut offset = 0;
-        let phase = AssemblerPhase::new(
+        let mut phase = AssemblerPhase::new(
             Vec::new(),
             SymbolTable::new(),
             DELFHeader::new(),
             Vec::new(),
         );
         for ins in instructions {
+            if ins.token.is_some() {
+                offset += 4; // every instruction is 4 bytes;
+            }
             if ins.label.is_some() {
                 // label detective, add to symbol table
             }
-            offset += 4; // every instruction is 4 byte;
         }
-
         return Err("Not implemented yet.");
     }
 
+    // translate symbol usage to memory offset
     fn process_second_phase(&self, phase: AssemblerPhase) -> Result<AssemblerPhase, &'static str> {
         return Err("Not implemented yet.");
     }

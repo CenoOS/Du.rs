@@ -5,7 +5,7 @@ use crate::assembler::elf::DELFHeader;
 
 pub struct AssemblerPhase {
     instructions: Vec<AssemblerInstruction>,
-    symbol_table: SymbolTable,
+    pub symbol_table: SymbolTable,
     elf_header: DELFHeader,
 
     ro_segment: Vec<u8>,
