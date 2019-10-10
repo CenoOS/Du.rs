@@ -17,7 +17,7 @@ impl<'a> AssemblyProgramParser<'a> {
         }
     }
 
-    fn parse_program(&mut self) -> Result<Vec<AssemblerInstruction>, &'static str> {
+    pub fn parse_program(&mut self) -> Result<Vec<AssemblerInstruction>, &'static str> {
         let mut assembler_instructions: Vec<AssemblerInstruction> = Vec::new();
         while self.instructions.peek().is_some() {
             match self.instructions.peek() {
