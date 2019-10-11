@@ -25,6 +25,14 @@ impl AssemblerInstruction {
         }
     }
 
+    pub fn is_label(&self) -> bool {
+        return self.label.is_some();
+    }
+
+    pub fn is_directive(&self) -> bool {
+        return self.directive.is_some();
+    }
+
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut results: Vec<u8> = Vec::new();
         match self.token {

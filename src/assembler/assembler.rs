@@ -4,9 +4,10 @@ use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::assembler::symbol_table::{SymbolTable, Symbol};
 use crate::assembler::elf::{DELFHeader, ELF_HEADER_PREFIX, ELF_HEADER_LENGTH};
 use crate::assembler::token::Token::LabelDeclaration;
-use crate::assembler::assembler_phase::AssemblerPhase::FIRST;
+use crate::assembler::assembler_phase::AssemblerPhase::{FIRST, SECOND};
 use crate::assembler::assembler_section::AssemblerSection;
 use crate::assembler::assembler_error::AssemblerError;
+use crate::assembler::assembler_error::AssemblerError::NoSectionDeclarationFound;
 
 pub struct Assembler {
     assemble_phase: AssemblerPhase,
@@ -36,7 +37,7 @@ impl Assembler {
     }
 
     fn write_delf_header(&self) -> Vec<u8> {
-        let mut header:Vec<u8> = Vec::<u8>::new();
+        let mut header: Vec<u8> = Vec::<u8>::new();
         for byte in ELF_HEADER_PREFIX.into_iter() {
             header.push(byte.clone());
         }
@@ -47,7 +48,7 @@ impl Assembler {
         return header;
     }
 
-    pub fn process(&self, assembly: &str) -> Result<Vec<u8>, &'static str> {
+    pub fn process(&mut self, assembly: &str) -> Result<Vec<u8>, &'static str> {
         let mut parser = AssemblyProgramParser::new(assembly);
         let instructions = parser.parse_program();
         match instructions {
@@ -66,16 +67,22 @@ impl Assembler {
     }
 
     // scan symbol declaration to symbol table
-    fn process_first_phase(&self, instructions: &Vec<AssemblerInstruction>) {
-        let mut offset = 0;
+    fn process_first_phase(&mut self, instructions: &Vec<AssemblerInstruction>) {
         for ins in instructions {
-            if ins.token.is_some() {
-                offset += 4; // every instruction is 4 bytes;
+            if ins.is_label() {
+                if self.current_section.is_some() {
+//                    self.process_label(&ins);
+                } else {
+                    self.errors.push(NoSectionDeclarationFound { instruction: self.current_instruction })
+                }
             }
-            if ins.label.is_some() {
-                // label detective, add to symbol table
+            if ins.is_directive() {
+//                self.process_directive(ins);
             }
+
+            self.current_instruction += 1;
         }
+        self.assemble_phase = SECOND;
     }
 
     // translate symbol usage to memory offset

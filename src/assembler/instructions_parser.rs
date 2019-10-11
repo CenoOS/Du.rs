@@ -45,9 +45,9 @@ impl<'a> InstructionParser<'a> {
             match label_usage {
                 Ok(label) => {
                     return Ok(AssemblerInstruction::new(Some(Op { opcode: op }),
-                                                        label.label,
                                                         None,
-                                                        label.operand1,// todo : operand should find from symbol table
+                                                        None,
+                                                        label.operand1,
                                                         None,
                                                         None));
                 }
@@ -82,9 +82,9 @@ impl<'a> InstructionParser<'a> {
                     self.tokens.next();
                     let instruction = self.parse_one_register_instruction(op).unwrap();
                     return Ok(AssemblerInstruction::new(instruction.token,
-                                                        label.label,
                                                         None,
-                                                        label.operand1, // todo : operand should find from symbol table
+                                                        None,
+                                                        label.operand1,
                                                         instruction.operand1,
                                                         None));
                 }
@@ -119,9 +119,9 @@ impl<'a> InstructionParser<'a> {
                     self.tokens.next();
                     let instruction = self.parse_two_register_instruction(op).unwrap();
                     return Ok(AssemblerInstruction::new(instruction.token,
-                                                        label.label,
                                                         None,
-                                                        label.operand1, // todo : operand should find from symbol table
+                                                        None,
+                                                        label.operand1,
                                                         instruction.operand1,
                                                         instruction.operand2));
                 }
@@ -256,11 +256,11 @@ impl<'a> InstructionParser<'a> {
     pub fn parse_label_usage(&mut self) -> Result<AssemblerInstruction, &'static str> {
         let label_usage = &(*self.tokens.peek().unwrap().to_string())[1..];
         return Ok(AssemblerInstruction::new(None,
+                                            None,
+                                            None,
                                             Some(LabelUsage {
                                                 name: label_usage.to_string()
                                             }),
-                                            None,
-                                            None,
                                             None,
                                             None));
     }
@@ -310,7 +310,18 @@ impl<'a> InstructionParser<'a> {
                                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...65536)"); }
                             }
                         } else if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_LABEL_USAGE)) {
-                            return self.parse_label_usage();
+                            let label_usage = self.parse_label_usage();
+                            match label_usage {
+                                Ok(label) => {
+                                    return Ok(AssemblerInstruction::new(Some(Op { opcode: LOAD }),
+                                                                        None,
+                                                                        None,
+                                                                        Some(Register { reg_num: operand1 }),
+                                                                        label.operand1,
+                                                                        None));
+                                }
+                                Err(_e) => { return Err("An Label is expected(e.g. @foo)"); }
+                            }
                         } else {
                             return Err("An Immediate number is expected(e.g. #1)");
                         }
@@ -318,9 +329,45 @@ impl<'a> InstructionParser<'a> {
                     Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
                 }
             } else if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_LABEL_USAGE)) {
-                return self.parse_label_usage();
+                let label_usage = self.parse_label_usage();
+                match label_usage {
+                    Ok(label) => {
+                        self.tokens.next();
+                        if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_LABEL_IMMEDIATE)) {
+                            let operand2_str = &(*self.tokens.peek().unwrap().to_string())[1..];
+                            let is_i32 = operand2_str.parse::<i32>();
+                            match is_i32 {
+                                Ok(operand2) => {
+                                    return Ok(AssemblerInstruction::new(Some(Op { opcode: LOAD }),
+                                                                        None,
+                                                                        None,
+                                                                        label.operand1,
+                                                                        Some(IntegerOperand { value: operand2 }),
+                                                                        None));
+                                }
+                                Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...65536)"); }
+                            }
+                        } else if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_LABEL_USAGE)) {
+                            let label_usage2 = self.parse_label_usage();
+                            match label_usage2 {
+                                Ok(label2) => {
+                                    return Ok(AssemblerInstruction::new(Some(Op { opcode: LOAD }),
+                                                                        None,
+                                                                        None,
+                                                                        label.operand1,
+                                                                        label2.operand1,
+                                                                        None));
+                                }
+                                Err(_e) => { return Err("An Label is expected(e.g. @foo)"); }
+                            }
+                        } else {
+                            return Err("An Immediate number is expected(e.g. #1)");
+                        }
+                    }
+                    Err(e) => { return Err(e); }
+                }
             } else {
-                return Err("An Register is expected(e.g. $1)");
+                return Err("An Register / Label is expected(e.g. $1 / @hello)");
             }
         }
 
@@ -615,6 +662,77 @@ mod tests {
             directive: None,
             operand1: Some(Register { reg_num: 0 }),
             operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_label_declaration_when_parse_label_declaration_with_instruction_and_use_label_as_register() {
+        let mut instruction_parser = InstructionParser::new("hello: JMP @foo");
+        let label = instruction_parser.parse_label_declaration();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: OpCode::JMP }),
+            label: Some(LabelDeclaration { name: "hello".to_string() }),
+            directive: None,
+            operand1: Some(LabelUsage { name: "foo".to_string() }),
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_instruction_when_give_assembly_with_three_label_as_register() {
+        let mut instruction_parser = InstructionParser::new("add @bar @foo @sum");
+        let label = instruction_parser.parse_assembly_line();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: OpCode::ADD }),
+            label: None,
+            directive: None,
+            operand1: Some(LabelUsage { name: "bar".to_string() }),
+            operand2: Some(LabelUsage { name: "foo".to_string() }),
+            operand3: Some(LabelUsage { name: "sum".to_string() }),
+        });
+    }
+
+
+    #[test]
+    fn should_return_instruction_when_give_assembly_with_two_label_as_register() {
+        let mut instruction_parser = InstructionParser::new("load @age @age_constant");
+        let label = instruction_parser.parse_assembly_line();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: OpCode::LOAD }),
+            label: None,
+            directive: None,
+            operand1: Some(LabelUsage { name: "age".to_string() }),
+            operand2: Some(LabelUsage { name: "age_constant".to_string() }),
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_load_instruction_when_give_assembly_with_label_as_register_and_immediate() {
+        let mut instruction_parser = InstructionParser::new("load @age #300");
+        let label = instruction_parser.parse_assembly_line();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: OpCode::LOAD }),
+            label: None,
+            directive: None,
+            operand1: Some(LabelUsage { name: "age".to_string() }),
+            operand2: Some(IntegerOperand { value: 300 }),
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_load_instruction_when_give_assembly_with_register_and_label_as__immediate() {
+        let mut instruction_parser = InstructionParser::new("load $0 @foo");
+        let label = instruction_parser.parse_assembly_line();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: OpCode::LOAD }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 0 }),
+            operand2: Some(LabelUsage { name: "foo".to_string() }),
             operand3: None,
         });
     }
