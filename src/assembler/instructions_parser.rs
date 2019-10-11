@@ -177,7 +177,7 @@ impl<'a> InstructionParser<'a> {
                                                             None));
                     }
                 }
-                return Err("Expect a string starts with \' and end with \'");
+                return Err("Expect a string starts with \" and end with \"");
             }
             "code" => {
                 return Ok(AssemblerInstruction::new(None,
