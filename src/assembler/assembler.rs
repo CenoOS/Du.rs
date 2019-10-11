@@ -66,18 +66,26 @@ impl Assembler {
         }
     }
 
+    fn process_label_declaration(&mut self, instruction: &AssemblerInstruction) {
+        // todo :
+    }
+
+    fn process_directive(&mut self, instruction: &AssemblerInstruction) {
+        // todo :
+    }
+
     // scan symbol declaration to symbol table
     fn process_first_phase(&mut self, instructions: &Vec<AssemblerInstruction>) {
         for ins in instructions {
             if ins.is_label() {
                 if self.current_section.is_some() {
-//                    self.process_label(&ins);
+                    self.process_label_declaration(&ins);
                 } else {
                     self.errors.push(NoSectionDeclarationFound { instruction: self.current_instruction })
                 }
             }
             if ins.is_directive() {
-//                self.process_directive(ins);
+                self.process_directive(&ins);
             }
 
             self.current_instruction += 1;
