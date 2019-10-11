@@ -61,8 +61,8 @@ mod tests {
                     eq $1 $2\n\
                     jeq $1\n\
             .data\n\
-                hw: .asciz \"hello,World\"\n\
-                about: .asciz \"hello, I am Nero Yang\"");
+                hw: .asciiz \"hello,World\"\n\
+                about: .asciiz \"hello, I am Nero Yang\"");
         let instructions = assembler.parse_program().unwrap();
         assert_eq!(instructions[0], AssemblerInstruction {
             token: Some(Op { opcode: HLT }),
@@ -179,7 +179,7 @@ mod tests {
         assert_eq!(instructions[14], AssemblerInstruction {
             token: None,
             label: Some(LabelDeclaration { name: "hw".to_string() }),
-            directive: Some(Directive { name: "asciz".to_string() }),
+            directive: Some(Directive { name: "asciiz".to_string() }),
             operand1: Some(IrString { name: "hello,World".to_string() }),
             operand2: None,
             operand3: None,
@@ -187,7 +187,7 @@ mod tests {
         assert_eq!(instructions[15], AssemblerInstruction {
             token: None,
             label: Some(LabelDeclaration { name: "about".to_string() }),
-            directive: Some(Directive { name: "asciz".to_string() }),
+            directive: Some(Directive { name: "asciiz".to_string() }),
             operand1: Some(IrString { name: "hello, I am Nero Yang".to_string() }),
             operand2: None,
             operand3: None,

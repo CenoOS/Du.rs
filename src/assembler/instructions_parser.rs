@@ -129,7 +129,7 @@ impl<'a> InstructionParser<'a> {
         // directive : http://web.mit.edu/gnu/doc/html/as_7.html
         let directive = &(*self.tokens.peek().unwrap().to_string())[1..];
         match directive {
-            "asciz" => {
+            "asciiz" => {
                 self.tokens.next();
                 let mut str = String::from("");
                 if self.tokens.peek().map_or(false, |w| w.starts_with("\"")) {
@@ -586,12 +586,12 @@ mod tests {
 
     #[test]
     fn should_return_label_declaration_when_parse_label_declaration_with_directive() {
-        let mut instruction_parser = InstructionParser::new("hello: .asciz \"Hello, World!\"");
+        let mut instruction_parser = InstructionParser::new("hello: .asciiz \"Hello, World!\"");
         let label = instruction_parser.parse_label_declaration();
         assert_eq!(label.unwrap(), AssemblerInstruction {
             token: None,
             label: Some(LabelDeclaration { name: "hello".to_string() }),
-            directive: Some(Directive { name: "asciz".to_string() }),
+            directive: Some(Directive { name: "asciiz".to_string() }),
             operand1: Some(IrString { name: "Hello, World!".to_string() }),
             operand2: None,
             operand3: None,
@@ -615,12 +615,12 @@ mod tests {
 
     #[test]
     fn should_return_directive_when_parse_directive() {
-        let mut instruction_parser = InstructionParser::new(".asciz \"Hello, World!\"");
+        let mut instruction_parser = InstructionParser::new(".asciiz \"Hello, World!\"");
         let label = instruction_parser.parse_directive();
         assert_eq!(label.unwrap(), AssemblerInstruction {
             token: None,
             label: None,
-            directive: Some(Directive { name: "asciz".to_string() }),
+            directive: Some(Directive { name: "asciiz".to_string() }),
             operand1: Some(IrString { name: "Hello, World!".to_string() }),
             operand2: None,
             operand3: None,
@@ -630,12 +630,12 @@ mod tests {
 
     #[test]
     fn should_return_instructions_when_parse_assembly_line() {
-        let mut instruction_parser = InstructionParser::new("hello: .asciz \"Hello, World!\"");
+        let mut instruction_parser = InstructionParser::new("hello: .asciiz \"Hello, World!\"");
         let label = instruction_parser.parse_assembly_line();
         assert_eq!(label.unwrap(), AssemblerInstruction {
             token: None,
             label: Some(LabelDeclaration { name: "hello".to_string() }),
-            directive: Some(Directive { name: "asciz".to_string() }),
+            directive: Some(Directive { name: "asciiz".to_string() }),
             operand1: Some(IrString { name: "Hello, World!".to_string() }),
             operand2: None,
             operand3: None,
