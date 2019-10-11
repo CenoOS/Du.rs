@@ -55,8 +55,14 @@
         - [x] .code
         - [x] .data
         - [ ] more
-  - [ ] symbol table
-    - [x] add
-    - [x] get value
-    - [ ] sort
-    - [ ] more
+  - [ ] assembler
+    - [ ] elf
+        - [x] header
+    - [ ] first pass
+        - [ ] symbol table
+            - [x] add
+            - [x] get value
+            - [ ] sort
+            - [ ] more
+    - [ ] second pass
+        
