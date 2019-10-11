@@ -1,5 +1,5 @@
-const ELF_HEADER_PREFIX: [u8; 4] = [0x64, 0x65, 0x6c, 0x66];
-const ELF_HEADER_LENGTH: u32 = 64;
+pub const ELF_HEADER_PREFIX: [u8; 4] = [0x64, 0x65, 0x6c, 0x66];
+pub const ELF_HEADER_LENGTH: usize = 64;
 
 pub struct DELFHeader {
     identify: [u8; 4],
@@ -7,7 +7,7 @@ pub struct DELFHeader {
     entry: u32,
     program_header_offset: u32,
     segment_header_offset: u32,
-    header_size: u32,
+    header_size: usize,
     program_header_length: u32,
     segment_header_length: u32,
     segment_str_table_index: u32,
