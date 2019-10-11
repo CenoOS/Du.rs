@@ -5,6 +5,13 @@ use crate::vm::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::vm::instruction::OpCode;
 
+const SYMBOL_REGISTER: &str = "$";
+const SYMBOL_LABEL_USAGE: &str = "@";
+const SYMBOL_LABEL_IMMEDIATE: &str = "#";
+const SYMBOL_DIRECTIVE: &str = ".";
+const SYMBOL_COLON: &str = ":";
+const SYMBOL_STRING: &str = "\"";
+
 
 pub struct InstructionParser<'a> {
     tokens: Peekable<SplitWhitespace<'a>>,
@@ -19,7 +26,7 @@ impl<'a> InstructionParser<'a> {
 
 
     fn parse_one_register_instruction(&mut self, op: OpCode) -> Result<AssemblerInstruction, &'static str> {
-        if self.tokens.peek().map_or(false, |word| word.starts_with("$")) {
+        if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_REGISTER)) {
             let operand1_str = &(*self.tokens.peek().unwrap().to_string())[1..];
             let is_u8 = operand1_str.parse::<u8>();
             match is_u8 {
@@ -33,7 +40,7 @@ impl<'a> InstructionParser<'a> {
                 }
                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
-        } else if self.tokens.peek().map_or(false, |word| word.starts_with("@")) {
+        } else if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_LABEL_USAGE)) {
             let label_usage = self.parse_label_usage();
             match label_usage {
                 Ok(label) => {
@@ -52,7 +59,7 @@ impl<'a> InstructionParser<'a> {
     }
 
     fn parse_two_register_instruction(&mut self, op: OpCode) -> Result<AssemblerInstruction, &'static str> {
-        if self.tokens.peek().map_or(false, |word| word.starts_with("$")) {
+        if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_REGISTER)) {
             let operand1_str = &(*self.tokens.peek().unwrap().to_string())[1..];
             let is_u8 = operand1_str.parse::<u8>();
             match is_u8 {
@@ -68,7 +75,7 @@ impl<'a> InstructionParser<'a> {
                 }
                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
-        } else if self.tokens.peek().map_or(false, |word| word.starts_with("@")) {
+        } else if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_LABEL_USAGE)) {
             let label_usage = self.parse_label_usage();
             match label_usage {
                 Ok(label) => {
@@ -89,7 +96,7 @@ impl<'a> InstructionParser<'a> {
     }
 
     fn parse_three_register_instruction(&mut self, op: OpCode) -> Result<AssemblerInstruction, &'static str> {
-        if self.tokens.peek().map_or(false, |word| word.starts_with("$")) {
+        if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_REGISTER)) {
             let operand1_str = &(*self.tokens.peek().unwrap().to_string())[1..];
             let is_u8 = operand1_str.parse::<u8>();
             match is_u8 {
@@ -105,7 +112,7 @@ impl<'a> InstructionParser<'a> {
                 }
                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
             }
-        } else if self.tokens.peek().map_or(false, |word| word.starts_with("@")) {
+        } else if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_LABEL_USAGE)) {
             let label_usage = self.parse_label_usage();
             match label_usage {
                 Ok(label) => {
@@ -132,8 +139,8 @@ impl<'a> InstructionParser<'a> {
             "asciiz" => {
                 self.tokens.next();
                 let mut str = String::from("");
-                if self.tokens.peek().map_or(false, |w| w.starts_with("\"")) {
-                    if self.tokens.peek().map_or(false, |w| w.ends_with("\"")) {
+                if self.tokens.peek().map_or(false, |w| w.starts_with(SYMBOL_STRING)) {
+                    if self.tokens.peek().map_or(false, |w| w.ends_with(SYMBOL_STRING)) {
                         let str_part = &(*self.tokens.peek().unwrap().to_string());
                         let len = &str_part.len() - 1;
                         let str_part_all = &str_part[1..len];
@@ -148,13 +155,13 @@ impl<'a> InstructionParser<'a> {
                         let str_part = &(*self.tokens.peek().unwrap().to_string())[1..];
                         str.push_str(str_part);
                         self.tokens.next();
-                        while self.tokens.peek().map_or(false, |w| !w.ends_with("\"")) {
+                        while self.tokens.peek().map_or(false, |w| !w.ends_with(SYMBOL_STRING)) {
                             let str_part_middle = &(*self.tokens.peek().unwrap().to_string());
                             str.push_str(" ");
                             str.push_str(str_part_middle);
                             self.tokens.next();
                         }
-                        if self.tokens.peek().map_or(false, |w| w.ends_with("\"")) {
+                        if self.tokens.peek().map_or(false, |w| w.ends_with(SYMBOL_STRING)) {
                             let str_part_last_all = &(*self.tokens.peek().unwrap().to_string());
                             let len = &str_part_last_all.len() - 1;
                             let str_part_last = &str_part_last_all[0..len];
@@ -204,7 +211,7 @@ impl<'a> InstructionParser<'a> {
         self.tokens.next();
 
         if self.tokens.peek().is_some() {
-            if self.tokens.peek().map_or(false, |word| word.starts_with('.')) { // hello: .asciz "Hello, World!"
+            if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_DIRECTIVE)) { // hello: .asciz "Hello, World!"
                 let directive = self.parse_directive();
                 match directive {
                     Ok(ins) => {
@@ -259,11 +266,11 @@ impl<'a> InstructionParser<'a> {
     }
 
     pub fn parse_assembly_line(&mut self) -> Result<AssemblerInstruction, &'static str> {
-        if self.tokens.peek().map_or(false, |word| word.starts_with(".")) {
+        if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_DIRECTIVE)) {
             return self.parse_directive();
         }
 
-        if self.tokens.peek().map_or(false, |word| word.ends_with(':')) {
+        if self.tokens.peek().map_or(false, |word| word.ends_with(SYMBOL_COLON)) {
             return self.parse_label_declaration();
         }
 
@@ -282,13 +289,13 @@ impl<'a> InstructionParser<'a> {
 
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "LOAD".to_string()) {
             self.tokens.next();
-            if self.tokens.peek().map_or(false, |word| word.starts_with("$")) {
+            if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_REGISTER)) {
                 let operand1_str = &(*self.tokens.peek().unwrap().to_string())[1..];
                 let is_u8 = operand1_str.parse::<u8>();
                 match is_u8 {
                     Ok(operand1) => {
                         self.tokens.next();
-                        if self.tokens.peek().map_or(false, |word| word.starts_with("#")) {
+                        if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_LABEL_IMMEDIATE)) {
                             let operand2_str = &(*self.tokens.peek().unwrap().to_string())[1..];
                             let is_i32 = operand2_str.parse::<i32>();
                             match is_i32 {
@@ -302,7 +309,7 @@ impl<'a> InstructionParser<'a> {
                                 }
                                 Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...65536)"); }
                             }
-                        } else if self.tokens.peek().map_or(false, |word| word.starts_with("@")) {
+                        } else if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_LABEL_USAGE)) {
                             return self.parse_label_usage();
                         } else {
                             return Err("An Immediate number is expected(e.g. #1)");
@@ -310,7 +317,7 @@ impl<'a> InstructionParser<'a> {
                     }
                     Err(_e) => { return Err("An Unsigned Integer is expected(e.g. 1...255)"); }
                 }
-            } else if self.tokens.peek().map_or(false, |word| word.starts_with("@")) {
+            } else if self.tokens.peek().map_or(false, |word| word.starts_with(SYMBOL_LABEL_USAGE)) {
                 return self.parse_label_usage();
             } else {
                 return Err("An Register is expected(e.g. $1)");
