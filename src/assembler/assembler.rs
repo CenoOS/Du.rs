@@ -1,13 +1,13 @@
 use crate::assembler::assembler_phase::AssemblerPhase;
 use crate::assembler::assembly_parser::AssemblyProgramParser;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
-use crate::assembler::symbol_table::{SymbolTable, Symbol};
+use crate::assembler::symbol_table::{SymbolTable, Symbol, SymbolType};
 use crate::assembler::elf::{DELFHeader, ELF_HEADER_PREFIX, ELF_HEADER_LENGTH};
 use crate::assembler::token::Token::LabelDeclaration;
 use crate::assembler::assembler_phase::AssemblerPhase::{FIRST, SECOND};
 use crate::assembler::assembler_section::AssemblerSection;
 use crate::assembler::assembler_error::AssemblerError;
-use crate::assembler::assembler_error::AssemblerError::NoSectionDeclarationFound;
+use crate::assembler::assembler_error::AssemblerError::{NoSectionDeclarationFound, NoLabelNameFound, SymbolAlreadyDeclared};
 
 pub struct Assembler {
     assemble_phase: AssemblerPhase,
@@ -67,7 +67,19 @@ impl Assembler {
     }
 
     fn process_label_declaration(&mut self, instruction: &AssemblerInstruction) {
-        // todo :
+        match instruction.get_label_name() {
+            Some(name) => {
+                if self.symbol_table.get_symbol(name).is_none() {
+                    let symbol = Symbol::default(name.to_string(), SymbolType::Label);
+                    self.symbol_table.add_symbol(symbol);
+                } else {
+                    self.errors.push(SymbolAlreadyDeclared { instruction: self.current_instruction })
+                }
+            }
+            None => {
+                self.errors.push(NoLabelNameFound { instruction: self.current_instruction })
+            }
+        }
     }
 
     fn process_directive(&mut self, instruction: &AssemblerInstruction) {

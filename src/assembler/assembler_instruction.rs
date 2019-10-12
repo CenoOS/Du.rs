@@ -29,6 +29,18 @@ impl AssemblerInstruction {
         return self.label.is_some();
     }
 
+    pub fn get_label_name(&self) -> Option<&str> {
+        let label = self.label.unwrap();
+        match label {
+            Token::LabelDeclaration { name } => {
+                return Some(&name);
+            }
+            _ => {
+                return None;
+            }
+        }
+    }
+
     pub fn is_directive(&self) -> bool {
         return self.directive.is_some();
     }
