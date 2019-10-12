@@ -50,7 +50,7 @@
     - [x] label_declaration
     - [x] label_usage
     - [ ] directive
-        - [x] .asciz
+        - [x] .asciiz
         - [ ] .ascii
         - [x] .code
         - [x] .data

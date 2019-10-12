@@ -74,9 +74,10 @@ impl Assembler {
         // todo :
     }
 
-    // scan symbol declara::tion to symbol table
+    // scan symbol declaration to symbol table
     fn process_first_phase(&mut self, instructions: &Vec<AssemblerInstruction>) {
-        for ins in instructions {
+        for ins
+            in instructions {
             if ins.is_label() {
                 if self.current_section.is_some() {
                     self.process_label_declaration(&ins);
