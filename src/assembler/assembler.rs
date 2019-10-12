@@ -22,7 +22,7 @@ pub struct Assembler {
 }
 
 impl Assembler {
-    pub fn new(assembly_str: &str) -> Assembler {
+    pub fn new() -> Assembler {
         Assembler {
             assemble_phase: FIRST,
             symbol_table: SymbolTable::new(),
@@ -69,7 +69,7 @@ impl Assembler {
     fn process_label_declaration(&mut self, instruction: &AssemblerInstruction) {
         match instruction.get_label_name() {
             Some(name) => {
-                if self.symbol_table.get_symbol(name).is_none() {
+                if self.symbol_table.get_symbol(&name).is_none() {
                     let symbol = Symbol::default(name.to_string(), SymbolType::Label);
                     self.symbol_table.add_symbol(symbol);
                 } else {
@@ -92,7 +92,7 @@ impl Assembler {
             in instructions {
             if ins.is_label() {
                 if self.current_section.is_some() {
-                    self.process_label_declaration(&ins);
+                    self.process_label_declaration(ins);
                 } else {
                     self.errors.push(NoSectionDeclarationFound { instruction: self.current_instruction })
                 }
@@ -109,5 +109,42 @@ impl Assembler {
     // translate symbol usage to memory offset
     fn process_second_phase(&self, instructions: &Vec<AssemblerInstruction>) -> Vec<u8> {
         return Vec::new();
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_write_elf_header() {
+        let mut assembler = Assembler::new();
+        let header = assembler.write_delf_header();
+        assert_eq!(header, vec![0x64, 0x65, 0x6c, 0x66, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, ])
+    }
+
+    #[test]
+    fn should_process_program() {
+        let mut assembler = Assembler::new();
+        let result = assembler.process(
+            ".code\n\
+                    main:   load $1 @bar\n\
+                            add $0 $1 $2\n\
+                            sub $0 $1 $2\n\
+                            mul $0 $1     $2\n\
+                            div $0 $1 $2\n\
+                    hello:  jmp @foo\n\
+                            jmp_f $1\n\
+                            jmp_b $1\n\
+                            eq $1 $2\n\
+                            jeq @flag\n\
+                            hlt\n\
+                 .data\n\
+                    hw:     .asciiz \"hello,World\"\n\
+                    about:  .asciiz \"hello, I am Nero Yang\"");
     }
 }

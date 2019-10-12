@@ -29,15 +29,20 @@ impl AssemblerInstruction {
         return self.label.is_some();
     }
 
-    pub fn get_label_name(&self) -> Option<&str> {
-        let label = self.label.unwrap();
-        match label {
-            Token::LabelDeclaration { name } => {
-                return Some(&name);
+    pub fn get_label_name(&self) -> Option<String> {
+        match &self.label {
+            Some(label) => {
+                match label {
+                    Token::LabelDeclaration { name } => {
+                        return Some(name.to_string());
+                    }
+                    _ => {
+                        return None;
+                    }
+                }
             }
-            _ => {
-                return None;
-            }
+
+            _ => { return None; }
         }
     }
 
