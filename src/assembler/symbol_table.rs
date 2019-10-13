@@ -1,9 +1,9 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum SymbolType {
     Label,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Symbol {
     name: String,
     offset: u32,

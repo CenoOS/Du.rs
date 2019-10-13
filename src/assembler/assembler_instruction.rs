@@ -46,8 +46,29 @@ impl AssemblerInstruction {
         }
     }
 
+    pub fn get_directive_name(&self) -> Option<String> {
+        match &self.directive {
+            Some(label) => {
+                match label {
+                    Token::Directive { name } => {
+                        return Some(name.to_string());
+                    }
+                    _ => {
+                        return None;
+                    }
+                }
+            }
+
+            _ => { return None; }
+        }
+    }
+
     pub fn is_directive(&self) -> bool {
         return self.directive.is_some();
+    }
+
+    pub fn has_operands(&self) -> bool {
+        return self.operand1.is_some() || self.operand2.is_some() || self.operand3.is_some();
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {

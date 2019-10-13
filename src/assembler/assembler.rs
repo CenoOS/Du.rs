@@ -3,11 +3,19 @@ use crate::assembler::assembly_parser::AssemblyProgramParser;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::assembler::symbol_table::{SymbolTable, Symbol, SymbolType};
 use crate::assembler::elf::{DELFHeader, ELF_HEADER_PREFIX, ELF_HEADER_LENGTH};
-use crate::assembler::token::Token::LabelDeclaration;
+use crate::assembler::token::Token::{LabelDeclaration, Directive};
 use crate::assembler::assembler_phase::AssemblerPhase::{FIRST, SECOND};
 use crate::assembler::assembler_section::AssemblerSection;
 use crate::assembler::assembler_error::AssemblerError;
-use crate::assembler::assembler_error::AssemblerError::{NoSectionDeclarationFound, NoLabelNameFound, SymbolAlreadyDeclared};
+use crate::assembler::assembler_error::AssemblerError::{
+    NoSectionDeclarationFound,
+    NoLabelNameFound,
+    SymbolAlreadyDeclared,
+    NoDirectiveNameFound,
+    UnknownDirectiveFound,
+    UnknownSectionFound,
+};
+use crate::assembler::assembler_section::AssemblerSection::UnKnown;
 
 pub struct Assembler {
     assemble_phase: AssemblerPhase,
@@ -82,8 +90,34 @@ impl Assembler {
         }
     }
 
+    fn handle_asciiz(&mut self, instruction: &AssemblerInstruction) {}
+
+    fn process_section_header(&mut self, header_name: &str) {
+        let new_section: AssemblerSection = header_name.into();
+        if new_section == AssemblerSection::UnKnown {
+            self.errors.push(UnknownSectionFound { section_name: header_name.to_string() });
+            return;
+        }
+
+        self.sections.push(new_section);
+        self.current_section = Some(new_section);
+    }
+
     fn process_directive(&mut self, instruction: &AssemblerInstruction) {
-        // todo :
+        if instruction.has_operands() {
+            match instruction.get_directive_name().unwrap().as_ref() {
+                "asciiz" => {
+                    self.handle_asciiz(instruction);
+                }
+                _ => {
+                    self.errors.push(UnknownDirectiveFound {
+                        directive: instruction.get_directive_name().unwrap().clone()
+                    });
+                }
+            }
+        } else {
+            self.process_section_header(instruction.get_directive_name().unwrap().as_ref());
+        }
     }
 
     // scan symbol declaration to symbol table
@@ -116,6 +150,7 @@ impl Assembler {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::assembler::assembler_section::AssemblerSection::{Code, Data};
 
     #[test]
     fn should_write_elf_header() {
@@ -146,5 +181,24 @@ mod tests {
                  .data\n\
                     hw:     .asciiz \"hello,World\"\n\
                     about:  .asciiz \"hello, I am Nero Yang\"");
+
+        assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
+        assert_eq!(assembler.symbol_table.get_symbol("main"), Some(&Symbol::new("main".to_string(), 0, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("hello"), Some(&Symbol::new("hello".to_string(), 0, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("hw"), Some(&Symbol::new("hw".to_string(), 0, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("about"), Some(&Symbol::new("about".to_string(), 0, SymbolType::Label)));
+    }
+
+    #[test]
+    fn should_process_section_header() {
+        let mut assembler = Assembler::new();
+        assembler.process_section_header("code");
+        assert_eq!(assembler.current_section, Some(Code { instruction_starting: None }));
+
+        assembler.process_section_header("data");
+        assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
+
+        assembler.process_section_header("bss");
+        assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
     }
 }
