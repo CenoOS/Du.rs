@@ -2,21 +2,19 @@ use crate::assembler::assembler_phase::AssemblerPhase;
 use crate::assembler::assembly_parser::AssemblyProgramParser;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::assembler::symbol_table::{SymbolTable, Symbol, SymbolType};
-use crate::assembler::elf::{DELFHeader, ELF_HEADER_PREFIX, ELF_HEADER_LENGTH};
-use crate::assembler::token::Token::{LabelDeclaration, Directive};
-use crate::assembler::assembler_phase::AssemblerPhase::{FIRST, SECOND};
+use crate::assembler::elf::{ELF_HEADER_PREFIX, ELF_HEADER_LENGTH};
+use crate::assembler::token::Token;
+use crate::assembler::assembler_phase::AssemblerPhase::{FIRST};
 use crate::assembler::assembler_section::AssemblerSection;
 use crate::assembler::assembler_error::AssemblerError;
 use crate::assembler::assembler_error::AssemblerError::{
     NoSectionDeclarationFound,
     NoLabelNameFound,
     SymbolAlreadyDeclared,
-    NoDirectiveNameFound,
     UnknownDirectiveFound,
     UnknownSectionFound,
 };
 use crate::assembler::assembler_section::AssemblerSection::UnKnown;
-use crate::repl::repl::ReplMode::Assembly;
 
 pub struct Assembler {
     assemble_phase: AssemblerPhase,
@@ -131,29 +129,42 @@ impl Assembler {
         }
     }
 
-    // scan symbol declaration to symbol table
+    // scan symbol declaration to symbol table,and sections
     fn process_first_phase(&mut self, instructions: &Vec<AssemblerInstruction>) {
-        for ins
-            in instructions {
-            if ins.is_label() {
+        for instruction in instructions {
+            if instruction.is_label() {
                 if self.current_section.is_some() {
-                    self.process_label_declaration(ins);
+                    self.process_label_declaration(instruction);
                 } else {
                     self.errors.push(NoSectionDeclarationFound { instruction: self.current_instruction })
                 }
             }
-            if ins.is_directive() {
-                self.process_directive(&ins);
+            if instruction.is_directive() {
+                self.process_directive(&instruction);
             }
 
             self.current_instruction += 1;
         }
-        self.assemble_phase = SECOND;
+        self.assemble_phase = AssemblerPhase::SECOND;
     }
 
     // translate symbol usage to memory offset
-    fn process_second_phase(&self, instructions: &Vec<AssemblerInstruction>) -> Vec<u8> {
-        return Vec::new();
+    fn process_second_phase(&mut self, instructions: &Vec<AssemblerInstruction>) -> Vec<u8> {
+        self.current_instruction = 0;
+        let mut program = Vec::<u8>::new();
+
+        for instruction in instructions {
+            if instruction.is_opcode() {
+                let mut bytes = instruction.to_bytes();
+                program.append(&mut bytes);
+            }
+
+            if instruction.is_directive() {
+                self.process_directive(&instruction);
+            }
+            self.current_instruction += 1;
+        }
+        return program;
     }
 }
 

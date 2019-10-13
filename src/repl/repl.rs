@@ -133,9 +133,6 @@ impl REPL {
                                 }
                             }
                         }
-                        _ => {
-                            println!("Error: un-support repl mode :{:?}", self.mode);
-                        }
                     }
                 }
             }

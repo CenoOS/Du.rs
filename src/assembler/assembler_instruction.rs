@@ -29,6 +29,10 @@ impl AssemblerInstruction {
         return self.label.is_some();
     }
 
+    pub fn is_opcode(&self) -> bool {
+        return self.token.is_some();
+    }
+
     pub fn get_label_name(&self) -> Option<String> {
         match &self.label {
             Some(label) => {

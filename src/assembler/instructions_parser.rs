@@ -724,7 +724,7 @@ mod tests {
     }
 
     #[test]
-    fn should_return_load_instruction_when_give_assembly_with_register_and_label_as__immediate() {
+    fn should_return_load_instruction_when_give_assembly_with_register_and_label_as_immediate() {
         let mut instruction_parser = InstructionParser::new("load $0 @foo");
         let label = instruction_parser.parse_assembly_line();
         assert_eq!(label.unwrap(), AssemblerInstruction {
