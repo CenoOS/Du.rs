@@ -1,4 +1,5 @@
 use crate::vm::instruction::OpCode;
+use std::str::from_utf8;
 
 #[derive(Debug)]
 pub struct VM {
@@ -8,7 +9,7 @@ pub struct VM {
     pc: usize,
     /* program memory */
     pub program: Vec<u8>,
-    pub heap: Vec<u8>,
+    pub ro_data: Vec<u8>,
     remainder: u32,
     eq_flag: bool,
 }
@@ -19,7 +20,7 @@ impl VM {
             registers: [0; 32],
             pc: 0,
             program: Vec::new(),
-            heap: Vec::new(),
+            ro_data: Vec::new(),
             remainder: 0,
             eq_flag: false,
         }
@@ -137,8 +138,28 @@ impl VM {
                 self.registers[self.next_8_bits() as usize] += 1;
             }
             OpCode::DEC => {
-                /* INC reg */
+                /* DEC reg */
                 self.registers[self.next_8_bits() as usize] -= 1;
+            }
+            OpCode::PRTS => {
+                /* PRTS reg */
+                let start_offset = self.next_16_bits() as usize;
+                let mut end_offset = start_offset;
+
+                let slice = self.ro_data.as_slice();
+                while slice[end_offset] != 0 {
+                    end_offset += 1;
+                }
+
+                let result = from_utf8(&slice[start_offset..end_offset]);
+                match result {
+                    Ok(str) => {
+                        print!("{}", str);
+                    }
+                    Err(e) => {
+                        println!("Error decoding string constant for PTRS instruction:{:#?}", e)
+                    }
+                }
             }
             _ => {
                 print!("Unrecognized opcode found! Terminating...");

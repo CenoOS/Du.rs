@@ -1,4 +1,4 @@
-use crate::vm::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMP_F, JMP_B, EQ, JEQ, IGL, ALOC, INC, DEC};
+use crate::vm::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMP_F, JMP_B, EQ, JEQ, IGL, ALOC, INC, DEC, PRTS};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum OpCode {
@@ -20,7 +20,8 @@ pub enum OpCode {
     ALOC = 11,
     INC = 12,
     DEC = 13,
-    IGL = 14,
+    PRTS = 14,
+    IGL = 15,
 }
 
 #[derive(Debug, PartialEq)]
@@ -45,6 +46,7 @@ impl From<u8> for OpCode {
             11 => return ALOC,
             12 => return INC,
             13 => return DEC,
+            14 => return PRTS,
             _ => return IGL,
         }
     }
