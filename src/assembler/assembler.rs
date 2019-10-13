@@ -157,44 +157,38 @@ impl Assembler {
 
     fn process_label_usage(&mut self, instruction: &AssemblerInstruction) -> Vec<u8> {
         let mut bytes = Vec::<u8>::new();
-        bytes.push(instruction.to_bytes()[0]);
-        match &instruction.operand1 {
-            Some(operand) => {
-                match operand {
-                    Token::LabelUsage { name } => {
-                        let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
-                        bytes.push(offset as u8)
-                    }
-                    _ => {}
-                }
+        match &instruction.token {
+            Some(Token::Op { opcode }) => match opcode {
+                _ => { bytes.push(*opcode as u8) }
+            },
+            _ => {
+                println!("None opCode found in opCode field.");
+                std::process::exit(0);
             }
-            None => {}
+        }
+
+        match &instruction.operand1 {
+            Some(Token::LabelUsage { name }) => {
+                let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
+                bytes.push(offset as u8)
+            }
+            _ => {}
         }
 
         match &instruction.operand2 {
-            Some(operand) => {
-                match operand {
-                    Token::LabelUsage { name } => {
-                        let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
-                        bytes.push(offset as u8)
-                    }
-                    _ => {}
-                }
+            Some(Token::LabelUsage { name }) => {
+                let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
+                bytes.push(offset as u8)
             }
-            None => {}
+            _ => {}
         }
 
         match &instruction.operand3 {
-            Some(operand) => {
-                match operand {
-                    Token::LabelUsage { name } => {
-                        let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
-                        bytes.push(offset as u8)
-                    }
-                    _ => {}
-                }
+            Some(Token::LabelUsage { name }) => {
+                let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
+                bytes.push(offset as u8)
             }
-            None => {}
+            _ => {}
         }
 
         return bytes;
@@ -299,12 +293,14 @@ mod tests {
     #[test]
     fn should_process_prts_to_machine_code() {
         let mut assembler = Assembler::new();
-        let mut parser = AssemblyProgramParser::new(
-            ".code\n\
+        let assembly = ".code\n\
                         main:   load $1 #500\n\
-                        prts @hw\n\
+                                prts    @hw\n\
+                                prts    @about\n\
                   .data\n\
-                        hw:     .asciiz \"hello,World\"");
+                        hw:     .asciiz \"hello,World\"\n\
+                        about:  .asciiz \"hello, I am Nero Yang\"";
+        let mut parser = AssemblyProgramParser::new(assembly);
         let ins = parser.parse_program().unwrap();
 
 
@@ -335,13 +331,24 @@ mod tests {
             operand3: None,
         });
 
+        assert_eq!(ins[3], AssemblerInstruction {
+            token: Some(Op { opcode: OpCode::PRTS }),
+            label: None,
+            directive: None,
+            operand1: Some(LabelUsage { name: "about".to_string() }),
+            operand2: None,
+            operand3: None,
+        });
+
         let result = assembler.process_instructions(&ins);
 
         assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
         assert_eq!(assembler.symbol_table.get_symbol("hw"), Some(&Symbol::new("hw".to_string(), 0, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("about"), Some(&Symbol::new("about".to_string(), 12, SymbolType::Label)));
 
         assert_eq!(assembler.ro_section, vec![
-            0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x00
+            0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x00,
+            0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x49, 0x20, 0x61, 0x6d, 0x20, 0x4e, 0x65, 0x72, 0x6f, 0x20, 0x59, 0x61, 0x6e, 0x67, 0x00
         ]);
 
         assert_eq!(result.unwrap(), vec![
@@ -350,7 +357,8 @@ mod tests {
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             1, 1, 1, 244,
-            14, 0
+            14, 0,
+            14, 12
         ]);
     }
 
@@ -404,6 +412,7 @@ mod tests {
             10, 0,
             14, 0,
             14, 12,
+            0
         ]);
     }
 

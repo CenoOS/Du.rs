@@ -1,6 +1,6 @@
 use crate::vm::instruction::OpCode;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     Op { opcode: OpCode },
     Register { reg_num: u8 },
