@@ -177,6 +177,10 @@ impl VM {
             terminated = self.execute_instruction();
         }
     }
+
+    pub fn set_program(&mut self, program: Vec<u8>) {
+        self.program = program;
+    }
 }
 
 
