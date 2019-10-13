@@ -4,7 +4,7 @@ use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::assembler::symbol_table::{SymbolTable, Symbol, SymbolType};
 use crate::assembler::elf::{ELF_HEADER_PREFIX, ELF_HEADER_LENGTH};
 use crate::assembler::token::Token;
-use crate::assembler::assembler_phase::AssemblerPhase::{FIRST};
+use crate::assembler::assembler_phase::AssemblerPhase::FIRST;
 use crate::assembler::assembler_section::AssemblerSection;
 use crate::assembler::assembler_error::AssemblerError;
 use crate::assembler::assembler_error::AssemblerError::{
@@ -99,7 +99,28 @@ impl Assembler {
         }
     }
 
-    fn handle_asciiz(&mut self, instruction: &AssemblerInstruction) {}
+    fn handle_asciiz(&mut self, instruction: &AssemblerInstruction) {
+        if self.assemble_phase != AssemblerPhase::FIRST { return; }
+        match instruction.get_string_constant() {
+            Some(s) => {
+                match instruction.get_label_name() {
+                    Some(name) => {
+                        self.symbol_table.set_symbol_offset(&name, self.ro_offset);
+                    }
+                    None => { self.errors.push(AssemblerError::LabelNotFoundForStringConstant); }
+                }
+                for byte in s.as_bytes() {
+                    self.ro_section.push(*byte);
+                    self.ro_offset += 1;
+                }
+                self.ro_section.push(0x0); // end of zero
+                self.ro_offset += 1;
+            }
+            None => {
+                self.errors.push(AssemblerError::StringConstantNotFound);
+            }
+        }
+    }
 
     fn process_section_header(&mut self, header_name: &str) {
         let new_section: AssemblerSection = header_name.into();
@@ -189,16 +210,16 @@ mod tests {
         let mut assembler = Assembler::new();
         let result = assembler.process(
             ".code\n\
-                    main:   load $1 @bar\n\
+                    main:   load $1 #300\n\
                             add $0 $1 $2\n\
                             sub $0 $1 $2\n\
                             mul $0 $1     $2\n\
                             div $0 $1 $2\n\
-                    hello:  jmp @foo\n\
+                    hello:  jmp $0\n\
                             jmp_f $1\n\
                             jmp_b $1\n\
                             eq $1 $2\n\
-                            jeq @flag\n\
+                            jeq $0\n\
                             hlt\n\
                  .data\n\
                     hw:     .asciiz \"hello,World\"\n\
@@ -208,7 +229,13 @@ mod tests {
         assert_eq!(assembler.symbol_table.get_symbol("main"), Some(&Symbol::new("main".to_string(), 0, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("hello"), Some(&Symbol::new("hello".to_string(), 0, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("hw"), Some(&Symbol::new("hw".to_string(), 0, SymbolType::Label)));
-        assert_eq!(assembler.symbol_table.get_symbol("about"), Some(&Symbol::new("about".to_string(), 0, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("about"), Some(&Symbol::new("about".to_string(), 12, SymbolType::Label)));
+
+
+        assert_eq!(assembler.ro_section, vec![
+            0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x00,
+            0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x49, 0x20, 0x61, 0x6d, 0x20, 0x4e, 0x65, 0x72, 0x6f, 0x20, 0x59, 0x61, 0x6e, 0x67, 0x00
+        ]);
     }
 
     #[test]

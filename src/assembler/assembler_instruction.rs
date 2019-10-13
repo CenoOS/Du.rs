@@ -66,6 +66,21 @@ impl AssemblerInstruction {
             _ => { return None; }
         }
     }
+    pub fn get_string_constant(&self) -> Option<String> {
+        if self.get_directive_name().is_some() {
+            match &self.operand1 {
+                Some(token) => {
+                    match token {
+                        Token::IrString { name } => { return Some(name.to_string()); }
+                        _ => { return None; }
+                    }
+                }
+                None => { return None; }
+            }
+        } else {
+            return None;
+        }
+    }
 
     pub fn is_directive(&self) -> bool {
         return self.directive.is_some();

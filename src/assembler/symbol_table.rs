@@ -52,13 +52,21 @@ impl SymbolTable {
         None
     }
 
-    pub fn get_symbol_value(&mut self, s: &str) -> Option<u32> {
+    pub fn get_symbol_offset(&mut self, s: &str) -> Option<u32> {
         for symbol in &self.symbols {
             if symbol.name == s.to_string() {
                 return Some(symbol.offset);
             }
         }
         None
+    }
+
+    pub fn set_symbol_offset(&mut self, s: &str, offset: u32){
+        for symbol in &mut self.symbols {
+            if symbol.name == s.to_string() {
+                symbol.offset = offset;
+            }
+        }
     }
 }
 
@@ -78,7 +86,19 @@ mod tests {
     fn should_get_symbol_from_symbol_table_when_give_a_symbol_name() {
         let mut symbol_table = SymbolTable::new();
         symbol_table.add_symbol(Symbol::new("hello".parse().unwrap(), 12, Label));
-        let symbol_value = symbol_table.get_symbol_value("hello").unwrap();
+        let symbol_value = symbol_table.get_symbol_offset("hello").unwrap();
         assert_eq!(symbol_value, 12);
+    }
+
+    #[test]
+    fn should_set_symbol_offset_when_give_a_symbol_name_and_offset() {
+        let mut symbol_table = SymbolTable::new();
+        symbol_table.add_symbol(Symbol::new("hello".parse().unwrap(), 12, Label));
+        let symbol_value = symbol_table.get_symbol_offset("hello").unwrap();
+        assert_eq!(symbol_value, 12);
+        symbol_table.set_symbol_offset("hello",15);
+        let symbol_value_new = symbol_table.get_symbol_offset("hello").unwrap();
+        assert_eq!(symbol_value_new, 15);
+
     }
 }

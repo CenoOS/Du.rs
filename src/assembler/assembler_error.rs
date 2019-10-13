@@ -10,4 +10,6 @@ pub enum AssemblerError {
     UnknownDirectiveFound { directive: String },
     UnknownSectionFound { section_name: String },
     InsufficientSections,
+    StringConstantNotFound,
+    LabelNotFoundForStringConstant,
 }

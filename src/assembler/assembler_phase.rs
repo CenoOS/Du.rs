@@ -3,7 +3,8 @@ use crate::assembler::symbol_table::SymbolTable;
 use crate::assembler::elf::DELFHeader;
 
 
+#[derive(PartialEq)]
 pub enum AssemblerPhase {
     FIRST,
-    SECOND
+    SECOND,
 }
