@@ -15,6 +15,7 @@ use crate::assembler::assembler_error::AssemblerError::{
     UnknownSectionFound,
 };
 use crate::assembler::assembler_section::AssemblerSection::UnKnown;
+use crate::assembler::token::Token::IntegerOperand;
 
 pub struct Assembler {
     assemble_phase: AssemblerPhase,
@@ -57,25 +58,10 @@ impl Assembler {
 
     pub fn process(&mut self, assembly: &str) -> Result<Vec<u8>, Vec<AssemblerError>> {
         let mut parser = AssemblyProgramParser::new(assembly);
-        let instructions = parser.parse_program();
+        let mut instructions = parser.parse_program();
         match instructions {
             Ok(ins) => {
-                let mut assembled_program: Vec<u8> = self.write_delf_header();
-                self.process_first_phase(&ins);
-
-                if !self.errors.is_empty() {
-                    return Err(self.errors.clone());
-                }
-
-                if self.sections.len() < 2 { // at lease code and data section are need.
-                    self.errors.push(AssemblerError::InsufficientSections);
-                    return Err(self.errors.clone());
-                }
-
-                let mut body: Vec<u8> = self.process_second_phase(&ins);
-
-                assembled_program.append(&mut body);
-                return Ok(assembled_program);
+                return self.process_instructions(&ins);
             }
             Err(e) => {
                 return Err(vec![AssemblerError::ParseError { error: e.to_string() }]);
@@ -83,8 +69,27 @@ impl Assembler {
         }
     }
 
+    pub fn process_instructions(&mut self, instructions: &Vec<AssemblerInstruction>) -> Result<Vec<u8>, Vec<AssemblerError>> {
+        let mut assembled_program: Vec<u8> = self.write_delf_header();
+        self.process_first_phase(&instructions);
+
+        if !self.errors.is_empty() {
+            return Err(self.errors.clone());
+        }
+
+        if self.sections.len() < 2 { // at lease code and data section are need.
+            self.errors.push(AssemblerError::InsufficientSections);
+            return Err(self.errors.clone());
+        }
+
+        let mut body: Vec<u8> = self.process_second_phase(&instructions);
+
+        assembled_program.append(&mut body);
+        return Ok(assembled_program);
+    }
+
     fn process_label_declaration(&mut self, instruction: &AssemblerInstruction) {
-        match instruction.get_label_name() {
+        match instruction.get_label_declaration_name() {
             Some(name) => {
                 if self.symbol_table.get_symbol(&name).is_none() {
                     let symbol = Symbol::default(name.to_string(), SymbolType::Label);
@@ -103,7 +108,7 @@ impl Assembler {
         if self.assemble_phase != AssemblerPhase::FIRST { return; }
         match instruction.get_string_constant() {
             Some(s) => {
-                match instruction.get_label_name() {
+                match instruction.get_label_declaration_name() {
                     Some(name) => {
                         self.symbol_table.set_symbol_offset(&name, self.ro_offset);
                     }
@@ -150,12 +155,57 @@ impl Assembler {
         }
     }
 
+    fn process_label_usage(&mut self, instruction: &AssemblerInstruction) -> Vec<u8> {
+        let mut bytes = Vec::<u8>::new();
+        bytes.push(instruction.to_bytes()[0]);
+        match &instruction.operand1 {
+            Some(operand) => {
+                match operand {
+                    Token::LabelUsage { name } => {
+                        let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
+                        bytes.push(offset as u8)
+                    }
+                    _ => {}
+                }
+            }
+            None => {}
+        }
+
+        match &instruction.operand2 {
+            Some(operand) => {
+                match operand {
+                    Token::LabelUsage { name } => {
+                        let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
+                        bytes.push(offset as u8)
+                    }
+                    _ => {}
+                }
+            }
+            None => {}
+        }
+
+        match &instruction.operand3 {
+            Some(operand) => {
+                match operand {
+                    Token::LabelUsage { name } => {
+                        let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
+                        bytes.push(offset as u8)
+                    }
+                    _ => {}
+                }
+            }
+            None => {}
+        }
+
+        return bytes;
+    }
+
     // scan symbol declaration to symbol table,and sections
     fn process_first_phase(&mut self, instructions: &Vec<AssemblerInstruction>) {
         for instruction in instructions {
-            if instruction.is_label() {
+            if instruction.is_label_declaration() {
                 if self.current_section.is_some() {
-                    self.process_label_declaration(instruction);
+                    self.process_label_declaration(&instruction);
                 } else {
                     self.errors.push(NoSectionDeclarationFound { instruction: self.current_instruction })
                 }
@@ -174,15 +224,21 @@ impl Assembler {
         self.current_instruction = 0;
         let mut program = Vec::<u8>::new();
 
-        for instruction in instructions {
+        for mut instruction in instructions {
             if instruction.is_opcode() {
-                let mut bytes = instruction.to_bytes();
-                program.append(&mut bytes);
+                if instruction.is_label_usage() {
+                    let mut bytes = self.process_label_usage(&instruction);
+                    program.append(&mut bytes);
+                } else {
+                    let mut bytes = instruction.to_bytes();
+                    program.append(&mut bytes);
+                }
             }
 
             if instruction.is_directive() {
                 self.process_directive(&instruction);
             }
+
             self.current_instruction += 1;
         }
         return program;
@@ -194,6 +250,8 @@ impl Assembler {
 mod tests {
     use super::*;
     use crate::assembler::assembler_section::AssemblerSection::{Code, Data};
+    use crate::assembler::token::Token::{Op, Directive, Register, LabelDeclaration, LabelUsage};
+    use crate::vm::instruction::OpCode;
 
     #[test]
     fn should_write_elf_header() {
@@ -235,6 +293,117 @@ mod tests {
         assert_eq!(assembler.ro_section, vec![
             0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x00,
             0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x49, 0x20, 0x61, 0x6d, 0x20, 0x4e, 0x65, 0x72, 0x6f, 0x20, 0x59, 0x61, 0x6e, 0x67, 0x00
+        ]);
+    }
+
+    #[test]
+    fn should_process_prts_to_machine_code() {
+        let mut assembler = Assembler::new();
+        let mut parser = AssemblyProgramParser::new(
+            ".code\n\
+                        main:   load $1 #500\n\
+                        prts @hw\n\
+                  .data\n\
+                        hw:     .asciiz \"hello,World\"");
+        let ins = parser.parse_program().unwrap();
+
+
+        assert_eq!(ins[0], AssemblerInstruction {
+            token: None,
+            label: None,
+            directive: Some(Directive { name: "code".to_string() }),
+            operand1: None,
+            operand2: None,
+            operand3: None,
+        });
+
+        assert_eq!(ins[1], AssemblerInstruction {
+            token: Some(Op { opcode: OpCode::LOAD }),
+            label: Some(LabelDeclaration { name: "main".to_string() }),
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(IntegerOperand { value: 500 }),
+            operand3: None,
+        });
+
+        assert_eq!(ins[2], AssemblerInstruction {
+            token: Some(Op { opcode: OpCode::PRTS }),
+            label: None,
+            directive: None,
+            operand1: Some(LabelUsage { name: "hw".to_string() }),
+            operand2: None,
+            operand3: None,
+        });
+
+        let result = assembler.process_instructions(&ins);
+
+        assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
+        assert_eq!(assembler.symbol_table.get_symbol("hw"), Some(&Symbol::new("hw".to_string(), 0, SymbolType::Label)));
+
+        assert_eq!(assembler.ro_section, vec![
+            0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x00
+        ]);
+
+        assert_eq!(result.unwrap(), vec![
+            0x64, 0x65, 0x6c, 0x66, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            1, 1, 1, 244,
+            14, 0
+        ]);
+    }
+
+    #[test]
+    fn should_process_program_to_machine_code() {
+        let mut assembler = Assembler::new();
+        let result = assembler.process(
+            ".code\n\
+                    main:   load $1 #500\n\
+                            add $0 $1 $2\n\
+                            sub $0 $1 $2\n\
+                            mul $0 $1     $2\n\
+                            div $0 $1 $2\n\
+                    hello:  jmp $0\n\
+                            jmp_f $1\n\
+                            jmp_b $1\n\
+                            eq $1 $2\n\
+                            jeq $0\n\
+                            prts @hw\n\
+                            prts @about\n\
+                            hlt\n\
+                 .data\n\
+                    hw:     .asciiz \"hello,World\"\n\
+                    about:  .asciiz \"hello, I am Nero Yang\"");
+
+        assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
+        assert_eq!(assembler.symbol_table.get_symbol("main"), Some(&Symbol::new("main".to_string(), 0, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("hello"), Some(&Symbol::new("hello".to_string(), 0, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("hw"), Some(&Symbol::new("hw".to_string(), 0, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("about"), Some(&Symbol::new("about".to_string(), 12, SymbolType::Label)));
+
+        assert_eq!(assembler.ro_section, vec![
+            0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x00,
+            0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x49, 0x20, 0x61, 0x6d, 0x20, 0x4e, 0x65, 0x72, 0x6f, 0x20, 0x59, 0x61, 0x6e, 0x67, 0x00
+        ]);
+
+        assert_eq!(result.unwrap(), vec![
+            0x64, 0x65, 0x6c, 0x66, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            1, 1, 1, 244,
+            2, 0, 1, 2,
+            3, 0, 1, 2,
+            4, 0, 1, 2,
+            5, 0, 1, 2,
+            6, 0,
+            7, 1,
+            8, 1,
+            9, 1, 2,
+            10, 0,
+            14, 0,
+            14, 12,
         ]);
     }
 

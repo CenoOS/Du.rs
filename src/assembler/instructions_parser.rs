@@ -426,6 +426,11 @@ impl<'a> InstructionParser<'a> {
             return self.parse_one_register_instruction(DEC);
         }
 
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "PRTS".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(PRTS);
+        }
+
         Err("Unexpected Assembly Code.")
     }
 }
@@ -737,6 +742,19 @@ mod tests {
         });
     }
 
+    #[test]
+    fn should_return_prts_instruction_when_give_assembly_with_label_of_constant_string() {
+        let mut instruction_parser = InstructionParser::new("prts @hw");
+        let label = instruction_parser.parse_assembly_line();
+        assert_eq!(label.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: OpCode::PRTS }),
+            label: None,
+            directive: None,
+            operand1: Some(LabelUsage { name: "hw".to_string() }),
+            operand2: None,
+            operand3: None,
+        });
+    }
 
     #[test]
     fn should_return_directive_when_parse_directive() {

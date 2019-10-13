@@ -25,15 +25,66 @@ impl AssemblerInstruction {
         }
     }
 
-    pub fn is_label(&self) -> bool {
-        return self.label.is_some();
+    pub fn is_label_declaration(&self) -> bool {
+        match &self.label {
+            Some(label) => {
+                match label {
+                    Token::LabelDeclaration { name } => {
+                        return true;
+                    }
+                    _ => { return false; }
+                }
+            }
+            None => { return false; }
+        }
+    }
+
+
+    pub fn is_label_usage(&self) -> bool {
+        let mut label_usage = false;
+        match &self.operand1 {
+            Some(label) => {
+                match label {
+                    Token::LabelUsage { name } => {
+                        label_usage = true;
+                    }
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+
+        match &self.operand2 {
+            Some(label) => {
+                match label {
+                    Token::LabelUsage { name } => {
+                        label_usage = true;
+                    }
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+
+        match &self.operand3 {
+            Some(label) => {
+                match label {
+                    Token::LabelUsage { name } => {
+                        label_usage = true;
+                    }
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+        return label_usage;
     }
 
     pub fn is_opcode(&self) -> bool {
         return self.token.is_some();
     }
 
-    pub fn get_label_name(&self) -> Option<String> {
+    pub fn get_label_declaration_name(&self) -> Option<String> {
         match &self.label {
             Some(label) => {
                 match label {
@@ -45,7 +96,23 @@ impl AssemblerInstruction {
                     }
                 }
             }
+            _ => { return None; }
+        }
+    }
 
+
+    pub fn get_label_usage_name(&self) -> Option<String> {
+        match &self.label {
+            Some(label) => {
+                match label {
+                    Token::LabelUsage { name } => {
+                        return Some(name.to_string());
+                    }
+                    _ => {
+                        return None;
+                    }
+                }
+            }
             _ => { return None; }
         }
     }
@@ -62,7 +129,6 @@ impl AssemblerInstruction {
                     }
                 }
             }
-
             _ => { return None; }
         }
     }
@@ -88,6 +154,18 @@ impl AssemblerInstruction {
 
     pub fn has_operands(&self) -> bool {
         return self.operand1.is_some() || self.operand2.is_some() || self.operand3.is_some();
+    }
+
+    pub fn set_operand1(&mut self, token: Option<Token>) {
+        self.operand1 = token;
+    }
+
+    pub fn set_operand2(&mut self, token: Option<Token>) {
+        self.operand2 = token;
+    }
+
+    pub fn set_operand3(&mut self, token: Option<Token>) {
+        self.operand3 = token;
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {

@@ -199,6 +199,7 @@ mod tests {
                             jmp_b $1\n\
                             eq $1 $2\n\
                             jeq @flag\n\
+                            prts @hw\n\
                             hlt\n\
                  .data\n\
                     hw:     .asciiz \"hello,World\"\n\
@@ -293,6 +294,14 @@ mod tests {
             operand3: None,
         });
         assert_eq!(instructions[11], AssemblerInstruction {
+            token: Some(Op { opcode: PRTS }),
+            label: None,
+            directive: None,
+            operand1: Some(LabelUsage { name: "hw".to_string() }),
+            operand2: None,
+            operand3: None,
+        });
+        assert_eq!(instructions[12], AssemblerInstruction {
             token: Some(Op { opcode: HLT }),
             label: None,
             directive: None,
@@ -300,7 +309,7 @@ mod tests {
             operand2: None,
             operand3: None,
         });
-        assert_eq!(instructions[12], AssemblerInstruction {
+        assert_eq!(instructions[13], AssemblerInstruction {
             token: None,
             label: None,
             directive: Some(Directive { name: "data".to_string() }),
@@ -308,7 +317,7 @@ mod tests {
             operand2: None,
             operand3: None,
         });
-        assert_eq!(instructions[13], AssemblerInstruction {
+        assert_eq!(instructions[14], AssemblerInstruction {
             token: None,
             label: Some(LabelDeclaration { name: "hw".to_string() }),
             directive: Some(Directive { name: "asciiz".to_string() }),
@@ -316,7 +325,7 @@ mod tests {
             operand2: None,
             operand3: None,
         });
-        assert_eq!(instructions[14], AssemblerInstruction {
+        assert_eq!(instructions[15], AssemblerInstruction {
             token: None,
             label: Some(LabelDeclaration { name: "about".to_string() }),
             directive: Some(Directive { name: "asciiz".to_string() }),
