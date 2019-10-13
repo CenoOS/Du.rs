@@ -1,7 +1,7 @@
 use crate::vm::instruction::OpCode;
 use std::str::from_utf8;
 
-pub const TMP_REGISTER: u8 = 0xFF;
+pub const TMP_REGISTER: u8 = 0x20 - 1;
 
 #[derive(Debug)]
 pub struct VM {
@@ -147,7 +147,7 @@ impl VM {
             }
             OpCode::PRTS => {
                 /* PRTS reg */
-                let start_offset = self.registers[TMP_REGISTER];
+                let start_offset = self.registers[TMP_REGISTER as usize] as usize;
                 let mut end_offset = start_offset;
 
                 let slice = self.ro_data.as_slice();
