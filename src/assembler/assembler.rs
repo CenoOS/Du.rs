@@ -104,6 +104,21 @@ impl Assembler {
         }
     }
 
+    fn process_label_declaration_second_phase(&mut self, instruction: &AssemblerInstruction, offset: usize) {
+        if instruction.token.is_some() {
+            match instruction.get_label_declaration_name() {
+                Some(name) => {
+                    if self.symbol_table.get_symbol(&name).is_some() {
+                        self.symbol_table.set_symbol_offset(&name, offset as u32);
+                    }
+                }
+                None => {
+                    self.errors.push(NoLabelNameFound { instruction: self.current_instruction })
+                }
+            }
+        }
+    }
+
     fn handle_asciiz(&mut self, instruction: &AssemblerInstruction) {
         if self.assemble_phase != AssemblerPhase::FIRST { return; }
         match instruction.get_string_constant() {
@@ -219,6 +234,9 @@ impl Assembler {
         let mut program = Vec::<u8>::new();
 
         for mut instruction in instructions {
+            if instruction.is_label_declaration() {
+                self.process_label_declaration_second_phase(&instruction, program.len());
+            }
             if instruction.is_opcode() {
                 if instruction.is_label_usage() {
                     let mut bytes = self.process_label_usage(&instruction);
@@ -279,7 +297,7 @@ mod tests {
 
         assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
         assert_eq!(assembler.symbol_table.get_symbol("main"), Some(&Symbol::new("main".to_string(), 0, SymbolType::Label)));
-        assert_eq!(assembler.symbol_table.get_symbol("hello"), Some(&Symbol::new("hello".to_string(), 0, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("hello"), Some(&Symbol::new("hello".to_string(), 20, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("hw"), Some(&Symbol::new("hw".to_string(), 0, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("about"), Some(&Symbol::new("about".to_string(), 12, SymbolType::Label)));
 
@@ -343,6 +361,7 @@ mod tests {
         let result = assembler.process_instructions(&ins);
 
         assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
+        assert_eq!(assembler.symbol_table.get_symbol("main"), Some(&Symbol::new("main".to_string(), 0, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("hw"), Some(&Symbol::new("hw".to_string(), 0, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("about"), Some(&Symbol::new("about".to_string(), 12, SymbolType::Label)));
 
@@ -386,7 +405,7 @@ mod tests {
 
         assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
         assert_eq!(assembler.symbol_table.get_symbol("main"), Some(&Symbol::new("main".to_string(), 0, SymbolType::Label)));
-        assert_eq!(assembler.symbol_table.get_symbol("hello"), Some(&Symbol::new("hello".to_string(), 0, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("hello"), Some(&Symbol::new("hello".to_string(), 20, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("hw"), Some(&Symbol::new("hw".to_string(), 0, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("about"), Some(&Symbol::new("about".to_string(), 12, SymbolType::Label)));
 
