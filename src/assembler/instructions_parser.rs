@@ -766,4 +766,11 @@ mod tests {
             operand3: None,
         });
     }
+
+    #[test]
+    fn should_return_string_constant_when_parse_assembly_line() {
+        let mut instruction_parser = InstructionParser::new("hello: .asciiz \"Hello, World!\"");
+        let label = instruction_parser.parse_assembly_line().unwrap();
+        assert_eq!("Hello, World!".to_string(), label.get_string_constant().unwrap());
+    }
 }
