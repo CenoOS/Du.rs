@@ -15,7 +15,11 @@ use crate::assembler::assembler_error::AssemblerError::{
     UnknownSectionFound,
 };
 use crate::assembler::assembler_section::AssemblerSection::UnKnown;
-use crate::assembler::token::Token::IntegerOperand;
+use crate::assembler::token::Token::{IntegerOperand, Op, Register};
+use crate::vm::instruction::OpCode;
+
+
+const TMP_REGISTER: u8 = 0xff;
 
 pub struct Assembler {
     assemble_phase: AssemblerPhase,
@@ -172,6 +176,36 @@ impl Assembler {
 
     fn process_label_usage(&mut self, instruction: &AssemblerInstruction) -> Vec<u8> {
         let mut bytes = Vec::<u8>::new();
+
+        match &instruction.operand1 {
+            Some(Token::LabelUsage { name }) => { self.process_label_offset(&instruction, &mut bytes, &name) }
+            _ => {}
+        }
+
+        match &instruction.operand2 {
+            Some(Token::LabelUsage { name }) => { self.process_label_offset(&instruction, &mut bytes, &name) }
+            _ => {}
+        }
+
+        match &instruction.operand3 {
+            Some(Token::LabelUsage { name }) => { self.process_label_offset(&instruction, &mut bytes, &name) }
+            _ => {}
+        }
+
+        return bytes;
+    }
+
+    fn process_label_offset(&mut self, instruction: &AssemblerInstruction, bytes: &mut Vec<u8>, name: &&String) -> () {
+        let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
+        let save_offset_instruction = AssemblerInstruction {
+            token: Some(Op { opcode: OpCode::LOAD }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: TMP_REGISTER }),
+            operand2: Some(IntegerOperand { value: offset as i32 }),
+            operand3: None,
+        };
+        bytes.append(&mut save_offset_instruction.to_bytes());
         match &instruction.token {
             Some(Token::Op { opcode }) => match opcode {
                 _ => { bytes.push(*opcode as u8) }
@@ -181,32 +215,7 @@ impl Assembler {
                 std::process::exit(0);
             }
         }
-
-        match &instruction.operand1 {
-            Some(Token::LabelUsage { name }) => {
-                let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
-                bytes.push(offset as u8)
-            }
-            _ => {}
-        }
-
-        match &instruction.operand2 {
-            Some(Token::LabelUsage { name }) => {
-                let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
-                bytes.push(offset as u8)
-            }
-            _ => {}
-        }
-
-        match &instruction.operand3 {
-            Some(Token::LabelUsage { name }) => {
-                let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
-                bytes.push(offset as u8)
-            }
-            _ => {}
-        }
-
-        return bytes;
+        bytes.push(TMP_REGISTER);
     }
 
     // scan symbol declaration to symbol table,and sections
@@ -376,8 +385,10 @@ mod tests {
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             1, 1, 1, 244,
-            14, 0,
-            14, 12
+            1, TMP_REGISTER, 0, 0,
+            14, TMP_REGISTER,
+            1, TMP_REGISTER, 0, 12,
+            14, TMP_REGISTER
         ]);
     }
 
@@ -395,7 +406,7 @@ mod tests {
                             jmp_f $1\n\
                             jmp_b $1\n\
                             eq $1 $2\n\
-                            jeq $0\n\
+                            jeq @hello\n\
                             prts @hw\n\
                             prts @about\n\
                             hlt\n\
@@ -428,9 +439,12 @@ mod tests {
             7, 1,
             8, 1,
             9, 1, 2,
-            10, 0,
-            14, 0,
-            14, 12,
+            1, TMP_REGISTER, 0, 20,
+            10, TMP_REGISTER,
+            1, TMP_REGISTER, 0, 0,
+            14, TMP_REGISTER,
+            1, TMP_REGISTER, 0, 12,
+            14, TMP_REGISTER,
             0
         ]);
     }
