@@ -16,6 +16,7 @@ use crate::assembler::assembler_error::AssemblerError::{
     UnknownSectionFound,
 };
 use crate::assembler::assembler_section::AssemblerSection::UnKnown;
+use crate::repl::repl::ReplMode::Assembly;
 
 pub struct Assembler {
     assemble_phase: AssemblerPhase,
@@ -56,20 +57,30 @@ impl Assembler {
         return header;
     }
 
-    pub fn process(&mut self, assembly: &str) -> Result<Vec<u8>, &'static str> {
+    pub fn process(&mut self, assembly: &str) -> Result<Vec<u8>, Vec<AssemblerError>> {
         let mut parser = AssemblyProgramParser::new(assembly);
         let instructions = parser.parse_program();
         match instructions {
             Ok(ins) => {
                 let mut assembled_program: Vec<u8> = self.write_delf_header();
                 self.process_first_phase(&ins);
+
+                if !self.errors.is_empty() {
+                    return Err(self.errors.clone());
+                }
+
+                if self.sections.len() < 2 { // at lease code and data section are need.
+                    self.errors.push(AssemblerError::InsufficientSections);
+                    return Err(self.errors.clone());
+                }
+
                 let mut body: Vec<u8> = self.process_second_phase(&ins);
 
                 assembled_program.append(&mut body);
                 return Ok(assembled_program);
             }
             Err(e) => {
-                return Err(e);
+                return Err(vec![AssemblerError::ParseError { error: e.to_string() }]);
             }
         }
     }
