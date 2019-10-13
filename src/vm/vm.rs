@@ -10,6 +10,7 @@ pub struct VM {
     /* program memory */
     pub program: Vec<u8>,
     pub ro_data: Vec<u8>,
+    pub heap: Vec<u8>,
     remainder: u32,
     eq_flag: bool,
 }
@@ -21,6 +22,7 @@ impl VM {
             pc: 0,
             program: Vec::new(),
             ro_data: Vec::new(),
+            heap: Vec::new(),
             remainder: 0,
             eq_flag: false,
         }
