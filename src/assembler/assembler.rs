@@ -17,9 +17,7 @@ use crate::assembler::assembler_error::AssemblerError::{
 use crate::assembler::assembler_section::AssemblerSection::UnKnown;
 use crate::assembler::token::Token::{IntegerOperand, Op, Register};
 use crate::vm::instruction::OpCode;
-
-
-const TMP_REGISTER: u8 = 0xff;
+use crate::vm::vm::TMP_REGISTER;
 
 pub struct Assembler {
     assemble_phase: AssemblerPhase,

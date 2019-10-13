@@ -1,6 +1,8 @@
 use crate::vm::instruction::OpCode;
 use std::str::from_utf8;
 
+pub const TMP_REGISTER: u8 = 0xFF;
+
 #[derive(Debug)]
 pub struct VM {
     /* 8bits for opcode , 8bits for register number , 16 bits for numbers just 2<<16 = 65536(unsigned) */
@@ -145,7 +147,7 @@ impl VM {
             }
             OpCode::PRTS => {
                 /* PRTS reg */
-                let start_offset = self.next_16_bits() as usize;
+                let start_offset = self.registers[TMP_REGISTER];
                 let mut end_offset = start_offset;
 
                 let slice = self.ro_data.as_slice();
