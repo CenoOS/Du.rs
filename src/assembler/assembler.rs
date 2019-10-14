@@ -395,18 +395,21 @@ mod tests {
         let mut assembler = Assembler::new();
         let result = assembler.process(
             ".code\n\
-                    main:   load $1 #500\n\
-                            add $0 $1 $2\n\
-                            sub $0 $1 $2\n\
-                            mul $0 $1     $2\n\
-                            div $0 $1 $2\n\
-                    hello:  jmp $0\n\
-                            jmp_f $1\n\
-                            jmp_b $1\n\
-                            eq $1 $2\n\
-                            jeq @hello\n\
-                            prts @hw\n\
-                            prts @about\n\
+                    main:   load    $1  #500\n\
+                            add     $0  $1  $2\n\
+                            sub     $0  $1  $2\n\
+                            mul     $0  $1  $2\n\
+                            div     $0  $1  $2\n\
+                    hello:  jmp     $0\n\
+                            jmp_f   $1\n\
+                            jmp_b   $1\n\
+                            eq $1   $2\n\
+                            jeq     @hello\n\
+                            prts    @hw\n\
+                            prts    @about\n\
+                    foo:    load    $0  #500\n\
+                            add     $0  $1  $0\n\
+                            jmp     @foo\n\
                             hlt\n\
                  .data\n\
                     hw:     .asciiz \"hello,World\"\n\
@@ -415,6 +418,7 @@ mod tests {
         assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
         assert_eq!(assembler.symbol_table.get_symbol("main"), Some(&Symbol::new("main".to_string(), 0, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("hello"), Some(&Symbol::new("hello".to_string(), 20, SymbolType::Label)));
+        assert_eq!(assembler.symbol_table.get_symbol("foo"), Some(&Symbol::new("foo".to_string(), 47, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("hw"), Some(&Symbol::new("hw".to_string(), 0, SymbolType::Label)));
         assert_eq!(assembler.symbol_table.get_symbol("about"), Some(&Symbol::new("about".to_string(), 12, SymbolType::Label)));
 
@@ -443,6 +447,10 @@ mod tests {
             0x0E, 0x1F,
             0x01, 0x1F, 0x00, 0x0C,
             0x0E, 0x1F,
+            0x01, 0x00, 0x01, 0xF4,
+            0x02, 0x00, 0x01, 0x00,
+            0x01, 0x1F, 0x00, 0x2F,
+            0x06, 0x1F,
             0x00
         ]);
     }
