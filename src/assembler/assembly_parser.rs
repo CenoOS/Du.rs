@@ -57,7 +57,7 @@ mod tests {
                             jmp_f $1\n\
                             jmp_b $1\n\
                             eq $1 $2\n\
-                            jeq $1\n\
+                            je $1\n\
                             hlt\n\
                  .data\n\
                     hw:     .asciiz \"hello,World\"\n\
@@ -144,7 +144,7 @@ mod tests {
             operand3: None,
         });
         assert_eq!(instructions[10], AssemblerInstruction {
-            token: Some(Op { opcode: JEQ }),
+            token: Some(Op { opcode: JE }),
             label: None,
             directive: None,
             operand1: Some(Register { reg_num: 1 }),
@@ -198,7 +198,7 @@ mod tests {
                             jmp_f $1\n\
                             jmp_b $1\n\
                             eq $1 $2\n\
-                            jeq @flag\n\
+                            je @flag\n\
                             prts @hw\n\
                             hlt\n\
                  .data\n\
@@ -286,7 +286,7 @@ mod tests {
             operand3: None,
         });
         assert_eq!(instructions[10], AssemblerInstruction {
-            token: Some(Op { opcode: JEQ }),
+            token: Some(Op { opcode: JE }),
             label: None,
             directive: None,
             operand1: Some(LabelUsage { name: "flag".to_string() }),

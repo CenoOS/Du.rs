@@ -54,6 +54,7 @@ impl REPL {
                     Ok(ins) => {
                         self.vm.set_program(ins);
                         self.vm.set_ro_data(assembler.ro_section);
+                        self.vm.run();
                     }
                     Err(errs) => {
                         for e in errs {
@@ -63,7 +64,7 @@ impl REPL {
                 }
             }
             Err(e) => {
-                println!("Asm load file: {:#?}", e);
+                println!("Asm load failed: {:#?}", e);
             }
         }
     }

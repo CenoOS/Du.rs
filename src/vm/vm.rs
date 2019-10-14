@@ -15,6 +15,8 @@ pub struct VM {
     pub heap: Vec<u8>,
     remainder: u32,
     eq_flag: bool,
+    lt_flag: bool,
+    gt_flag: bool,
 }
 
 impl VM {
@@ -27,6 +29,9 @@ impl VM {
             heap: Vec::new(),
             remainder: 0,
             eq_flag: false,
+            lt_flag: false,
+            gt_flag: false,
+
         }
     }
 
@@ -121,9 +126,53 @@ impl VM {
 
                 self.next_8_bits();
             }
-            OpCode::JEQ => {
+            OpCode::LT => {
+                /* LT reg0 reg1 */
+                let register1 = self.registers[self.next_8_bits() as usize];
+                let register2 = self.registers[self.next_8_bits() as usize];
+
+                if register1 < register2 {
+                    self.lt_flag = true;
+                } else {
+                    self.lt_flag = false;
+                }
+
+                self.next_8_bits();
+            }
+            OpCode::GT => {
+                /* LT reg0 reg1 */
+                let register1 = self.registers[self.next_8_bits() as usize];
+                let register2 = self.registers[self.next_8_bits() as usize];
+
+                if register1 > register2 {
+                    self.gt_flag = true;
+                } else {
+                    self.gt_flag = false;
+                }
+
+                self.next_8_bits();
+            }
+            OpCode::JE => {
                 let target = self.registers[self.next_8_bits() as usize];
                 if self.eq_flag {
+                    self.pc = target as usize;
+                }
+            }
+            OpCode::JNE => {
+                let target = self.registers[self.next_8_bits() as usize];
+                if !self.eq_flag {
+                    self.pc = target as usize;
+                }
+            }
+            OpCode::JL => {
+                let target = self.registers[self.next_8_bits() as usize];
+                if self.lt_flag {
+                    self.pc = target as usize;
+                }
+            }
+            OpCode::JG => {
+                let target = self.registers[self.next_8_bits() as usize];
+                if self.gt_flag {
                     self.pc = target as usize;
                 }
             }

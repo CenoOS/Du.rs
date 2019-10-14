@@ -411,9 +411,35 @@ impl<'a> InstructionParser<'a> {
             return self.parse_two_register_instruction(EQ);
         }
 
-        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JEQ".to_string()) {
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "LT".to_string()) {
             self.tokens.next();
-            return self.parse_one_register_instruction(JEQ);
+            return self.parse_two_register_instruction(LT);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "GT".to_string()) {
+            self.tokens.next();
+            return self.parse_two_register_instruction(GT);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JE".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(JE);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JNE".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(JNE);
+        }
+
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JL".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(JL);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JG".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(JG);
         }
 
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "INC".to_string()) {
@@ -431,7 +457,7 @@ impl<'a> InstructionParser<'a> {
             return self.parse_one_register_instruction(PRTS);
         }
 
-        Err("Unexpected Assembly Code.")
+        return Err("Unexpected Assembly Code.");
     }
 }
 
@@ -580,11 +606,81 @@ mod tests {
     }
 
     #[test]
-    fn should_return_jeq_when_give_jeq() {
-        let mut token_parser = InstructionParser::new("jeq $1");
+    fn should_return_lt_when_give_lt() {
+        let mut token_parser = InstructionParser::new("lt $1 $2");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Some(Op { opcode: JEQ }),
+            token: Some(Op { opcode: LT }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_gt_when_give_gt() {
+        let mut token_parser = InstructionParser::new("gt $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: GT }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_jeq_when_give_jeq() {
+        let mut token_parser = InstructionParser::new("je $1");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: JE }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_jne_when_give_jne() {
+        let mut token_parser = InstructionParser::new("jne $1");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: JNE }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_jl_when_give_jl() {
+        let mut token_parser = InstructionParser::new("jl $1");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: JL }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_jg_when_give_jg() {
+        let mut token_parser = InstructionParser::new("jg $1");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: JG }),
             label: None,
             directive: None,
             operand1: Some(Register { reg_num: 1 }),

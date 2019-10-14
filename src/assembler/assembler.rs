@@ -296,7 +296,7 @@ mod tests {
                             jmp_f $1\n\
                             jmp_b $1\n\
                             eq $1 $2\n\
-                            jeq $0\n\
+                            je $0\n\
                             hlt\n\
                  .data\n\
                     hw:     .asciiz \"hello,World\"\n\
@@ -404,7 +404,7 @@ mod tests {
                             jmp_f   $1\n\
                             jmp_b   $1\n\
                             eq $1   $2\n\
-                            jeq     @hello\n\
+                            je     @hello\n\
                             prts    @hw\n\
                             prts    @about\n\
                     foo:    load    $0  #500\n\
@@ -466,5 +466,31 @@ mod tests {
 
         assembler.process_section_header("bss");
         assert_eq!(assembler.current_section, Some(Data { instruction_starting: None }));
+    }
+
+    #[test]
+    fn should_assemble_for_each_prints() {
+        let mut assembler = Assembler::new();
+        let result = assembler.process(
+            ".code                                         \n\
+                            main:   load    $0  #0  #0              \n\
+                                    load    $1  #0  #50             \n\
+                            for:    eq      $0  $1                  \n\
+                                    prts    @hw                     \n\
+                                    dec     $1                      \n\
+                                    je     @for                    \n\
+                                    prts    @passed                 \n\
+                      .data                                         \n\
+                            hw:     .asciiz \"Hello, World.\"       \n\
+                            passed: .asciiz \"Ok, 50 times print passed.\"");
+        assert_eq!(result.unwrap(), vec![
+            0x64, 0x65, 0x6c, 0x66, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            1, 0, 0, 0,
+            1, 1, 0, 0,
+            9, 0, 1, 1, 31, 0, 0, 14, 31, 13, 1, 1, 31, 0, 8, 10, 31, 1, 31, 0, 14, 14, 31
+        ]);
     }
 }
