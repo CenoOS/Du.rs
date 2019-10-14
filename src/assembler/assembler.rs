@@ -493,4 +493,26 @@ mod tests {
             9, 0, 1, 1, 31, 0, 0, 14, 31, 13, 1, 1, 31, 0, 8, 15, 31, 1, 31, 0, 14, 14, 31
         ]);
     }
+
+    #[test]
+    fn should_assemble_loop_add() {
+        let mut assembler = Assembler::new();
+        let result = assembler.process(
+            ".code                                         \n\
+                            main:   load    $0  #0  #0              \n\
+                                    load    $1  #0  #50             \n\
+                                    load    $2  #0  #0              \n\
+                            for:    eq      $0  $1                  \n\
+                                    dec     $1                      \n\
+                                    inc     $2                      \n\
+                                    jne     @for                    \n\
+                      .data");
+        assert_eq!(result.unwrap(), vec![
+            0x64, 0x65, 0x6c, 0x66, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            1, 0, 0, 0, 1, 1, 0, 0, 1, 2, 0, 0, 9, 0, 1, 13, 1, 12, 2, 1, 31, 0, 12, 15, 31
+        ]);
+    }
 }

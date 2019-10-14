@@ -124,8 +124,6 @@ impl VM {
                 } else {
                     self.eq_flag = false;
                 }
-
-                self.next_8_bits();
             }
             OpCode::LT => {
                 /* LT reg0 reg1 */
@@ -137,8 +135,6 @@ impl VM {
                 } else {
                     self.lt_flag = false;
                 }
-
-                self.next_8_bits();
             }
             OpCode::GT => {
                 /* LT reg0 reg1 */
@@ -150,8 +146,6 @@ impl VM {
                 } else {
                     self.gt_flag = false;
                 }
-
-                self.next_8_bits();
             }
             OpCode::JE => {
                 /* JE regTarget */
@@ -324,7 +318,7 @@ mod tests {
     fn should_jmp() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 0, 1, /*LOAD 0 #1; */
-                          6, 0, 0, 0];  /*JMP 0; */
+                          6, 0];  /*JMP 0; */
         vm.run_once();
         vm.run_once();
         assert_eq!(vm.pc, 1);
@@ -334,7 +328,7 @@ mod tests {
     fn should_jmpf() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 0, 3, /*LOAD 0 #3; */
-                          7, 0, 0, 0];  /*JMPF 0; */
+                          7, 0];  /*JMPF 0; */
         vm.run_once();
         assert_eq!(vm.pc, 4);
         vm.run_once();
@@ -345,7 +339,7 @@ mod tests {
     fn should_jmpb() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 0, 3, /*LOAD 0 #3; */
-                          8, 0, 0, 0];  /*JMPB 0; */
+                          8, 0];  /*JMPB 0; */
         vm.run_once();
         assert_eq!(vm.pc, 4);
         vm.run_once();
@@ -357,10 +351,10 @@ mod tests {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
                           1, 1, 1, 244, /*LOAD 1 #500; */
-                          9, 0, 1, 0, /*EQ 0 1; */
+                          9, 0, 1, /*EQ 0 1; */
                           1, 2, 1, 244, /*LOAD 2 #500; */
                           1, 3, 0, 244, /*LOAD 3 #244; */
-                          9, 2, 3, 0];  /*EQ 2 3; */
+                          9, 2, 3];  /*EQ 2 3; */
 
         vm.run();
         assert_eq!(vm.eq_flag, false);
@@ -371,9 +365,9 @@ mod tests {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
                           1, 1, 1, 244, /*LOAD 1 #500; */
-                          9, 0, 1, 0, /*EQ 0 1; */
+                          9, 0, 1, /*EQ 0 1; */
                           1, 2, 0, 3, /*LOAD 2 #3; */
-                          10, 2, 0, 0];  /*JEQ 2; */
+                          10, 2]; /*JEQ 2; */
 
         vm.run_once(); /*LOAD 0 #500; */
         vm.run_once(); /*LOAD 1 #500; */
@@ -388,7 +382,7 @@ mod tests {
     fn should_inc() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
-                          12, 0, 0, 0]; /*INC $0; */
+                          12, 0]; /*INC $0; */
 
         vm.run_once(); /*LOAD 0 #500; */
         vm.run_once(); /*INC $0; */
@@ -399,7 +393,7 @@ mod tests {
     fn should_dec() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
-                          13, 0, 0, 0]; /*DEC $0; */
+                          13, 0]; /*DEC $0; */
 
         vm.run_once(); /*LOAD 0 #500; */
         vm.run_once(); /*DEC $0; */
@@ -411,7 +405,7 @@ mod tests {
     fn should_aloc() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
-                          11, 0, 0, 0]; /*ALOC $0; */
+                          11, 0]; /*ALOC $0; */
 
         vm.run_once(); /*LOAD 0 #500; */
         vm.run_once(); /*ALOC $0; */
@@ -424,5 +418,21 @@ mod tests {
         vm.program = vec![200, 0, 0, 0];
         vm.run();
         assert_eq!(vm.pc, 1);
+    }
+
+    #[test]
+    fn should_loop_add() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 0, 0,   // load    $0  #0  #0
+                          1, 1, 0, 50,  // load    $1  #0  #50
+                          1, 2, 0, 0,   // load    $2  #0  #0
+                          9, 0, 1,   // eq      $0  $1
+                          13, 1,  // dec     $1
+                          12, 2,  // inc     $2
+                          1, 31, 0, 12, // load    $31 #0  #12
+                          15, 31];// jne     $31
+        vm.run();
+        assert_eq!(vm.pc, 25);
+        assert_eq!(vm.registers[2], 51);
     }
 }
