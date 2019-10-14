@@ -293,7 +293,7 @@ mod tests {
     fn should_mul() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
-                          1, 1, 0, 3,   /*LOAD 1 #3; */
+                          1, 1, 0, 3, /*LOAD 1 #3; */
                           4, 0, 1, 2];  /*MUL 0 1 2; */
         vm.run();
         assert_eq!(vm.registers[0], 500);
@@ -305,7 +305,7 @@ mod tests {
     fn should_div() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
-                          1, 1, 0, 3,   /*LOAD 1 #3; */
+                          1, 1, 0, 3, /*LOAD 1 #3; */
                           5, 0, 1, 2];  /*DIV 0 1 2; */
         vm.run();
         assert_eq!(vm.registers[0], 500);
@@ -317,7 +317,7 @@ mod tests {
     #[test]
     fn should_jmp() {
         let mut vm = VM::new();
-        vm.program = vec![1, 0, 0, 1,   /*LOAD 0 #1; */
+        vm.program = vec![1, 0, 0, 1, /*LOAD 0 #1; */
                           6, 0];        /*JMP 0; */
         vm.run_once();
         vm.run_once();
@@ -327,7 +327,7 @@ mod tests {
     #[test]
     fn should_jmpf() {
         let mut vm = VM::new();
-        vm.program = vec![1, 0, 0, 3,   /*LOAD 0 #3; */
+        vm.program = vec![1, 0, 0, 3, /*LOAD 0 #3; */
                           7, 0];        /*JMPF 0; */
         vm.run_once();
         assert_eq!(vm.pc, 4);
@@ -338,7 +338,7 @@ mod tests {
     #[test]
     fn should_jmpb() {
         let mut vm = VM::new();
-        vm.program = vec![1, 0, 0, 3,   /*LOAD 0 #3; */
+        vm.program = vec![1, 0, 0, 3, /*LOAD 0 #3; */
                           8, 0];        /*JMPB 0; */
         vm.run_once();
         assert_eq!(vm.pc, 4);
@@ -351,7 +351,7 @@ mod tests {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
                           1, 1, 1, 244, /*LOAD 1 #500; */
-                          9, 0, 1,      /*EQ 0 1; */
+                          9, 0, 1, /*EQ 0 1; */
                           1, 2, 1, 244, /*LOAD 2 #500; */
                           1, 3, 0, 244, /*LOAD 3 #244; */
                           9, 2, 3];     /*EQ 2 3; */
@@ -365,8 +365,8 @@ mod tests {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
                           1, 1, 1, 244, /*LOAD 1 #500; */
-                          9, 0, 1,      /*EQ 0 1; */
-                          1, 2, 0, 3,   /*LOAD 2 #3; */
+                          9, 0, 1, /*EQ 0 1; */
+                          1, 2, 0, 3, /*LOAD 2 #3; */
                           10, 2];       /*JEQ 2; */
 
         vm.run_once(); /*LOAD 0 #500; */
@@ -434,5 +434,28 @@ mod tests {
         vm.run();
         assert_eq!(vm.pc, 25);
         assert_eq!(vm.registers[2], 51);
+    }
+
+    #[test]
+    fn should_loop_add_and_print() {
+        let mut vm = VM::new();
+        vm.ro_data = vec![72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 46, 0,
+                          79, 107, 44, 32, 53, 48, 32, 116, 105, 109, 101, 115, 32, 112, 114, 105,
+                          110, 116, 32, 112, 97, 115, 115, 101, 100, 46, 0];
+        vm.program = vec![0x01, 0x00, 0x00, 0x00,
+                          0x01, 0x01, 0x00, 0x00,
+                          0x01, 0x02, 0x00, 0x00,
+                          0x09, 0x00, 0x01,
+                          0x01, 0x1F, 0x00, 0x00,
+                          0x0E, 0x1F,
+                          0x0D, 0x01,
+                          0x0C, 0x02,
+                          0x01, 0x1F, 0x00, 0x0C,
+                          0x0F, 0x1F,
+                          0x01, 0x1F, 0x00, 0x0E,
+                          0x0E, 0x1F];
+        vm.run();
+        assert_eq!(vm.pc, 21);
+        assert_eq!(vm.registers[2], 0); // TODO : IT NOT CORRECT !!!!!!!
     }
 }
