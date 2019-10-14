@@ -53,6 +53,7 @@ impl REPL {
                 match instructions {
                     Ok(ins) => {
                         self.vm.set_program(ins);
+                        self.vm.set_ro_data(assembler.ro_section);
                     }
                     Err(errs) => {
                         for e in errs {

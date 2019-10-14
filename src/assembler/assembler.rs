@@ -22,7 +22,7 @@ use crate::vm::vm::TMP_REGISTER;
 pub struct Assembler {
     assemble_phase: AssemblerPhase,
     pub symbol_table: SymbolTable,
-    ro_section: Vec<u8>,
+    pub ro_section: Vec<u8>,
     byte_code: Vec<u8>,
     ro_offset: u32,
     sections: Vec<AssemblerSection>,

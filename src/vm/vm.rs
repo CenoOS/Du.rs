@@ -183,6 +183,10 @@ impl VM {
     pub fn set_program(&mut self, program: Vec<u8>) {
         self.program = program;
     }
+
+    pub fn set_ro_data(&mut self, ro_section: Vec<u8>) {
+        self.ro_data = ro_section;
+    }
 }
 
 
