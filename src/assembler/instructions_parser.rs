@@ -396,14 +396,14 @@ impl<'a> InstructionParser<'a> {
             return self.parse_one_register_instruction(JMP);
         }
 
-        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JMP_F".to_string()) {
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JMPF".to_string()) {
             self.tokens.next();
-            return self.parse_one_register_instruction(JMP_F);
+            return self.parse_one_register_instruction(JMPF);
         }
 
-        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JMP_B".to_string()) {
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JMPB".to_string()) {
             self.tokens.next();
-            return self.parse_one_register_instruction(JMP_B);
+            return self.parse_one_register_instruction(JMPB);
         }
 
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "EQ".to_string()) {
@@ -564,11 +564,11 @@ mod tests {
     }
 
     #[test]
-    fn should_return_jmp_f_when_give_jmp_f() {
-        let mut token_parser = InstructionParser::new("jmp_f $1");
+    fn should_return_jmpf_when_give_jmpf() {
+        let mut token_parser = InstructionParser::new("jmpf $1");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Some(Op { opcode: JMP_F }),
+            token: Some(Op { opcode: JMPF }),
             label: None,
             directive: None,
             operand1: Some(Register { reg_num: 1 }),
@@ -578,11 +578,11 @@ mod tests {
     }
 
     #[test]
-    fn should_return_jmp_b_when_give_jmp_b() {
-        let mut token_parser = InstructionParser::new("jmp_b $1");
+    fn should_return_jmpb_when_give_jmpb() {
+        let mut token_parser = InstructionParser::new("jmpb $1");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
-            token: Some(Op { opcode: JMP_B }),
+            token: Some(Op { opcode: JMPB }),
             label: None,
             directive: None,
             operand1: Some(Register { reg_num: 1 }),

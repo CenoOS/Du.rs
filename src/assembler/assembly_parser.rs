@@ -54,8 +54,8 @@ mod tests {
                             mul $0 $1     $2\n\
                             div $0 $1 $2\n\
                     hello:  jmp $1\n\
-                            jmp_f $1\n\
-                            jmp_b $1\n\
+                            jmpf $1\n\
+                            jmpb $1\n\
                             eq $1 $2\n\
                             je $1\n\
                             hlt\n\
@@ -120,7 +120,7 @@ mod tests {
             operand3: None,
         });
         assert_eq!(instructions[7], AssemblerInstruction {
-            token: Some(Op { opcode: JMP_F }),
+            token: Some(Op { opcode: JMPF }),
             label: None,
             directive: None,
             operand1: Some(Register { reg_num: 1 }),
@@ -128,7 +128,7 @@ mod tests {
             operand3: None,
         });
         assert_eq!(instructions[8], AssemblerInstruction {
-            token: Some(Op { opcode: JMP_B }),
+            token: Some(Op { opcode: JMPB }),
             label: None,
             directive: None,
             operand1: Some(Register { reg_num: 1 }),
@@ -195,8 +195,8 @@ mod tests {
                             mul $0 $1     $2\n\
                             div $0 $1 $2\n\
                     hello:  jmp @foo\n\
-                            jmp_f $1\n\
-                            jmp_b $1\n\
+                            jmpf $1\n\
+                            jmpb $1\n\
                             eq $1 $2\n\
                             je @flag\n\
                             prts @hw\n\
@@ -262,7 +262,7 @@ mod tests {
             operand3: None,
         });
         assert_eq!(instructions[7], AssemblerInstruction {
-            token: Some(Op { opcode: JMP_F }),
+            token: Some(Op { opcode: JMPF }),
             label: None,
             directive: None,
             operand1: Some(Register { reg_num: 1 }),
@@ -270,7 +270,7 @@ mod tests {
             operand3: None,
         });
         assert_eq!(instructions[8], AssemblerInstruction {
-            token: Some(Op { opcode: JMP_B }),
+            token: Some(Op { opcode: JMPB }),
             label: None,
             directive: None,
             operand1: Some(Register { reg_num: 1 }),

@@ -44,10 +44,12 @@ impl REPL {
         Ok(results)
     }
 
-    fn run_asm_file(&mut self, filename: &str) {
+    pub fn run_asm_file(&mut self, filename: &str) {
         let src = fs::read_to_string(filename);
         match src {
             Ok(asm_src) => {
+                println!("Loading ASM : \n{}\nASM loaded.", asm_src);
+
                 let mut assembler = Assembler::new();
                 let instructions = assembler.process(&asm_src);
                 match instructions {
@@ -172,5 +174,16 @@ impl REPL {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+
+    #[test]
+    fn should_run_asm(){
+        let mut repl = REPL::new();
+        repl.run_asm_file("/Users/xingfeng.yang/project/live-code/rust/Dulang/asm/for_each.asm");
     }
 }

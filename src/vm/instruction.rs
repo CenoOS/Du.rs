@@ -1,4 +1,6 @@
-use crate::vm::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMP_F, JMP_B, EQ, IGL, ALOC, INC, DEC, PRTS, JE, JNE, JL, JG, LT, GT};
+use crate::vm::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMPF, JMPB, EQ, IGL, ALOC, INC, DEC, PRTS, JE, JNE, JL, JG, LT, GT};
+use std::fmt::{Display, Formatter};
+use std::fmt;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum OpCode {
@@ -10,9 +12,9 @@ pub enum OpCode {
     DIV = 5,
     JMP = 6,
     /* absolute jump */
-    JMP_F = 7,
+    JMPF = 7,
     /* forward relative jump */
-    JMP_B = 8,
+    JMPB = 8,
     /* backward relative jump */
     EQ = 9,
     JE = 10,
@@ -27,6 +29,17 @@ pub enum OpCode {
     LT = 18,
     GT = 19,
     IGL = 20,
+}
+
+
+impl Display for OpCode {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match *self {
+            _ => {
+                f.write_str(&format!("{}", *self as u8))
+            }
+        }
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -44,8 +57,8 @@ impl From<u8> for OpCode {
             4 => return MUL,
             5 => return DIV,
             6 => return JMP,
-            7 => return JMP_F,
-            8 => return JMP_B,
+            7 => return JMPF,
+            8 => return JMPB,
             9 => return EQ,
             10 => return JE,
             11 => return ALOC,
@@ -56,7 +69,7 @@ impl From<u8> for OpCode {
             16 => return JL,
             17 => return JG,
             18 => return LT,
-            20 => return GT,
+            19 => return GT,
             _ => return IGL,
         }
     }

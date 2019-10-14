@@ -66,7 +66,8 @@ impl VM {
             return true;
         }
 
-        match self.decode_opcode() {
+        let code = self.decode_opcode();
+        match code {
             OpCode::LOAD => {
                 /* LOAD reg numberH numberL*/
                 let register = self.next_8_bits() as usize;
@@ -103,13 +104,13 @@ impl VM {
                 let target = self.registers[self.next_8_bits() as usize];
                 self.pc = target as usize;
             }
-            OpCode::JMP_F => {
-                /* JMP_F regTarget */
+            OpCode::JMPF => {
+                /* JMPF regTarget */
                 let step = self.registers[self.next_8_bits() as usize];
                 self.pc += step as usize;
             }
-            OpCode::JMP_B => {
-                /* JMP_B regTarget */
+            OpCode::JMPB => {
+                /* JMPB regTarget */
                 let step = self.registers[self.next_8_bits() as usize];
                 self.pc -= step as usize;
             }
@@ -153,24 +154,28 @@ impl VM {
                 self.next_8_bits();
             }
             OpCode::JE => {
+                /* JE regTarget */
                 let target = self.registers[self.next_8_bits() as usize];
                 if self.eq_flag {
                     self.pc = target as usize;
                 }
             }
             OpCode::JNE => {
+                /* JNE regTarget */
                 let target = self.registers[self.next_8_bits() as usize];
                 if !self.eq_flag {
                     self.pc = target as usize;
                 }
             }
             OpCode::JL => {
+                /* JL regTarget */
                 let target = self.registers[self.next_8_bits() as usize];
                 if self.lt_flag {
                     self.pc = target as usize;
                 }
             }
             OpCode::JG => {
+                /* JG regTarget */
                 let target = self.registers[self.next_8_bits() as usize];
                 if self.gt_flag {
                     self.pc = target as usize;
@@ -181,10 +186,6 @@ impl VM {
                 let bytes = self.registers[register];
                 let new_end = self.heap.len() as i32 + bytes;
                 self.heap.resize(new_end as usize, 0);
-            }
-            OpCode::HLT => {
-                print!("HLT");
-                return true;
             }
             OpCode::INC => {
                 /* INC reg */
@@ -214,8 +215,12 @@ impl VM {
                     }
                 }
             }
-            _ => {
-                print!("Unrecognized opcode found! Terminating...");
+            OpCode::HLT => {
+                print!("exit(0)");
+                return true;
+            }
+            OpCode::IGL => {
+                print!("Unrecognized opcode {} found! Terminating...", code);
                 return true;
             }
         }
@@ -257,13 +262,6 @@ mod tests {
         assert_eq!(vm.pc, 1);
     }
 
-    #[test]
-    fn should_opcode_igl() {
-        let mut vm = VM::new();
-        vm.program = vec![200, 0, 0, 0];
-        vm.run();
-        assert_eq!(vm.pc, 1);
-    }
 
     #[test]
     fn should_load_instruction() {
@@ -333,10 +331,10 @@ mod tests {
     }
 
     #[test]
-    fn should_jmp_f() {
+    fn should_jmpf() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 0, 3, /*LOAD 0 #3; */
-                          7, 0, 0, 0];  /*JMP_F 0; */
+                          7, 0, 0, 0];  /*JMPF 0; */
         vm.run_once();
         assert_eq!(vm.pc, 4);
         vm.run_once();
@@ -344,10 +342,10 @@ mod tests {
     }
 
     #[test]
-    fn should_jmp_b() {
+    fn should_jmpb() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 0, 3, /*LOAD 0 #3; */
-                          8, 0, 0, 0];  /*JMP_F 0; */
+                          8, 0, 0, 0];  /*JMPB 0; */
         vm.run_once();
         assert_eq!(vm.pc, 4);
         vm.run_once();
@@ -418,5 +416,13 @@ mod tests {
         vm.run_once(); /*LOAD 0 #500; */
         vm.run_once(); /*ALOC $0; */
         assert_eq!(vm.heap.len(), 500);
+    }
+
+    #[test]
+    fn should_opcode_igl() {
+        let mut vm = VM::new();
+        vm.program = vec![200, 0, 0, 0];
+        vm.run();
+        assert_eq!(vm.pc, 1);
     }
 }

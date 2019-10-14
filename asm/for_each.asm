@@ -4,7 +4,7 @@
     for:    eq      $0  $1
             prts    @hw
             dec     $1
-            jeq     @for
+            jne     @for
             prts    @passed
 .data
     hw:     .asciiz "Hello, World."

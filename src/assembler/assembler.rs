@@ -293,8 +293,8 @@ mod tests {
                             mul $0 $1     $2\n\
                             div $0 $1 $2\n\
                     hello:  jmp $0\n\
-                            jmp_f $1\n\
-                            jmp_b $1\n\
+                            jmpf $1\n\
+                            jmpb $1\n\
                             eq $1 $2\n\
                             je $0\n\
                             hlt\n\
@@ -401,8 +401,8 @@ mod tests {
                             mul     $0  $1  $2\n\
                             div     $0  $1  $2\n\
                     hello:  jmp     $0\n\
-                            jmp_f   $1\n\
-                            jmp_b   $1\n\
+                            jmpf   $1\n\
+                            jmpb   $1\n\
                             eq $1   $2\n\
                             je     @hello\n\
                             prts    @hw\n\
@@ -478,7 +478,7 @@ mod tests {
                             for:    eq      $0  $1                  \n\
                                     prts    @hw                     \n\
                                     dec     $1                      \n\
-                                    je     @for                    \n\
+                                    jne     @for                    \n\
                                     prts    @passed                 \n\
                       .data                                         \n\
                             hw:     .asciiz \"Hello, World.\"       \n\
@@ -490,7 +490,7 @@ mod tests {
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
             1, 0, 0, 0,
             1, 1, 0, 0,
-            9, 0, 1, 1, 31, 0, 0, 14, 31, 13, 1, 1, 31, 0, 8, 10, 31, 1, 31, 0, 14, 14, 31
+            9, 0, 1, 1, 31, 0, 0, 14, 31, 13, 1, 1, 31, 0, 8, 15, 31, 1, 31, 0, 14, 14, 31
         ]);
     }
 }
