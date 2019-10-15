@@ -105,11 +105,11 @@ impl REPL {
                     match commands.peek() {
                         Some(mode) => {
                             match mode {
-                                &"Assembly"=>{
+                                &"Assembly" => {
                                     self.mode = ReplMode::Assembly;
                                     println!("Mode change to Assembly.");
                                 }
-                                &"Instruction"=>{
+                                &"Instruction" => {
                                     self.mode = ReplMode::Instruction;
                                     println!("Mode change to Instruction.");
                                 }
@@ -204,7 +204,8 @@ mod tests {
                                          0x01, 0x1F, 0x00, 0x0C,
                                          0x0F, 0x1F,
                                          0x01, 0x1F, 0x00, 0x0E,
-                                         0x0E, 0x1F]);
+                                         0x0E, 0x1F,
+                                         0x00]);
 
         assert_eq!(repl.vm.ro_data, vec![72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 46, 0,
                                          79, 107, 44, 32, 53, 48, 32, 116, 105, 109, 101, 115, 32, 112, 114, 105,
