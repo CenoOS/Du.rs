@@ -212,7 +212,7 @@ impl VM {
                 }
             }
             OpCode::HLT => {
-                print!("exit(0)");
+                println!("\nexit(0)");
                 return true;
             }
             OpCode::IGL => {
