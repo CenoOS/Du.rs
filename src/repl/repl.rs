@@ -141,10 +141,13 @@ impl REPL {
                     println!("End of Registers Listing.")
                 } else if commands.peek().map_or(false, |w| (*w == ".help")) {
                     println!("Command Usage:");
-                    println!("  .load_asm   : load asm file and run. e.g. .load_asm xxx.asm");
-                    println!("  .history    : command history");
-                    println!("  .program    : program in current vm");
-                    println!("  .registers  : registers and content in current vm");
+                    println!("  .load_asm   : Load asm file and run. e.g. .load_asm xxx.asm");
+                    println!("  .history    : Command history");
+                    println!("  .registers  : Registers and content in current vm");
+                    println!("  .program    : Program in current vm");
+                    println!("  .clear      : Clear vm program memory");
+                    println!("  .mode       : Change to mode of REPL between Assembly and Instruction");
+
                 } else {
                     match &self.mode {
                         ReplMode::Assembly => {
