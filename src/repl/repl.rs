@@ -135,7 +135,16 @@ impl REPL {
                     println!("Clearing in VM's program vector:");
                     let len = self.vm.program.len();
                     self.vm.program.clear();
-                    println!("{} instructions cleared.", len)
+                    println!("  {} instructions cleared.", len)
+                } else if commands.peek().map_or(false, |w| (*w == ".reset")) {
+                    println!("Resetting vm:");
+                    self.vm.registers = [0; 32];
+                    println!("  registers reset.");
+                    self.vm.program.clear();
+                    println!("  program reset.");
+                    self.vm.ro_data.clear();
+                    println!("  read-only data reset.");
+                    println!("  vm reset.")
                 } else if commands.peek().map_or(false, |w| (*w == ".registers")) {
                     println!("Listing registers and all contents:");
                     println!("{:#?}", self.vm.registers);
@@ -147,8 +156,8 @@ impl REPL {
                     println!("  .registers  : Registers and content in current vm");
                     println!("  .program    : Program in current vm");
                     println!("  .clear      : Clear vm program memory");
+                    println!("  .reset      : Reset vm");
                     println!("  .mode       : Change to mode of REPL between Assembly and Instruction");
-
                 } else {
                     match &self.mode {
                         ReplMode::Assembly => {
