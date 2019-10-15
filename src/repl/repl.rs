@@ -90,7 +90,8 @@ impl REPL {
                     println!("Bye, have a nice day.");
                     std::process::exit(0);
                 } else if commands.peek().map_or(false, |w| (*w == ".load_asm")) {
-                    match commands.next() {
+                    commands.next();
+                    match commands.peek() {
                         Some(filepath) => {
                             self.run_asm_file(filepath);
                         }
