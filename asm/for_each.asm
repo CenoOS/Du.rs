@@ -1,6 +1,6 @@
 .code
-    main:   load    $0  #0  #0
-            load    $1  #0  #50
+    main:   load    $0  #0
+            load    $1  #50
     for:    eq      $0  $1
             prts    @hw
             dec     $1

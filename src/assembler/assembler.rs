@@ -472,9 +472,9 @@ mod tests {
         let mut assembler = Assembler::new();
         let result = assembler.process(
             ".code                                         \n\
-                            main:   load    $0  #0  #0              \n\
-                                    load    $1  #0  #50             \n\
-                                    load    $2  #0  #0             \n\
+                            main:   load    $0  #0              \n\
+                                    load    $1  #50             \n\
+                                    load    $2  #0             \n\
                             for:    eq      $0  $1                  \n\
                                     prts    @hw                     \n\
                                     dec     $1                      \n\
@@ -497,7 +497,7 @@ mod tests {
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
             0x01, 0x00, 0x00, 0x00,
-            0x01, 0x01, 0x00, 0x00,
+            0x01, 0x01, 0x00, 0x32,
             0x01, 0x02, 0x00, 0x00,
             0x09, 0x00, 0x01,
             0x01, 0x1F, 0x00, 0x00,
@@ -516,9 +516,9 @@ mod tests {
         let mut assembler = Assembler::new();
         let result = assembler.process(
             ".code                                         \n\
-                            main:   load    $0  #0  #0              \n\
-                                    load    $1  #0  #50             \n\
-                                    load    $2  #0  #0              \n\
+                            main:   load    $0  #0              \n\
+                                    load    $1  #50             \n\
+                                    load    $2  #0              \n\
                             for:    eq      $0  $1                  \n\
                                     dec     $1                      \n\
                                     inc     $2                      \n\
@@ -530,7 +530,7 @@ mod tests {
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
             0x01, 0x00, 0x00, 0x00,
-            0x01, 0x01, 0x00, 0x00,
+            0x01, 0x01, 0x00, 0x32,
             0x01, 0x02, 0x00, 0x00,
             0x09, 0x00, 0x01,
             0x0D, 0x01,

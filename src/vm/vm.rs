@@ -191,7 +191,8 @@ impl VM {
             }
             OpCode::PRTS => {
                 /* PRTS reg */
-                let start_offset = self.registers[TMP_REGISTER as usize] as usize;
+                let register = self.next_8_bits() as usize;
+                let start_offset = self.registers[register] as usize;
                 let mut end_offset = start_offset;
 
                 let slice = self.ro_data.as_slice();
@@ -443,7 +444,7 @@ mod tests {
                           79, 107, 44, 32, 53, 48, 32, 116, 105, 109, 101, 115, 32, 112, 114, 105,
                           110, 116, 32, 112, 97, 115, 115, 101, 100, 46, 0];
         vm.program = vec![0x01, 0x00, 0x00, 0x00,
-                          0x01, 0x01, 0x00, 0x00,
+                          0x01, 0x01, 0x00, 0x32,
                           0x01, 0x02, 0x00, 0x00,
                           0x09, 0x00, 0x01,
                           0x01, 0x1F, 0x00, 0x00,
@@ -455,7 +456,7 @@ mod tests {
                           0x01, 0x1F, 0x00, 0x0E,
                           0x0E, 0x1F];
         vm.run();
-        assert_eq!(vm.pc, 21);
-        assert_eq!(vm.registers[2], 0); // TODO : IT NOT CORRECT !!!!!!!
+        assert_eq!(vm.pc, 37);
+        assert_eq!(vm.registers[2], 51);
     }
 }
