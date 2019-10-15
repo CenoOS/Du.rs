@@ -8,6 +8,7 @@
             inc     $2
             jne     @for
             prts    @passed
+            hlt
 .data
     hw:     .asciiz "Hello, World."
     passed: .asciiz "Ok, 50 times print passed."

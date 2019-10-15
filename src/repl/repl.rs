@@ -72,7 +72,7 @@ impl REPL {
     }
 
     pub fn run(&mut self) {
-        println!("Du.rs 0.0.23 (default, Sep 23 2019, 20:52:15)");
+        println!("Du.rs 0.1.23 (default, Sep 23 2019, 20:52:15)");
         println!("Type \".help\" for more information, \".exit\" to quit.");
         loop {
             let mut buffer = String::new();
@@ -84,67 +84,75 @@ impl REPL {
             stdin.read_line(&mut buffer).expect("Unable to read line.");
             let buffer = buffer.trim();
             self.command_buffer.push(buffer.to_string());
-            let mut commands = buffer.split_ascii_whitespace();
-            match commands.next().unwrap() {
-                ".quit" | ".exit" => {
+            let mut commands = buffer.split_ascii_whitespace().peekable();
+            if commands.peek().is_some() {
+                if commands.peek().map_or(false, |w| (*w == ".quit") || (*w == ".exit")) {
                     println!("Bye, have a nice day.");
                     std::process::exit(0);
-                }
-                ".load_asm" => {
+                } else if commands.peek().map_or(false, |w| (*w == ".load_asm")) {
                     match commands.next() {
                         Some(filepath) => {
                             self.run_asm_file(filepath);
                         }
                         None => { println!("No input: need a file path for asm code.") }
                     }
-                }
-                ".load_elf" => {
+                } else if commands.peek().map_or(false, |w| (*w == ".load_elf")) {
                     // todo : load elf file to execute.
-                }
-                ".output_elf" => {
+                } else if commands.peek().map_or(false, |w| (*w == ".output_elf")) {
                     // todo : output elf file.
-                }
-                ".mode" => {
-                    // todo : change mode to Assembly / Instruction
-                }
-                ".history" => {
+                } else if commands.peek().map_or(false, |w| (*w == ".mode")) {
+                    commands.next();
+                    match commands.peek() {
+                        Some(mode) => {
+                            match mode {
+                                &"Assembly"=>{
+                                    self.mode = ReplMode::Assembly;
+                                    println!("Mode change to Assembly.");
+                                }
+                                &"Instruction"=>{
+                                    self.mode = ReplMode::Instruction;
+                                    println!("Mode change to Instruction.");
+                                }
+                                _ => {
+                                    println!("Expect mode: Assembly/Instruction");
+                                }
+                            }
+                        }
+                        None => { println!("Need a mode Assembly/Instruction.") }
+                    }
+                } else if commands.peek().map_or(false, |w| (*w == ".history")) {
                     for command in &self.command_buffer {
                         println!("{}", command);
                     }
-                }
-                ".program" => {
+                } else if commands.peek().map_or(false, |w| (*w == ".program")) {
                     println!("Listing instructions currently in VM's program vector:");
                     for instruction in &self.vm.program {
                         println!("{}", instruction);
                     }
                     println!("End of Program Listing.")
-                }
-                ".clear" => {
+                } else if commands.peek().map_or(false, |w| (*w == ".clear")) {
                     println!("Clearing in VM's program vector:");
                     let len = self.vm.program.len();
                     self.vm.program.clear();
                     println!("{} instructions cleared.", len)
-                }
-                ".registers" => {
+                } else if commands.peek().map_or(false, |w| (*w == ".registers")) {
                     println!("Listing registers and all contents:");
                     println!("{:#?}", self.vm.registers);
                     println!("End of Registers Listing.")
-                }
-                ".help" => {
+                } else if commands.peek().map_or(false, |w| (*w == ".help")) {
                     println!("Command Usage:");
+                    println!("  .load_asm   : load asm file and run. e.g. .load_asm xxx.asm");
                     println!("  .history    : command history");
                     println!("  .program    : program in current vm");
                     println!("  .registers  : registers and content in current vm");
-                    println!("Type above commands to debug.");
-                }
-                _ => {
+                } else {
                     match &self.mode {
                         ReplMode::Assembly => {
                             let mut instruction_parser = InstructionParser::new(buffer);
                             let input_instruction = instruction_parser.parse_assembly_line();
                             match input_instruction {
                                 Ok(ins) => {
-                                    if ins.token.is_some() && ins.label.is_none() {
+                                    if ins.token.is_some() & &ins.label.is_none() {
                                         for byte in ins.to_bytes() {
                                             self.vm.program.push(byte);
                                         }
