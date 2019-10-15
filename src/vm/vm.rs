@@ -1,5 +1,6 @@
 use crate::vm::instruction::OpCode;
 use std::str::from_utf8;
+use crate::assembler::elf::ELF_HEADER_PREFIX;
 
 pub const TMP_REGISTER: u8 = 0x20 - 1;
 
@@ -229,8 +230,20 @@ impl VM {
         }
     }
 
-    pub fn set_program(&mut self, program: Vec<u8>) {
+    fn verify_header(&mut self) -> bool {
+        if self.program[0..4] != ELF_HEADER_PREFIX.to_owned() {
+            return false;
+        }
+        true
+    }
+
+    pub fn load_program(&mut self, program: Vec<u8>) {
         self.program = program;
+        if !self.verify_header() {
+            println!("Not ELF file.")
+        }
+        let pro:Vec<u8> = self.program[64..].to_owned();
+        self.program = pro;
     }
 
     pub fn set_ro_data(&mut self, ro_section: Vec<u8>) {
