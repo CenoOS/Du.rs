@@ -72,7 +72,7 @@ impl REPL {
     }
 
     pub fn run(&mut self) {
-        println!("Du.rs 0.1.23 (default, Sep 23 2019, 20:52:15)");
+        println!("Du.rs release_0.1.0 (default, Oct 15 2019, 23:12:15)");
         println!("Type \".help\" for more information, \".exit\" to quit.");
         loop {
             let mut buffer = String::new();
