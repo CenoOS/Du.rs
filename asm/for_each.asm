@@ -10,5 +10,5 @@
             prts    @passed
             hlt
 .data
-    hw:     .asciiz "Hello, World."
+    hw:     .asciiz "Hello, World.\n"
     passed: .asciiz "Ok, 50 times print passed."
