@@ -2,6 +2,7 @@ use crate::vm::instruction::OpCode;
 use std::str::from_utf8;
 use crate::assembler::elf::ELF_HEADER_PREFIX;
 use std::f64::EPSILON;
+use std::intrinsics::size_of_val;
 
 pub const DEFAULT_STACK_SIZE: usize = 2097152;
 pub const TMP_REGISTER: u8 = 0x20 - 1;
@@ -22,8 +23,11 @@ pub struct VM {
     sp: usize,
     stack: Vec<i32>,
 
+    bp: usize,
+
     remainder: u32,
     comparison_flag: bool,
+
 }
 
 impl VM {
@@ -38,6 +42,8 @@ impl VM {
 
             sp: 0,
             stack: Vec::with_capacity(DEFAULT_STACK_SIZE),
+
+            bp: 0,
 
             remainder: 0,
             comparison_flag: false,
@@ -341,8 +347,24 @@ impl VM {
                 self.registers[register1 as usize] = self.stack.pop().unwrap();
                 self.sp -= 1;
             }
-            OpCode::CALL => {}
-            OpCode::RET => {}
+            OpCode::CALL => {
+                /* POP label_usage */
+                let ret_dest = self.pc + 1;
+
+                let function = self.registers[self.next_8_bits() as usize];
+
+                self.stack.push(ret_dest as i32);
+                self.stack.push(bp);
+
+                self.bp = self.sp;
+
+                self.pc = function as usize;
+            }
+            OpCode::RET => {
+                self.sp = self.bp;
+                self.bp = self.stack.pop().unwrap() as usize;
+                self.pc = self.stack.pop().unwrap() as usize;
+            }
             OpCode::HLT => {
                 println!("\nexit(0)");
                 return true;
