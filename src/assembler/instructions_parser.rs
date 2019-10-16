@@ -528,6 +528,30 @@ impl<'a> InstructionParser<'a> {
             return self.parse_two_register_instruction(NOT);
         }
 
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "PUSH".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(PUSH);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "POP".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(POP);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "CALL".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(CALL);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "RET".to_string()) {
+            return Ok(AssemblerInstruction::new(Some(Op { opcode: RET }),
+                                                None,
+                                                None,
+                                                None,
+                                                None,
+                                                None));
+        }
+
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "PRTS".to_string()) {
             self.tokens.next();
             return self.parse_one_register_instruction(PRTS);
@@ -874,6 +898,62 @@ mod tests {
             directive: None,
             operand1: Some(Register { reg_num: 1 }),
             operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_push_when_give_push() {
+        let mut token_parser = InstructionParser::new("push $1");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: PUSH }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_pop_when_give_pop() {
+        let mut token_parser = InstructionParser::new("pop $1");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: POP }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_call_when_give_call() {
+        let mut token_parser = InstructionParser::new("call @foo");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: CALL }),
+            label: None,
+            directive: None,
+            operand1: Some(LabelUsage { name: "foo".to_string() }),
+            operand2: None,
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_ret_when_give_ret() {
+        let mut token_parser = InstructionParser::new("ret");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: RET }),
+            label: None,
+            directive: None,
+            operand1: None,
+            operand2: None,
             operand3: None,
         });
     }

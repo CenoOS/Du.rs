@@ -3,6 +3,7 @@ use std::str::from_utf8;
 use crate::assembler::elf::ELF_HEADER_PREFIX;
 use std::f64::EPSILON;
 
+pub const DEFAULT_STACK_SIZE: usize = 2097152;
 pub const TMP_REGISTER: u8 = 0x20 - 1;
 
 #[derive(Debug)]
@@ -12,10 +13,15 @@ pub struct VM {
     pub float_registers: [f64; 32],
     /* program counter */
     pc: usize,
+
     /* program memory */
     pub program: Vec<u8>,
     pub ro_data: Vec<u8>,
     pub heap: Vec<u8>,
+
+    sp: usize,
+    stack: Vec<i32>,
+
     remainder: u32,
     comparison_flag: bool,
 }
@@ -29,6 +35,10 @@ impl VM {
             program: Vec::new(),
             ro_data: Vec::new(),
             heap: Vec::new(),
+
+            sp: 0,
+            stack: Vec::with_capacity(DEFAULT_STACK_SIZE),
+
             remainder: 0,
             comparison_flag: false,
         }
@@ -39,7 +49,6 @@ impl VM {
         self.pc += 1;
         return opcode;
     }
-
 
     /* read next 8bits from program */
     fn next_8_bits(&mut self) -> u8 {
@@ -54,7 +63,6 @@ impl VM {
         self.pc += 2;
         return result;
     }
-
 
     pub fn run_once(&mut self) {
         self.execute_instruction();
@@ -321,6 +329,20 @@ impl VM {
                 let register1 = self.registers[self.next_8_bits() as usize];
                 self.registers[self.next_8_bits() as usize] = !register1;
             }
+            OpCode::PUSH => {
+                /* PUSH reg1 */
+                let register1 = self.registers[self.next_8_bits() as usize];
+                self.stack.push(register1);
+                self.sp += 1;
+            }
+            OpCode::POP => {
+                /* POP reg1 */
+                let register1 = self.registers[self.next_8_bits() as usize];
+                self.registers[register1 as usize] = self.stack.pop().unwrap();
+                self.sp -= 1;
+            }
+            OpCode::CALL => {}
+            OpCode::RET => {}
             OpCode::HLT => {
                 println!("\nexit(0)");
                 return true;

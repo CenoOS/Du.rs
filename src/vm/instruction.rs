@@ -1,4 +1,4 @@
-use crate::vm::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMPF, JMPB, EQ, IGL, ALOC, INC, DEC, PRTS, JE, JNE, JL, JG, LT, GT, LTE, GTE, LOADF64, ADDF64, SUBF64, MULF64, DIVF64, EQF64, NEQF64, GTF64, GTEF64, LTF64, LTEF64, AND, OR, XOR, NOT};
+use crate::vm::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMPF, JMPB, EQ, IGL, ALOC, INC, DEC, PRTS, JE, JNE, JL, JG, LT, GT, LTE, GTE, LOADF64, ADDF64, SUBF64, MULF64, DIVF64, EQF64, NEQF64, GTF64, GTEF64, LTF64, LTEF64, AND, OR, XOR, NOT, PUSH, POP, CALL, RET};
 use std::fmt::{Display, Formatter};
 use std::fmt;
 
@@ -45,7 +45,14 @@ pub enum OpCode {
     OR = 34,
     XOR = 35,
     NOT = 36,
-    IGL = 37,
+
+    PUSH = 37,
+    POP = 38,
+
+    CALL = 39,
+    RET = 40,
+
+    IGL = 41,
 }
 
 
@@ -106,6 +113,12 @@ impl From<u8> for OpCode {
             34 => return OR,
             35 => return XOR,
             36 => return NOT,
+
+            37 => return PUSH,
+            38 => return POP,
+
+            39 => return CALL,
+            40 => return RET,
 
             _ => return IGL,
         }
