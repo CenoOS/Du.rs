@@ -137,21 +137,25 @@ impl Assembler {
                         let byte_addr = unsafe { byte_addr.add(1) };
                         if unsafe { *byte_addr } == 110 {
                             self.ro_section.push(0xA);
+                            self.ro_offset += 1;
                         } else {
                             self.ro_section.push(*byte);
+                            self.ro_offset += 1;
                         }
                     } else {
                         if *byte == 110 {
                             let byte_addr: *const u8 = unsafe { byte as *const u8 };
                             let byte_addr = unsafe { byte_addr.sub(1) };
-                            if unsafe { *byte_addr } != 90 {
+                            if unsafe { *byte_addr } != 92 {
                                 self.ro_section.push(*byte);
+                                self.ro_offset += 1;
                             }
                         } else {
                             self.ro_section.push(*byte);
+                            self.ro_offset += 1;
                         }
                     }
-                    self.ro_offset += 1;
+
                 }
                 self.ro_section.push(0x0); // end of zero
                 self.ro_offset += 1;
