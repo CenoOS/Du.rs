@@ -17,9 +17,7 @@ pub struct VM {
     pub ro_data: Vec<u8>,
     pub heap: Vec<u8>,
     remainder: u32,
-    eq_flag: bool,
-    lt_flag: bool,
-    gt_flag: bool,
+    comparison_flag: bool,
 }
 
 impl VM {
@@ -32,10 +30,7 @@ impl VM {
             ro_data: Vec::new(),
             heap: Vec::new(),
             remainder: 0,
-            eq_flag: false,
-            lt_flag: false,
-            gt_flag: false,
-
+            comparison_flag: false,
         }
     }
 
@@ -125,9 +120,9 @@ impl VM {
                 let register2 = self.registers[self.next_8_bits() as usize];
 
                 if register1 == register2 {
-                    self.eq_flag = true;
+                    self.comparison_flag = true;
                 } else {
-                    self.eq_flag = false;
+                    self.comparison_flag = false;
                 }
             }
             OpCode::LT => {
@@ -136,9 +131,9 @@ impl VM {
                 let register2 = self.registers[self.next_8_bits() as usize];
 
                 if register1 < register2 {
-                    self.lt_flag = true;
+                    self.comparison_flag = true;
                 } else {
-                    self.lt_flag = false;
+                    self.comparison_flag = false;
                 }
             }
             OpCode::LTE => {
@@ -147,9 +142,9 @@ impl VM {
                 let register2 = self.registers[self.next_8_bits() as usize];
 
                 if register1 <= register2 {
-                    self.lt_flag = true;
+                    self.comparison_flag = true;
                 } else {
-                    self.lt_flag = false;
+                    self.comparison_flag = false;
                 }
             }
             OpCode::GT => {
@@ -158,9 +153,9 @@ impl VM {
                 let register2 = self.registers[self.next_8_bits() as usize];
 
                 if register1 > register2 {
-                    self.gt_flag = true;
+                    self.comparison_flag = true;
                 } else {
-                    self.gt_flag = false;
+                    self.comparison_flag = false;
                 }
             }
             OpCode::GTE => {
@@ -169,36 +164,36 @@ impl VM {
                 let register2 = self.registers[self.next_8_bits() as usize];
 
                 if register1 >= register2 {
-                    self.gt_flag = true;
+                    self.comparison_flag = true;
                 } else {
-                    self.gt_flag = false;
+                    self.comparison_flag = false;
                 }
             }
             OpCode::JE => {
                 /* JE regTarget */
                 let target = self.registers[self.next_8_bits() as usize];
-                if self.eq_flag {
+                if self.comparison_flag {
                     self.pc = target as usize;
                 }
             }
             OpCode::JNE => {
                 /* JNE regTarget */
                 let target = self.registers[self.next_8_bits() as usize];
-                if !self.eq_flag {
+                if !self.comparison_flag {
                     self.pc = target as usize;
                 }
             }
             OpCode::JL => {
                 /* JL regTarget */
                 let target = self.registers[self.next_8_bits() as usize];
-                if self.lt_flag {
+                if self.comparison_flag {
                     self.pc = target as usize;
                 }
             }
             OpCode::JG => {
                 /* JG regTarget */
                 let target = self.registers[self.next_8_bits() as usize];
-                if self.gt_flag {
+                if self.comparison_flag {
                     self.pc = target as usize;
                 }
             }
@@ -271,37 +266,37 @@ impl VM {
                 /* EQF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.eq_flag = (register1 - register2).abs() < EPSILON;
+                self.comparison_flag = (register1 - register2).abs() < EPSILON;
             }
             OpCode::NEQF64 => {
                 /* NEQF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.eq_flag = (register1 - register2).abs() > EPSILON;
+                self.comparison_flag = (register1 - register2).abs() > EPSILON;
             }
             OpCode::GTF64 => {
                 /* GTF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.gt_flag = (register1 > register2);
+                self.comparison_flag = (register1 > register2);
             }
             OpCode::GTEF64 => {
                 /* GTEF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.gt_flag = (register1 >= register2);
+                self.comparison_flag = (register1 >= register2);
             }
             OpCode::LTF64 => {
                 /* LTF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.lt_flag = (register1 < register2);
+                self.comparison_flag = (register1 < register2);
             }
             OpCode::LTEF64 => {
                 /* LTEF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.lt_flag = (register1 <= register2);
+                self.comparison_flag = (register1 <= register2);
             }
             OpCode::AND => {
                 /* AND reg1 reg2 regTarget */
@@ -486,7 +481,7 @@ mod tests {
                           9, 2, 3];     /*EQ 2 3; */
 
         vm.run();
-        assert_eq!(vm.eq_flag, false);
+        assert_eq!(vm.comparison_flag, false);
     }
 
     #[test]
@@ -501,7 +496,7 @@ mod tests {
         vm.run_once(); /*LOAD 0 #500; */
         vm.run_once(); /*LOAD 1 #500; */
         vm.run_once(); /*EQ 0 1; */
-        assert_eq!(vm.eq_flag, true);
+        assert_eq!(vm.comparison_flag, true);
         vm.run_once(); /*LOAD 2 #3; */
         vm.run_once(); /*JEQ 2; */
         assert_eq!(vm.pc, 3);
@@ -519,7 +514,7 @@ mod tests {
         vm.run_once(); /*LOAD 0 #500; */
         vm.run_once(); /*LOAD 1 #499; */
         vm.run_once(); /*EQ 0 1; */
-        assert_eq!(vm.eq_flag, false);
+        assert_eq!(vm.comparison_flag, false);
         vm.run_once(); /*LOAD 2 #3; */
         vm.run_once(); /*jne 2; */
         assert_eq!(vm.pc, 3);
@@ -533,7 +528,7 @@ mod tests {
                           18, 0, 1]; /*LT 0 1; */
 
         vm.run();
-        assert_eq!(vm.lt_flag, true);
+        assert_eq!(vm.comparison_flag, true);
     }
 
     #[test]
@@ -544,7 +539,7 @@ mod tests {
                           20, 0, 1]; /*GT 0 1; */
 
         vm.run();
-        assert_eq!(vm.gt_flag, true);
+        assert_eq!(vm.comparison_flag, true);
     }
 
     #[test]
@@ -559,7 +554,7 @@ mod tests {
         vm.run_once(); /*LOAD 0 #499; */
         vm.run_once(); /*LOAD 1 #500; */
         vm.run_once(); /*LT 0 1; */
-        assert_eq!(vm.lt_flag, true);
+        assert_eq!(vm.comparison_flag, true);
         vm.run_once(); /*LOAD 2 #3; */
         vm.run_once(); /*JLT 2; */
         assert_eq!(vm.pc, 3);
@@ -577,7 +572,7 @@ mod tests {
         vm.run_once(); /*LOAD 0 #500; */
         vm.run_once(); /*LOAD 1 #499; */
         vm.run_once(); /*GT 0 1; */
-        assert_eq!(vm.gt_flag, true);
+        assert_eq!(vm.comparison_flag, true);
         vm.run_once(); /*LOAD 2 #3; */
         vm.run_once(); /*JGT 2; */
         assert_eq!(vm.pc, 3);
