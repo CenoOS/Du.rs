@@ -52,6 +52,7 @@
     - [ ] directive
         - [x] .asciiz
           - [ ] Escape character
+            - [ ] \n
         - [ ] .ascii
         - [x] .code
         - [x] .data
