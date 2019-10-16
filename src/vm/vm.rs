@@ -352,7 +352,7 @@ impl VM {
                 let function = self.registers[self.next_8_bits() as usize];
 
                 self.stack.push(ret_dest as i32);
-                self.stack.push(bp);
+                self.stack.push(self.bp as i32);
 
                 self.bp = self.sp;
 
