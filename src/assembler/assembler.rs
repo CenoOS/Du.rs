@@ -155,7 +155,6 @@ impl Assembler {
                             self.ro_offset += 1;
                         }
                     }
-
                 }
                 self.ro_section.push(0x0); // end of zero
                 self.ro_offset += 1;

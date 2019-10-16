@@ -168,7 +168,6 @@ impl<'a> InstructionParser<'a> {
                             str.push_str(" ");
                             str.push_str(str_part_last);
                         }
-
                         return Ok(AssemblerInstruction::new(None,
                                                             None,
                                                             Some(Directive { name: directive.to_string() }),
@@ -391,21 +390,6 @@ impl<'a> InstructionParser<'a> {
             return self.parse_three_register_instruction(DIV);
         }
 
-        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JMP".to_string()) {
-            self.tokens.next();
-            return self.parse_one_register_instruction(JMP);
-        }
-
-        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JMPF".to_string()) {
-            self.tokens.next();
-            return self.parse_one_register_instruction(JMPF);
-        }
-
-        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JMPB".to_string()) {
-            self.tokens.next();
-            return self.parse_one_register_instruction(JMPB);
-        }
-
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "EQ".to_string()) {
             self.tokens.next();
             return self.parse_two_register_instruction(EQ);
@@ -416,9 +400,66 @@ impl<'a> InstructionParser<'a> {
             return self.parse_two_register_instruction(LT);
         }
 
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "LTE".to_string()) {
+            self.tokens.next();
+            return self.parse_two_register_instruction(LTE);
+        }
+
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "GT".to_string()) {
             self.tokens.next();
             return self.parse_two_register_instruction(GT);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "GTE".to_string()) {
+            self.tokens.next();
+            return self.parse_two_register_instruction(GTE);
+        }
+
+        // todo : loadf64
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "ADDF64".to_string()) {
+            self.tokens.next();
+            return self.parse_three_register_instruction(ADDF64);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "SUBF64".to_string()) {
+            self.tokens.next();
+            return self.parse_three_register_instruction(SUBF64);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "MULF64".to_string()) {
+            self.tokens.next();
+            return self.parse_three_register_instruction(MULF64);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "DIVF64".to_string()) {
+            self.tokens.next();
+            return self.parse_three_register_instruction(DIVF64);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "EQF64".to_string()) {
+            self.tokens.next();
+            return self.parse_two_register_instruction(EQF64);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "LTF64".to_string()) {
+            self.tokens.next();
+            return self.parse_two_register_instruction(LTF64);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "LTEF64".to_string()) {
+            self.tokens.next();
+            return self.parse_two_register_instruction(LTEF64);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "GTF64".to_string()) {
+            self.tokens.next();
+            return self.parse_two_register_instruction(GTF64);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "GTEF64".to_string()) {
+            self.tokens.next();
+            return self.parse_two_register_instruction(GTEF64);
         }
 
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JE".to_string()) {
@@ -450,6 +491,41 @@ impl<'a> InstructionParser<'a> {
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "DEC".to_string()) {
             self.tokens.next();
             return self.parse_one_register_instruction(DEC);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JMP".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(JMP);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JMPF".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(JMPF);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "JMPB".to_string()) {
+            self.tokens.next();
+            return self.parse_one_register_instruction(JMPB);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "AND".to_string()) {
+            self.tokens.next();
+            return self.parse_three_register_instruction(AND);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "OR".to_string()) {
+            self.tokens.next();
+            return self.parse_three_register_instruction(OR);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "XOR".to_string()) {
+            self.tokens.next();
+            return self.parse_three_register_instruction(XOR);
+        }
+
+        if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "NOT".to_string()) {
+            self.tokens.next();
+            return self.parse_two_register_instruction(NOT);
         }
 
         if self.tokens.peek().map_or(false, |word| (*word).to_uppercase() == "PRTS".to_string()) {
@@ -620,11 +696,39 @@ mod tests {
     }
 
     #[test]
+    fn should_return_lte_when_give_lte() {
+        let mut token_parser = InstructionParser::new("lte $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: LTE }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
+
+    #[test]
     fn should_return_gt_when_give_gt() {
         let mut token_parser = InstructionParser::new("gt $1 $2");
         let token = token_parser.parse_instruction();
         assert_eq!(token.unwrap(), AssemblerInstruction {
             token: Some(Op { opcode: GT }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_gte_when_give_gte() {
+        let mut token_parser = InstructionParser::new("gte $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: GTE }),
             label: None,
             directive: None,
             operand1: Some(Register { reg_num: 1 }),
@@ -717,6 +821,62 @@ mod tests {
         });
     }
 
+
+    #[test]
+    fn should_return_and_when_give_and() {
+        let mut token_parser = InstructionParser::new("and $1 $2 $0");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: AND }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: Some(Register { reg_num: 0 }),
+        });
+    }
+
+    #[test]
+    fn should_return_or_when_give_or() {
+        let mut token_parser = InstructionParser::new("or $1 $2 $0");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: OR }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: Some(Register { reg_num: 0 }),
+        });
+    }
+
+    #[test]
+    fn should_return_xor_when_give_xor() {
+        let mut token_parser = InstructionParser::new("xor $1 $2 $0");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: XOR }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: Some(Register { reg_num: 0 }),
+        });
+    }
+
+    #[test]
+    fn should_return_not_when_give_not() {
+        let mut token_parser = InstructionParser::new("not $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: NOT }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
 
     #[test]
     fn should_return_error_when_give_unexpected_token() {

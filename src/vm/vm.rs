@@ -1,6 +1,7 @@
 use crate::vm::instruction::OpCode;
 use std::str::from_utf8;
 use crate::assembler::elf::ELF_HEADER_PREFIX;
+use std::f64::EPSILON;
 
 pub const TMP_REGISTER: u8 = 0x20 - 1;
 
@@ -8,6 +9,7 @@ pub const TMP_REGISTER: u8 = 0x20 - 1;
 pub struct VM {
     /* 8bits for opcode , 8bits for register number , 16 bits for numbers just 2<<16 = 65536(unsigned) */
     pub registers: [i32; 32],
+    pub float_registers: [f64; 32],
     /* program counter */
     pc: usize,
     /* program memory */
@@ -24,6 +26,7 @@ impl VM {
     pub fn new() -> VM {
         VM {
             registers: [0; 32],
+            float_registers: [0.0; 32],
             pc: 0,
             program: Vec::new(),
             ro_data: Vec::new(),
@@ -56,6 +59,7 @@ impl VM {
         self.pc += 2;
         return result;
     }
+
 
     pub fn run_once(&mut self) {
         self.execute_instruction();
@@ -137,12 +141,34 @@ impl VM {
                     self.lt_flag = false;
                 }
             }
+            OpCode::LTE => {
+                /* LTE reg0 reg1 */
+                let register1 = self.registers[self.next_8_bits() as usize];
+                let register2 = self.registers[self.next_8_bits() as usize];
+
+                if register1 <= register2 {
+                    self.lt_flag = true;
+                } else {
+                    self.lt_flag = false;
+                }
+            }
             OpCode::GT => {
                 /* LT reg0 reg1 */
                 let register1 = self.registers[self.next_8_bits() as usize];
                 let register2 = self.registers[self.next_8_bits() as usize];
 
                 if register1 > register2 {
+                    self.gt_flag = true;
+                } else {
+                    self.gt_flag = false;
+                }
+            }
+            OpCode::GTE => {
+                /* GTE reg0 reg1 */
+                let register1 = self.registers[self.next_8_bits() as usize];
+                let register2 = self.registers[self.next_8_bits() as usize];
+
+                if register1 >= register2 {
                     self.gt_flag = true;
                 } else {
                     self.gt_flag = false;
@@ -211,6 +237,95 @@ impl VM {
                     }
                 }
             }
+            OpCode::LOADF64 => {
+                /* LOADF64 reg numberH numberL*/
+                let register = self.next_8_bits() as usize;
+                let number = f64::from(self.next_16_bits());
+                self.float_registers[register] = number;
+            }
+            OpCode::ADDF64 => {
+                /* ADDF64 reg1 reg2 regTarget */
+                let register1 = self.float_registers[self.next_8_bits() as usize];
+                let register2 = self.float_registers[self.next_8_bits() as usize];
+                self.float_registers[self.next_8_bits() as usize] = register1 + register2;
+            }
+            OpCode::SUBF64 => {
+                /* ADDF64 reg1 reg2 regTarget */
+                let register1 = self.float_registers[self.next_8_bits() as usize];
+                let register2 = self.float_registers[self.next_8_bits() as usize];
+                self.float_registers[self.next_8_bits() as usize] = register1 - register2;
+            }
+            OpCode::MULF64 => {
+                /* ADDF64 reg1 reg2 regTarget */
+                let register1 = self.float_registers[self.next_8_bits() as usize];
+                let register2 = self.float_registers[self.next_8_bits() as usize];
+                self.float_registers[self.next_8_bits() as usize] = register1 * register2;
+            }
+            OpCode::DIVF64 => {
+                /* DIVF64 reg1 reg2 regTarget */
+                let register1 = self.float_registers[self.next_8_bits() as usize];
+                let register2 = self.float_registers[self.next_8_bits() as usize];
+                self.float_registers[self.next_8_bits() as usize] = (register1 / register2);
+            }
+            OpCode::EQF64 => {
+                /* EQF64 reg1 reg2 regTarget */
+                let register1 = self.float_registers[self.next_8_bits() as usize];
+                let register2 = self.float_registers[self.next_8_bits() as usize];
+                self.eq_flag = (register1 - register2).abs() < EPSILON;
+            }
+            OpCode::NEQF64 => {
+                /* NEQF64 reg1 reg2 regTarget */
+                let register1 = self.float_registers[self.next_8_bits() as usize];
+                let register2 = self.float_registers[self.next_8_bits() as usize];
+                self.eq_flag = (register1 - register2).abs() > EPSILON;
+            }
+            OpCode::GTF64 => {
+                /* GTF64 reg1 reg2 regTarget */
+                let register1 = self.float_registers[self.next_8_bits() as usize];
+                let register2 = self.float_registers[self.next_8_bits() as usize];
+                self.gt_flag = (register1 > register2);
+            }
+            OpCode::GTEF64 => {
+                /* GTEF64 reg1 reg2 regTarget */
+                let register1 = self.float_registers[self.next_8_bits() as usize];
+                let register2 = self.float_registers[self.next_8_bits() as usize];
+                self.gt_flag = (register1 >= register2);
+            }
+            OpCode::LTF64 => {
+                /* LTF64 reg1 reg2 regTarget */
+                let register1 = self.float_registers[self.next_8_bits() as usize];
+                let register2 = self.float_registers[self.next_8_bits() as usize];
+                self.lt_flag = (register1 < register2);
+            }
+            OpCode::LTEF64 => {
+                /* LTEF64 reg1 reg2 regTarget */
+                let register1 = self.float_registers[self.next_8_bits() as usize];
+                let register2 = self.float_registers[self.next_8_bits() as usize];
+                self.lt_flag = (register1 <= register2);
+            }
+            OpCode::AND => {
+                /* AND reg1 reg2 regTarget */
+                let register1 = self.registers[self.next_8_bits() as usize];
+                let register2 = self.registers[self.next_8_bits() as usize];
+                self.registers[self.next_8_bits() as usize] = register1 & register2;
+            }
+            OpCode::OR => {
+                /* OR reg1 reg2 regTarget */
+                let register1 = self.registers[self.next_8_bits() as usize];
+                let register2 = self.registers[self.next_8_bits() as usize];
+                self.registers[self.next_8_bits() as usize] = register1 | register2;
+            }
+            OpCode::XOR => {
+                /* XOR reg1 reg2 regTarget */
+                let register1 = self.registers[self.next_8_bits() as usize];
+                let register2 = self.registers[self.next_8_bits() as usize];
+                self.registers[self.next_8_bits() as usize] = register1 ^ register2;
+            }
+            OpCode::NOT => {
+                /* NOT reg1 regTarget */
+                let register1 = self.registers[self.next_8_bits() as usize];
+                self.registers[self.next_8_bits() as usize] = !register1;
+            }
             OpCode::HLT => {
                 println!("\nexit(0)");
                 return true;
@@ -242,7 +357,7 @@ impl VM {
         if !self.verify_header() {
             println!("Not ELF file.")
         }
-        let pro:Vec<u8> = self.program[64..].to_owned();
+        let pro: Vec<u8> = self.program[64..].to_owned();
         self.program = pro;
     }
 
@@ -393,6 +508,83 @@ mod tests {
     }
 
     #[test]
+    fn should_jne() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
+                          1, 1, 1, 243, /*LOAD 1 #499; */
+                          9, 0, 1, /*EQ 0 1; */
+                          1, 2, 0, 3, /*LOAD 2 #3; */
+                          15, 2];       /*JNE 2; */
+
+        vm.run_once(); /*LOAD 0 #500; */
+        vm.run_once(); /*LOAD 1 #499; */
+        vm.run_once(); /*EQ 0 1; */
+        assert_eq!(vm.eq_flag, false);
+        vm.run_once(); /*LOAD 2 #3; */
+        vm.run_once(); /*jne 2; */
+        assert_eq!(vm.pc, 3);
+    }
+
+    #[test]
+    fn should_lt() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 243, /*LOAD 0 #499; */
+                          1, 1, 1, 244, /*LOAD 1 #500; */
+                          18, 0, 1]; /*LT 0 1; */
+
+        vm.run();
+        assert_eq!(vm.lt_flag, true);
+    }
+
+    #[test]
+    fn should_gt() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
+                          1, 1, 1, 243, /*LOAD 1 #499; */
+                          20, 0, 1]; /*GT 0 1; */
+
+        vm.run();
+        assert_eq!(vm.gt_flag, true);
+    }
+
+    #[test]
+    fn should_jlt() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 243, /*LOAD 0 #499; */
+                          1, 1, 1, 244, /*LOAD 1 #500; */
+                          18, 0, 1, /*LT 0 1; */
+                          1, 2, 0, 3, /*LOAD 2 #3; */
+                          16, 2];       /*JLT 2; */
+
+        vm.run_once(); /*LOAD 0 #499; */
+        vm.run_once(); /*LOAD 1 #500; */
+        vm.run_once(); /*LT 0 1; */
+        assert_eq!(vm.lt_flag, true);
+        vm.run_once(); /*LOAD 2 #3; */
+        vm.run_once(); /*JLT 2; */
+        assert_eq!(vm.pc, 3);
+    }
+
+    #[test]
+    fn should_jgt() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
+                          1, 1, 1, 243, /*LOAD 1 #499; */
+                          20, 0, 1, /*Gt 0 1; */
+                          1, 2, 0, 3, /*LOAD 2 #3; */
+                          17, 2];       /*JGT 2; */
+
+        vm.run_once(); /*LOAD 0 #500; */
+        vm.run_once(); /*LOAD 1 #499; */
+        vm.run_once(); /*GT 0 1; */
+        assert_eq!(vm.gt_flag, true);
+        vm.run_once(); /*LOAD 2 #3; */
+        vm.run_once(); /*JGT 2; */
+        assert_eq!(vm.pc, 3);
+    }
+
+
+    #[test]
     fn should_inc() {
         let mut vm = VM::new();
         vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
@@ -414,6 +606,44 @@ mod tests {
         assert_eq!(vm.registers[0], 499);
     }
 
+    #[test]
+    fn should_opcode_and() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 0, 3,
+                          1, 1, 0, 7,
+                          33, 0, 1, 2];
+        vm.run();
+        assert_eq!(vm.registers[2], 3 & 7);
+    }
+
+    #[test]
+    fn should_opcode_or() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 0, 3,
+                          1, 1, 0, 7,
+                          34, 0, 1, 2];
+        vm.run();
+        assert_eq!(vm.registers[2], 3 | 7);
+    }
+
+    #[test]
+    fn should_opcode_xor() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 0, 3,
+                          1, 1, 0, 7,
+                          35, 0, 1, 2];
+        vm.run();
+        assert_eq!(vm.registers[2], 3 ^ 7);
+    }
+
+    #[test]
+    fn should_opcode_not() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 0, 3,
+                          36, 0, 1];
+        vm.run();
+        assert_eq!(vm.registers[1], !3);
+    }
 
     #[test]
     fn should_aloc() {

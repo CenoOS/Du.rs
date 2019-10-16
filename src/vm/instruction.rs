@@ -1,4 +1,4 @@
-use crate::vm::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMPF, JMPB, EQ, IGL, ALOC, INC, DEC, PRTS, JE, JNE, JL, JG, LT, GT};
+use crate::vm::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMPF, JMPB, EQ, IGL, ALOC, INC, DEC, PRTS, JE, JNE, JL, JG, LT, GT, LTE, GTE, LOADF64, ADDF64, SUBF64, MULF64, DIVF64, EQF64, NEQF64, GTF64, GTEF64, LTF64, LTEF64, AND, OR, XOR, NOT};
 use std::fmt::{Display, Formatter};
 use std::fmt;
 
@@ -18,7 +18,6 @@ pub enum OpCode {
     /* backward relative jump */
     EQ = 9,
     JE = 10,
-
     ALOC = 11,
     INC = 12,
     DEC = 13,
@@ -27,8 +26,26 @@ pub enum OpCode {
     JL = 16,
     JG = 17,
     LT = 18,
-    GT = 19,
-    IGL = 20,
+    LTE = 19,
+    GT = 20,
+    GTE = 21,
+    LOADF64 = 22,
+    ADDF64 = 23,
+    SUBF64 = 24,
+    MULF64 = 25,
+    DIVF64 = 26,
+    EQF64 = 27,
+    NEQF64 = 28,
+    GTF64 = 29,
+    GTEF64 = 30,
+    LTF64 = 31,
+    LTEF64 = 32,
+
+    AND = 33,
+    OR = 34,
+    XOR = 35,
+    NOT = 36,
+    IGL = 37,
 }
 
 
@@ -69,7 +86,27 @@ impl From<u8> for OpCode {
             16 => return JL,
             17 => return JG,
             18 => return LT,
-            19 => return GT,
+            19 => return LTE,
+            20 => return GT,
+            21 => return GTE,
+
+            22 => return LOADF64,
+            23 => return ADDF64,
+            24 => return SUBF64,
+            25 => return MULF64,
+            26 => return DIVF64,
+            27 => return EQF64,
+            28 => return NEQF64,
+            29 => return GTF64,
+            30 => return GTEF64,
+            31 => return LTF64,
+            32 => return LTEF64,
+
+            33 => return AND,
+            34 => return OR,
+            35 => return XOR,
+            36 => return NOT,
+
             _ => return IGL,
         }
     }
