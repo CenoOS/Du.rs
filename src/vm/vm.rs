@@ -2,8 +2,6 @@ use crate::vm::instruction::OpCode;
 use std::str::from_utf8;
 use crate::assembler::elf::ELF_HEADER_PREFIX;
 use std::f64::EPSILON;
-use std::intrinsics::size_of_val;
-
 pub const DEFAULT_STACK_SIZE: usize = 2097152;
 pub const TMP_REGISTER: u8 = 0x20 - 1;
 
