@@ -14,9 +14,17 @@
         - [x] jmpf
         - [x] jmpb
         - [x] eq
+        - [x] lt
+        - [x] gt
         - [x] jeq
+        - [x] jl
+        - [x] jg
         - [x] inc
         - [x] dec
+        - [x] and
+        - [x] or
+        - [x] xor
+        - [x] not
         - [ ] More...
     - [x] decode
     - [x] execute
