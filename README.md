@@ -51,6 +51,8 @@
     - [x] label_usage
     - [ ] directive
         - [x] .asciiz
+          - [ ] Escape character
+            - [ ] \n
         - [ ] .ascii
         - [x] .code
         - [x] .data
