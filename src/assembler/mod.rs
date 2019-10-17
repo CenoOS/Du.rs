@@ -8,3 +8,6 @@ pub mod assembler_section;
 pub mod assembly_parser;
 pub mod assembler_phase;
 pub mod assembler;
+
+
+pub mod __tests__;
