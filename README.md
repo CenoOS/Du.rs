@@ -174,3 +174,4 @@
 - [ ] Parser
 - [ ] Interpreter
 - [ ] Compiler
+- [ ] JIT
