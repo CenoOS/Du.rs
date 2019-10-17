@@ -2,6 +2,7 @@ use crate::vm::instruction::OpCode;
 use std::str::from_utf8;
 use crate::assembler::elf::ELF_HEADER_PREFIX;
 use std::f64::EPSILON;
+
 pub const DEFAULT_STACK_SIZE: usize = 2097152;
 pub const TMP_REGISTER: u8 = 0x20 - 1;
 
@@ -18,8 +19,8 @@ pub struct VM {
     pub ro_data: Vec<u8>,
     pub heap: Vec<u8>,
 
-    sp: usize,
-    stack: Vec<i32>,
+    pub(crate) sp: usize,
+    pub(crate) stack: Vec<i32>,
 
     bp: usize,
 
@@ -223,27 +224,6 @@ impl VM {
                 /* DEC reg */
                 self.registers[self.next_8_bits() as usize] -= 1;
             }
-            OpCode::PRTS => {
-                /* PRTS reg */
-                let register = self.next_8_bits() as usize;
-                let start_offset = self.registers[register] as usize;
-                let mut end_offset = start_offset;
-
-                let slice = self.ro_data.as_slice();
-                while slice[end_offset] != 0 {
-                    end_offset += 1;
-                }
-
-                let result = from_utf8(&slice[start_offset..end_offset]);
-                match result {
-                    Ok(str) => {
-                        print!("{}", str);
-                    }
-                    Err(e) => {
-                        println!("Error decoding string constant for PTRS instruction:{:#?}", e)
-                    }
-                }
-            }
             OpCode::LOADF64 => {
                 /* LOADF64 reg numberH numberL*/
                 let register = self.next_8_bits() as usize;
@@ -346,7 +326,7 @@ impl VM {
                 self.sp -= 1;
             }
             OpCode::CALL => {
-                /* POP label_usage */
+                /* CALL label_usage */
                 let ret_dest = self.pc + 1;
 
                 let function = self.registers[self.next_8_bits() as usize];
@@ -359,6 +339,7 @@ impl VM {
                 self.pc = function as usize;
             }
             OpCode::RET => {
+                /* RET */
                 self.sp = self.bp;
                 self.bp = self.stack.pop().unwrap() as usize;
                 self.pc = self.stack.pop().unwrap() as usize;
@@ -366,6 +347,27 @@ impl VM {
             OpCode::HLT => {
                 println!("\nexit(0)");
                 return true;
+            }
+            OpCode::PRTS => {
+                /* PRTS reg */
+                let register = self.next_8_bits() as usize;
+                let start_offset = self.registers[register] as usize;
+                let mut end_offset = start_offset;
+
+                let slice = self.ro_data.as_slice();
+                while slice[end_offset] != 0 {
+                    end_offset += 1;
+                }
+
+                let result = from_utf8(&slice[start_offset..end_offset]);
+                match result {
+                    Ok(str) => {
+                        print!("{}", str);
+                    }
+                    Err(e) => {
+                        println!("Error decoding string constant for PTRS instruction:{:#?}", e)
+                    }
+                }
             }
             OpCode::IGL => {
                 print!("Unrecognized opcode {} found! Terminating...", code);

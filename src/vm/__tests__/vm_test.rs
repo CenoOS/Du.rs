@@ -293,6 +293,39 @@ mod tests {
     }
 
     #[test]
+    fn should_push() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
+                          37, 0, /*PUSH $0; */
+                          1, 1, 1, 243, /*LOAD 1 #499; */
+                          37, 1];       /*PUSH $1; */
+
+        vm.run();
+        assert_eq!(vm.stack.len(), 2);
+        assert_eq!(vm.sp, 2);
+        assert_eq!(vm.stack, vec![500, 499]);
+    }
+
+    #[test]
+    fn should_pop() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
+                          37, 0, /*PUSH $0; */
+                          1, 1, 1, 243, /*LOAD 1 #499; */
+                          37, 1, /*PUSH $1; */
+                          38, 2];        /*POP 2*/
+
+        vm.run();
+        assert_eq!(vm.stack.len(), 1);
+        assert_eq!(vm.stack, vec![500]);
+        assert_eq!(vm.registers[2], 499);
+    }
+
+//    39 => return CALL,
+//    40 => return RET,
+
+
+    #[test]
     fn should_opcode_igl() {
         let mut vm = VM::new();
         vm.program = vec![200, 0, 0, 0];
