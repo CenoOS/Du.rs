@@ -6,25 +6,39 @@
     - [ ] instruction
         - [x] hlt
         - [x] load
-        - [x] add
-        - [x] sub
-        - [x] mul
-        - [x] div
-        - [x] jmp
-        - [x] jmpf
-        - [x] jmpb
-        - [x] eq
-        - [x] lt
-        - [x] gt
-        - [x] jeq
-        - [x] jl
-        - [x] jg
-        - [x] inc
-        - [x] dec
-        - [x] and
-        - [x] or
-        - [x] xor
-        - [x] not
+        - [x] arithmetic，，， ， float， 
+            - [x] add
+            - [x] sub
+            - [x] mul
+            - [x] div
+            - [x] inc
+            - [x] dec
+        - [x] jump
+            - [x] jmp
+            - [x] jmpf
+            - [x] jmpb
+            - [x] jeq
+            - [x] jl
+            - [x] jg
+        - [x] conditional
+            - [x] eq
+            - [x] lt
+            - [x] gt
+        - [x] logical
+            - [x] and
+            - [x] or
+            - [x] xor
+            - [x] not
+        - [x] stack
+            - [x] push
+            - [x] pop
+        - [x] function call
+            - [x] call
+            - [x] ret
+        - [ ] mem
+            - [ ] read
+            - [ ] store
+        - [ ] float
         - [ ] More...
     - [x] decode
     - [x] execute
