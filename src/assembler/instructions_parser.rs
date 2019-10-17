@@ -902,6 +902,136 @@ mod tests {
         });
     }
 
+
+    #[test]
+    fn should_return_addf64_when_give_addf64() {
+        let mut token_parser = InstructionParser::new("addf64 $0 $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: ADDF64 }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 0 }),
+            operand2: Some(Register { reg_num: 1 }),
+            operand3: Some(Register { reg_num: 2 }),
+        });
+    }
+
+    #[test]
+    fn should_return_subf64_when_give_subf64() {
+        let mut token_parser = InstructionParser::new("subf64 $0 $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: SUBF64 }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 0 }),
+            operand2: Some(Register { reg_num: 1 }),
+            operand3: Some(Register { reg_num: 2 }),
+        });
+    }
+
+    #[test]
+    fn should_return_mulf64_when_give_mulf64() {
+        let mut token_parser = InstructionParser::new("mulf64 $0 $1     $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: MULF64 }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 0 }),
+            operand2: Some(Register { reg_num: 1 }),
+            operand3: Some(Register { reg_num: 2 }),
+        });
+    }
+
+    #[test]
+    fn should_return_divf64_when_give_divf64() {
+        let mut token_parser = InstructionParser::new("divf64 $0 $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: DIVF64 }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 0 }),
+            operand2: Some(Register { reg_num: 1 }),
+            operand3: Some(Register { reg_num: 2 }),
+        });
+    }
+
+    #[test]
+    fn should_return_eqf64_when_give_eqf64() {
+        let mut token_parser = InstructionParser::new("eqf64 $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: EQF64 }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_ltf64_when_give_ltf64() {
+        let mut token_parser = InstructionParser::new("ltf64 $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: LTF64 }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_ltef64_when_give_ltef64() {
+        let mut token_parser = InstructionParser::new("ltef64 $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: LTEF64 }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_gtf64_when_give_gtf64() {
+        let mut token_parser = InstructionParser::new("gtf64 $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: GTF64 }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
+
+    #[test]
+    fn should_return_gtef64_when_give_gtef64() {
+        let mut token_parser = InstructionParser::new("gtef64 $1 $2");
+        let token = token_parser.parse_instruction();
+        assert_eq!(token.unwrap(), AssemblerInstruction {
+            token: Some(Op { opcode: GTEF64 }),
+            label: None,
+            directive: None,
+            operand1: Some(Register { reg_num: 1 }),
+            operand2: Some(Register { reg_num: 2 }),
+            operand3: None,
+        });
+    }
+
+
+
+
     #[test]
     fn should_return_push_when_give_push() {
         let mut token_parser = InstructionParser::new("push $1");
