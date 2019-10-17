@@ -92,7 +92,7 @@
             - [ ] more
     - [ ] second pass
         
-### 3. Dulang
+### 4. Dulang
 - [ ] EBNF
     - [ ] tokens
         - [ ] Grouping tokens
