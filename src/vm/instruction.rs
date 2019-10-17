@@ -68,7 +68,7 @@ impl Display for OpCode {
 
 #[derive(Debug, PartialEq)]
 pub struct Instruction {
-    opcode: OpCode,
+    pub(crate) opcode: OpCode,
 }
 
 impl From<u8> for OpCode {
@@ -130,23 +130,5 @@ impl Instruction {
         Instruction {
             opcode
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::vm::instruction::OpCode::IGL;
-
-    #[test]
-    fn should_create_opcode() {
-        let opcode = HLT;
-        assert_eq!(opcode, HLT);
-    }
-
-    #[test]
-    fn should_create_instruction() {
-        let instruction = Instruction::new(HLT);
-        assert_eq!(instruction.opcode, HLT);
     }
 }

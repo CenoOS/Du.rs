@@ -3,3 +3,6 @@
  */
 pub mod assembler_test;
 pub mod instruction_parser_test;
+pub mod symbol_table_test;
+pub mod assembler_parser_test;
+pub mod assembler_instruction_test;
