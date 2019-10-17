@@ -313,19 +313,85 @@ mod tests {
                           37, 0, /*PUSH $0; */
                           1, 1, 1, 243, /*LOAD 1 #499; */
                           37, 1, /*PUSH $1; */
-                          38, 2];        /*POP 2*/
+                          38, 2];        /*POP $2*/
 
-        vm.run();
+        vm.run_once();
+        vm.run_once();
         assert_eq!(vm.stack.len(), 1);
         assert_eq!(vm.stack, vec![500]);
+        assert_eq!(vm.sp, 1);
+        vm.run_once();
+        vm.run_once();
+        assert_eq!(vm.stack.len(), 2);
+        assert_eq!(vm.stack, vec![500, 499]);
+        assert_eq!(vm.sp, 2);
+        vm.run_once();
         assert_eq!(vm.registers[2], 499);
+        assert_eq!(vm.sp, 1);
     }
 
-//    39 => return CALL,
-//    40 => return RET,
+    #[test]
+    #[should_panic(expected = "Error: Stack Overflow.")]
+    fn should_stack_overflow_when_recursion_call() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 1, 244, /*LOAD 0 #500; */
+                          37, 0, /*PUSH $0; */
+                          1, 3, 0, 10, /*LOAD $3 10*/
+                          39, 3]; /*call $3*/
+        vm.run();
+    }
 
 
     #[test]
+    fn should_call() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 0, 10, /*LOAD $0 10*/
+                          39, 0, /*call $0*/
+                          1, 1, 1, 243, /*LOAD 1 #499; */
+                          1, 2, 1, 242, /*LOAD 1 #498; */
+                          1, 3, 1, 241, /*LOAD 1 #497; */
+                          1, 4, 1, 240, /*LOAD 1 #496; */
+                          1, 5, 1, 239]; /*LOAD 1 #495; */
+        vm.run();
+        assert_eq!(vm.stack.len(), 2);
+        assert_eq!(vm.bp, 0);
+        assert_eq!(vm.stack, vec![6, 0]);
+        assert_eq!(vm.registers[0], 10);
+        assert_eq!(vm.registers[1], 0);
+        assert_eq!(vm.registers[2], 498);
+        assert_eq!(vm.registers[3], 497);
+        assert_eq!(vm.registers[4], 496);
+        assert_eq!(vm.registers[5], 495);
+    }
+
+
+    #[test]
+    fn should_ret() {
+        let mut vm = VM::new();
+        vm.program = vec![1, 0, 0, 11, /*LOAD $0 11*/
+                          39, 0, /*call $0*/
+                          1, 1, 1, 243, /*LOAD 1 #499; */
+                          0, /*hlt */
+                          1, 1, 1, 243, /*LOAD 1 #499; */
+                          1, 2, 1, 242, /*LOAD 2 #498; */
+                          1, 3, 1, 241, /*LOAD 3 #497; */
+                          1, 4, 1, 240, /*LOAD 4 #496; */
+                          1, 5, 1, 239, /*LOAD 5 #495; */
+                          40];/*ret*/
+        vm.run();
+        assert_eq!(vm.stack.len(), 0);
+        assert_eq!(vm.bp, 0);
+        assert_eq!(vm.registers[0], 11);
+        assert_eq!(vm.registers[1], 499);
+        assert_eq!(vm.registers[2], 498);
+        assert_eq!(vm.registers[3], 497);
+        assert_eq!(vm.registers[4], 496);
+        assert_eq!(vm.registers[5], 495);
+    }
+
+
+    #[test]
+    #[should_panic(expected = "Unrecognized opcode found, Terminated.")]
     fn should_opcode_igl() {
         let mut vm = VM::new();
         vm.program = vec![200, 0, 0, 0];

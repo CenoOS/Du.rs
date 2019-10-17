@@ -2,6 +2,7 @@ use crate::vm::instruction::OpCode;
 use std::str::from_utf8;
 use crate::assembler::elf::ELF_HEADER_PREFIX;
 use std::f64::EPSILON;
+use std::fmt::Error;
 
 pub const DEFAULT_STACK_SIZE: usize = 2097152;
 pub const TMP_REGISTER: u8 = 0x20 - 1;
@@ -22,7 +23,7 @@ pub struct VM {
     pub(crate) sp: usize,
     pub(crate) stack: Vec<i32>,
 
-    bp: usize,
+    pub(crate) bp: usize,
 
     pub(crate) remainder: u32,
     pub(crate) comparison_flag: bool,
@@ -73,10 +74,10 @@ impl VM {
         self.execute_instruction();
     }
 
-    fn execute_instruction(&mut self) -> bool {
+    fn execute_instruction(&mut self) -> Result<bool, &'static str> {
         // fly away
         if self.pc >= self.program.len() {
-            return true;
+            return Ok(true);
         }
 
         let code = self.decode_opcode();
@@ -321,8 +322,8 @@ impl VM {
             }
             OpCode::POP => {
                 /* POP reg1 */
-                let register1 = self.registers[self.next_8_bits() as usize];
-                self.registers[register1 as usize] = self.stack.pop().unwrap();
+                let register1 = self.next_8_bits() as usize;
+                self.registers[register1] = self.stack.pop().unwrap();
                 self.sp -= 1;
             }
             OpCode::CALL => {
@@ -334,6 +335,9 @@ impl VM {
                 self.stack.push(ret_dest as i32);
                 self.stack.push(self.bp as i32);
 
+                if self.stack.len() > DEFAULT_STACK_SIZE {
+                    return Err("Error: Stack Overflow.");
+                }
                 self.bp = self.sp;
 
                 self.pc = function as usize;
@@ -346,7 +350,7 @@ impl VM {
             }
             OpCode::HLT => {
                 println!("\nexit(0)");
-                return true;
+                return Ok(true);
             }
             OpCode::PRTS => {
                 /* PRTS reg */
@@ -371,16 +375,16 @@ impl VM {
             }
             OpCode::IGL => {
                 print!("Unrecognized opcode {} found! Terminating...", code);
-                return true;
+                return Err("Unrecognized opcode found, Terminated.");
             }
         }
-        return false;
+        return Ok(false);
     }
 
     pub fn run(&mut self) {
         let mut terminated = false;
         while !terminated {
-            terminated = self.execute_instruction();
+            terminated = self.execute_instruction().unwrap();
         }
     }
 
