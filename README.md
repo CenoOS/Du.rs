@@ -47,7 +47,9 @@
     - [x] pc
     - [x] sp
     - [x] bp
+    - [x] stack
   - [ ] Mem
+    - [ ] ro
     - [ ] heap
         - [ ] malloc 
         - [ ] gc
