@@ -55,6 +55,7 @@ pub enum Token {
     TokenFloat {},
     TokenInt {},
     TokenStr {},
+    TokenChar {},
     TokenName {},
 
     TokenLeftShift {},
