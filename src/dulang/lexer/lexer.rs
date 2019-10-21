@@ -178,6 +178,8 @@ impl<'a> Lexer<'a> {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
                     return Ok(Token::TokenAddAssign {});
+                } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '+' {
+                    return Ok(Token::TokenInc {});
                 }
                 return Ok(Token::TokenAdd {});
             }
@@ -185,6 +187,8 @@ impl<'a> Lexer<'a> {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
                     return Ok(Token::TokenSubAssign {});
+                } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '-' {
+                    return Ok(Token::TokenDec {});
                 }
                 return Ok(Token::TokenSub {});
             }
@@ -192,15 +196,19 @@ impl<'a> Lexer<'a> {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
                     return Ok(Token::TokenAndAssign {});
+                } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '&' {
+                    return Ok(Token::TokenAnd {});
                 }
-                return Ok(Token::TokenAnd {});
+                return Ok(Token::TokenBand {});
             }
             Some('|') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
                     return Ok(Token::TokenOrAssign {});
+                } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '|' {
+                    return Ok(Token::TokenOr {});
                 }
-                return Ok(Token::TokenOr {});
+                return Ok(Token::TokenBor {});
             }
             _ => { Err("") }
         }
