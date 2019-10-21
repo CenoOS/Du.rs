@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2019. NeroYang
+ */
+
 use std::iter::{Peekable, Iterator};
 use std::str::{SplitWhitespace, Lines};
 use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, LabelDeclaration, LabelUsage, IrString};

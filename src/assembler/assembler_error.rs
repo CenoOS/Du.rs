@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2019. NeroYang
+ */
+
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use std::error::Error;
 use std::fmt::{Debug, Formatter, Display};

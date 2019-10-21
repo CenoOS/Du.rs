@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2019. NeroYang
+ */
+
 use crate::assembler::token::Token;
 
 #[derive(Debug, PartialEq)]
