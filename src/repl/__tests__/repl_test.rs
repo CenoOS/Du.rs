@@ -3,7 +3,6 @@
  */
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::repl::repl::REPL;
 
     #[test]

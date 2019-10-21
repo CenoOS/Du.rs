@@ -3,11 +3,11 @@
  */
 
 use std::iter::{Peekable, Iterator};
-use std::str::{SplitWhitespace, Lines};
 use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, LabelDeclaration, LabelUsage, IrString};
 use crate::vm::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
 use crate::vm::instruction::OpCode;
+use std::str::SplitWhitespace;
 
 const SYMBOL_REGISTER: &str = "$";
 const SYMBOL_LABEL_USAGE: &str = "@";

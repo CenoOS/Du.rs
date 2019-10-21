@@ -18,7 +18,6 @@ use crate::assembler::assembler_error::AssemblerError::{
     UnknownDirectiveFound,
     UnknownSectionFound,
 };
-use crate::assembler::assembler_section::AssemblerSection::UnKnown;
 use crate::assembler::token::Token::{IntegerOperand, Op, Register};
 use crate::vm::instruction::OpCode;
 use crate::vm::vm::TMP_REGISTER;
@@ -64,7 +63,7 @@ impl Assembler {
 
     pub fn process(&mut self, assembly: &str) -> Result<Vec<u8>, Vec<AssemblerError>> {
         let mut parser = AssemblyProgramParser::new(assembly);
-        let mut instructions = parser.parse_program();
+        let instructions = parser.parse_program();
         match instructions {
             Ok(ins) => {
                 return self.process_instructions(&ins);
@@ -265,7 +264,7 @@ impl Assembler {
         self.current_instruction = 0;
         let mut program = Vec::<u8>::new();
 
-        for mut instruction in instructions {
+        for instruction in instructions {
             if instruction.is_label_declaration() {
                 self.process_label_declaration_second_phase(&instruction, program.len());
             }

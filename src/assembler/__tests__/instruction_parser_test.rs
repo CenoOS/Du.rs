@@ -5,7 +5,6 @@
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::assembler::instructions_parser::InstructionParser;
     use crate::assembler::assembler_instruction::AssemblerInstruction;
     use crate::vm::instruction::OpCode;

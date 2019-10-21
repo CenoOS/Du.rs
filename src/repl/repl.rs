@@ -2,8 +2,7 @@ use std::io::Write;
 use std::fs;
 use std::num::ParseIntError;
 use crate::vm::vm::VM;
-use crate::assembler::token::Token::LabelUsage;
-use crate::repl::repl::ReplMode::{Assembly, Instruction};
+use crate::repl::repl::ReplMode::Assembly;
 use crate::assembler::instructions_parser::InstructionParser;
 use crate::assembler::assembler::Assembler;
 

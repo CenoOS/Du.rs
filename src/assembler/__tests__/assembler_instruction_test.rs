@@ -3,8 +3,7 @@
  */
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::assembler::token::Token::{Op, Register, IntegerOperand, LabelUsage};
+    use crate::assembler::token::Token::{Op, Register, IntegerOperand};
     use crate::vm::instruction::OpCode::*;
     use crate::assembler::assembler_instruction::AssemblerInstruction;
 
@@ -429,7 +428,7 @@ mod tests {
 
     #[test]
     fn should_return_bytes_when_give_gtef64() {
-        let token =  AssemblerInstruction {
+        let token = AssemblerInstruction {
             token: Some(Op { opcode: GTEF64 }),
             label: None,
             directive: None,
@@ -443,7 +442,7 @@ mod tests {
 
     #[test]
     fn should_return_bytes_when_give_push() {
-        let token =  AssemblerInstruction {
+        let token = AssemblerInstruction {
             token: Some(Op { opcode: PUSH }),
             label: None,
             directive: None,
@@ -451,7 +450,7 @@ mod tests {
             operand2: None,
             operand3: None,
         };
-        assert_eq!(token.to_bytes(), vec![37,1]);
+        assert_eq!(token.to_bytes(), vec![37, 1]);
     }
 
     #[test]
@@ -464,13 +463,13 @@ mod tests {
             operand2: None,
             operand3: None,
         };
-        assert_eq!(token.to_bytes(), vec![38,1]);
+        assert_eq!(token.to_bytes(), vec![38, 1]);
     }
 
 
     #[test]
     fn should_return_bytes_when_give_ret() {
-        let token =  AssemblerInstruction {
+        let token = AssemblerInstruction {
             token: Some(Op { opcode: RET }),
             label: None,
             directive: None,

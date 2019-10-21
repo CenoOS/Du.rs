@@ -5,7 +5,6 @@
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::assembler::assembly_parser::AssemblyProgramParser;
     use crate::assembler::assembler_instruction::AssemblerInstruction;
     use crate::assembler::token::Token::{Directive, LabelDeclaration, Op, Register, IntegerOperand, IrString, LabelUsage};

@@ -5,7 +5,6 @@
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::assembler::assembler_section::AssemblerSection::{Code, Data};
     use crate::assembler::token::Token::{Op, Directive, Register, LabelDeclaration, LabelUsage, IntegerOperand};
     use crate::vm::instruction::OpCode;
@@ -17,7 +16,7 @@ mod tests {
 
     #[test]
     fn should_write_elf_header() {
-        let mut assembler = Assembler::new();
+        let assembler = Assembler::new();
         let header = assembler.write_delf_header();
         assert_eq!(header, vec![0x64, 0x65, 0x6C, 0x66, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
                                 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -28,7 +27,7 @@ mod tests {
     #[test]
     fn should_process_program() {
         let mut assembler = Assembler::new();
-        let result = assembler.process(
+        assembler.process(
             ".code\n\
                     main:   load $1 #300\n\
                             add $0 $1 $2\n\

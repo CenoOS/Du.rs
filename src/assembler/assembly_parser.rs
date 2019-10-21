@@ -3,12 +3,9 @@
  */
 
 use std::iter::Peekable;
-use std::str::{SplitWhitespace, Lines};
-use crate::assembler::token::Token::{Op, Register, IntegerOperand, Directive, LabelDeclaration, LabelUsage, IrString};
-use crate::vm::instruction::OpCode::*;
 use crate::assembler::assembler_instruction::AssemblerInstruction;
-use crate::vm::instruction::OpCode;
 use crate::assembler::instructions_parser::InstructionParser;
+use std::str::Lines;
 
 pub struct AssemblyProgramParser<'a> {
     instructions: Peekable<Lines<'a>>,

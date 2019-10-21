@@ -2,7 +2,6 @@ use crate::vm::instruction::OpCode;
 use std::str::from_utf8;
 use crate::assembler::elf::ELF_HEADER_PREFIX;
 use std::f64::EPSILON;
-use std::fmt::Error;
 
 pub const DEFAULT_STACK_SIZE: usize = 2097152;
 pub const TMP_REGISTER: u8 = 0x20 - 1;
@@ -253,7 +252,7 @@ impl VM {
                 /* DIVF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.float_registers[self.next_8_bits() as usize] = (register1 / register2);
+                self.float_registers[self.next_8_bits() as usize] = register1 / register2;
             }
             OpCode::EQF64 => {
                 /* EQF64 reg1 reg2 regTarget */
@@ -271,25 +270,25 @@ impl VM {
                 /* GTF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.comparison_flag = (register1 > register2);
+                self.comparison_flag = register1 > register2;
             }
             OpCode::GTEF64 => {
                 /* GTEF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.comparison_flag = (register1 >= register2);
+                self.comparison_flag = register1 >= register2;
             }
             OpCode::LTF64 => {
                 /* LTF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.comparison_flag = (register1 < register2);
+                self.comparison_flag = register1 < register2;
             }
             OpCode::LTEF64 => {
                 /* LTEF64 reg1 reg2 regTarget */
                 let register1 = self.float_registers[self.next_8_bits() as usize];
                 let register2 = self.float_registers[self.next_8_bits() as usize];
-                self.comparison_flag = (register1 <= register2);
+                self.comparison_flag = register1 <= register2;
             }
             OpCode::AND => {
                 /* AND reg1 reg2 regTarget */

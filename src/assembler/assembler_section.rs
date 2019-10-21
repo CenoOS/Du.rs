@@ -2,8 +2,6 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use crate::assembler::assembler_phase::AssemblerPhase;
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum AssemblerSection {
     Data { instruction_starting: Option<u32> },

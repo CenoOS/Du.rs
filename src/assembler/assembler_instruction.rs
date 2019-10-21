@@ -33,7 +33,7 @@ impl AssemblerInstruction {
         match &self.label {
             Some(label) => {
                 match label {
-                    Token::LabelDeclaration { name } => {
+                    Token::LabelDeclaration{ name } => {
                         return true;
                     }
                     _ => { return false; }
@@ -49,7 +49,7 @@ impl AssemblerInstruction {
         match &self.operand1 {
             Some(label) => {
                 match label {
-                    Token::LabelUsage { name } => {
+                    Token::LabelUsage{ name } => {
                         label_usage = true;
                     }
                     _ => {}
@@ -61,7 +61,7 @@ impl AssemblerInstruction {
         match &self.operand2 {
             Some(label) => {
                 match label {
-                    Token::LabelUsage { name } => {
+                    Token::LabelUsage{ name } => {
                         label_usage = true;
                     }
                     _ => {}
@@ -73,7 +73,7 @@ impl AssemblerInstruction {
         match &self.operand3 {
             Some(label) => {
                 match label {
-                    Token::LabelUsage { name } => {
+                    Token::LabelUsage{ name } => {
                         label_usage = true;
                     }
                     _ => {}

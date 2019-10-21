@@ -4,7 +4,6 @@
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::vm::vm::VM;
 
     #[test]

@@ -4,9 +4,8 @@
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::vm::instruction::OpCode::{IGL, HLT};
     use crate::vm::instruction::Instruction;
+    use crate::vm::instruction::OpCode::HLT;
 
     #[test]
     fn should_create_opcode() {
