@@ -310,6 +310,28 @@ impl<'a> Lexer<'a> {
             _ => { return *c; }
         }
     }
+
+    fn hex_char_to_digit(c: &char) -> u8 {
+        match *c {
+            '0' => { return 0; }
+            '1' => { return 1; }
+            '2' => { return 2; }
+            '3' => { return 3; }
+            '4' => { return 4; }
+            '5' => { return 5; }
+            '6' => { return 6; }
+            '7' => { return 7; }
+            '8' => { return 8; }
+            '9' => { return 9; }
+            'A' | 'a' => { return 10; }
+            'B' | 'b' => { return 11; }
+            'C' | 'c' => { return 12; }
+            'D' | 'd' => { return 13; }
+            'E' | 'e' => { return 14; }
+            'F' | 'f' => { return 15; }
+            _ => { return *c as u8; }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -435,5 +457,17 @@ mod tests {
         assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
             value: 0.0
         });
+    }
+
+    #[test]
+    fn should_return_u8_when_give_a_hex_char() {
+        let mut result = vec![];
+        for c in vec!['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                      'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'E', 'f', 'F'] {
+            result.push(Lexer::hex_char_to_digit(&c));
+        }
+        assert_eq!(result, vec![
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15
+        ]);
     }
 }
