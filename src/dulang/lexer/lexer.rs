@@ -65,12 +65,42 @@ impl<'a> Lexer<'a> {
         return Ok(Token::TokenStr { value });
     }
 
-    fn scan_float(&mut self) -> Token {
-        return Token::TokenFloat {};
+    fn scan_float(&mut self, value: &mut String) -> Result<Token, &'static str> {
+        self.char_stream.next();
+        while Lexer::is_digit(self.char_stream.peek().unwrap()) {
+            value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+            self.char_stream.next();
+        }
+        if self.char_stream.peek().unwrap().to_ascii_lowercase() == '.' {
+            value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+            self.char_stream.next();
+        }
+        while Lexer::is_digit(self.char_stream.peek().unwrap()) {
+            value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+            self.char_stream.next();
+        }
+        if self.char_stream.peek().unwrap().to_ascii_lowercase() == 'e' {
+            value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+            self.char_stream.next();
+            if self.char_stream.peek().unwrap().to_ascii_lowercase() == '+' || self.char_stream.peek().unwrap().to_ascii_lowercase() == '-' {
+                value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+                self.char_stream.next();
+            }
+            if !Lexer::is_digit(self.char_stream.peek().unwrap()) {
+                return Err("SyntaxError: Expected digit after float literal exponent");
+            }
+            while Lexer::is_digit(self.char_stream.peek().unwrap()) {
+                value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+                self.char_stream.next();
+            }
+        }
+        let doubleVal = value.parse::<f64>().unwrap();
+
+        return Ok(Token::TokenFloat { value: doubleVal });
     }
 
-    fn scan_int(&mut self) -> Token {
-        return Token::TokenInt {};
+    fn scan_int(&mut self, str: &mut String) -> Result<Token, &'static str> {
+        return Ok(Token::TokenInt {});
     }
 
     fn next_token(&mut self) -> Result<Token, &'static str> {
@@ -88,17 +118,21 @@ impl<'a> Lexer<'a> {
                 return self.scan_str();
             }
             Some('.') => {
-                return Ok(self.scan_float());
+                return self.scan_float(&mut "0.".to_string());
             }
             Some('0') | Some('1') | Some('2') | Some('3') | Some('4') | Some('5') | Some('6') |
             Some('7') | Some('8') | Some('9') => {
+                let mut value = String::from("");
                 while Lexer::is_digit(self.char_stream.peek().unwrap()) {
+                    value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
                     self.char_stream.next();
                 }
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '.' || self.char_stream.peek().unwrap().to_ascii_lowercase() == 'e' {
-                    return Ok(self.scan_float());
+                    value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+                    return self.scan_float(&mut value);
                 } else {
-                    return Ok(self.scan_int());
+                    value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+                    return self.scan_int(&mut value);
                 }
             }
             Some('a') | Some('b') | Some('c') | Some('d') | Some('e') | Some('f') | Some('g') |
@@ -371,6 +405,35 @@ mod tests {
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenStr {
             value: "z".to_string()
+        });
+    }
+
+    #[test]
+    fn should_return_token_float() {
+        let mut lexer = Lexer::new("1.324 .23 0.34 1.23e-1 1.22e+12 0.0 ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
+            value: 1.324
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
+            value: 0.23
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
+            value: 0.34
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
+            value: 1.23e-1
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
+            value: 1.22e+12
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
+            value: 0.0
         });
     }
 }
