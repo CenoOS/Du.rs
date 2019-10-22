@@ -22,20 +22,58 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn scan_char(&mut self) -> Token {
-        return Token::TokenChar {};
+    fn scan_char(&mut self) -> Result<Token, &'static str> {
+        let value: char;
+        self.char_stream.next();
+        if self.char_stream.peek().unwrap().to_ascii_lowercase() == '\'' {
+            return Err("SyntaxError: Char literal cannot be empty");
+        } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '\n' {
+            return Err("SyntaxError: Char literal cannot contain newline");
+        } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '\\' {
+            self.char_stream.next();
+            if Lexer::escape_to_char(self.char_stream.peek().unwrap()) == 0 as char || self.char_stream.peek().unwrap().to_ascii_lowercase() == '0' {
+                return Err("SyntaxError: Invalid char literal escape");
+            }
+        }
+        value = *self.char_stream.peek().unwrap();
+        self.char_stream.next();
+        if self.char_stream.peek().unwrap().to_ascii_lowercase() != '\'' {
+            return Err("SyntaxError: Expected closing char quote");
+        } else {
+            self.char_stream.next();
+        }
+        return Ok(Token::TokenChar { value });
     }
-    fn scan_str(&mut self) -> Token {
-        return Token::TokenStr {};
+
+    fn scan_str(&mut self) -> Result<Token, &'static str> {
+        let mut value = String::from("");
+        self.char_stream.next();
+        while self.char_stream.peek().unwrap().to_ascii_lowercase() != '\"' {
+            if self.char_stream.peek().unwrap().to_ascii_lowercase() == '\n' {
+                return Err("SyntaxError: String literal cannot contain newline");
+            } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '\\' {
+                self.char_stream.next();
+                let val = Lexer::escape_to_char(self.char_stream.peek().unwrap());
+                if val == 0 as char || self.char_stream.peek().unwrap().to_ascii_lowercase() == '0' {
+                    return Err("SyntaxError: Invalid string literal escape");
+                }
+            }
+            value.push(*self.char_stream.peek().unwrap());
+            self.char_stream.next();
+        }
+        self.char_stream.next();
+        return Ok(Token::TokenStr { value });
     }
+
     fn scan_float(&mut self) -> Token {
         return Token::TokenFloat {};
     }
+
     fn scan_int(&mut self) -> Token {
         return Token::TokenInt {};
     }
 
-    fn next_token(mut self) -> Result<Token, &'static str> {
+    fn next_token(&mut self) -> Result<Token, &'static str> {
         match self.char_stream.peek() {
             Some(' ') | Some('\n') | Some('\r') | Some('\t') => {
                 while Lexer::is_space(self.char_stream.peek().unwrap()) {
@@ -44,10 +82,10 @@ impl<'a> Lexer<'a> {
                 return self.next_token();
             }
             Some('\'') => {
-                return Ok(self.scan_char());
+                return self.scan_char();
             }
             Some('"') => {
-                return Ok(self.scan_str());
+                return self.scan_str();
             }
             Some('.') => {
                 return Ok(self.scan_float());
@@ -71,10 +109,12 @@ impl<'a> Lexer<'a> {
             Some('H') | Some('I') | Some('J') | Some('K') | Some('L') | Some('M') | Some('N') |
             Some('O') | Some('P') | Some('Q') | Some('R') | Some('S') | Some('T') | Some('U') |
             Some('V') | Some('W') | Some('X') | Some('Y') | Some('Z') | Some('_') => {
+                let mut name = String::from("");
                 while Lexer::is_al_num(self.char_stream.peek().unwrap()) || self.char_stream.peek().unwrap().to_ascii_lowercase() == '_' {
+                    name.push(*self.char_stream.peek().unwrap());
                     self.char_stream.next();
                 }
-                return Ok(TokenName {});
+                return Ok(TokenName { name });
             }
             Some('<') => {
                 self.char_stream.next();
@@ -227,6 +267,15 @@ impl<'a> Lexer<'a> {
     fn is_space(c: &char) -> bool {
         return *c == ' ' || *c == '\n' || *c == '\r' || *c == '\t';
     }
+
+    fn escape_to_char(c: &char) -> char {
+        match *c {
+            'n' => { return '\n'; }
+            'r' => { return '\r'; }
+            't' => { return '\t'; }
+            _ => { return *c; }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -259,5 +308,69 @@ mod tests {
                       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] {
             assert_eq!(Lexer::is_al_num(&c), true);
         }
+    }
+
+    #[test]
+    fn should_return_token_char() {
+        let mut lexer = Lexer::new(" 'a' 'b' 'E' '1' '0'");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
+            value: 'a'
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
+            value: 'b'
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
+            value: 'E'
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
+            value: '1'
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
+            value: '0'
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "SyntaxError: Char literal cannot contain newline")]
+    fn should_throw_when_token_char_contains_new_line() {
+        let mut lexer = Lexer::new(" '\n'");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
+            value: '\n'
+        });
+    }
+
+    #[test]
+    fn should_return_token_str() {
+        let mut lexer = Lexer::new("\"xxxx\" \"aaa\" \"111\" \"000000\" \"z\"");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenStr {
+            value: "xxxx".to_string()
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenStr {
+            value: "aaa".to_string()
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenStr {
+            value: "111".to_string()
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenStr {
+            value: "000000".to_string()
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenStr {
+            value: "z".to_string()
+        });
     }
 }

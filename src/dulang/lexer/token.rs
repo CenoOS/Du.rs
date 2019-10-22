@@ -48,15 +48,16 @@ pub const TOKEN_BOR: &str = "|";
 pub const TOKEN_XOR: &str = "^";
 pub const TOKEN_HASH_TAG: &str = "#";
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     TokenEof {},
     TokenLastChar {},
 
     TokenFloat {},
     TokenInt {},
-    TokenStr {},
-    TokenChar {},
-    TokenName {},
+    TokenStr { value: String },
+    TokenChar { value: char },
+    TokenName { name: String },
 
     TokenLeftShift {},
     TokenRightShift {},
