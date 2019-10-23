@@ -207,7 +207,7 @@ impl<'a> Lexer<'a> {
             }
             Some('>') => {
                 self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '<' {
+                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '>' {
                     self.char_stream.next();
                     if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
                         return Ok(Token::TokenRightShiftAssign {});
@@ -763,5 +763,215 @@ mod tests {
         assert_eq!(tokenResult.unwrap(), Token::TokenName {
             name: "email2".to_string()
         });
+    }
+
+    #[test]
+    fn should_return_token_less_than() {
+        let mut lexer = Lexer::new("< ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenLessThan {});
+    }
+
+    #[test]
+    fn should_return_token_less_than_eq() {
+        let mut lexer = Lexer::new("<= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenLessThanEqual {});
+    }
+
+    #[test]
+    fn should_return_token_left_shift() {
+        let mut lexer = Lexer::new("<< ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenLeftShift {});
+    }
+
+    #[test]
+    fn should_return_token_left_shift_assign() {
+        let mut lexer = Lexer::new("<<= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenLeftShiftAssign {});
+    }
+
+    #[test]
+    fn should_return_token_greater_than() {
+        let mut lexer = Lexer::new("> ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenGreaterThan {});
+    }
+
+    #[test]
+    fn should_return_token_greater_than_eq() {
+        let mut lexer = Lexer::new(">= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenGreaterThanEqual {});
+    }
+
+    #[test]
+    fn should_return_token_right_shift() {
+        let mut lexer = Lexer::new(">> ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenRightShift {});
+    }
+
+    #[test]
+    fn should_return_token_right_shift_assign() {
+        let mut lexer = Lexer::new(">>= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenRightShiftAssign {});
+    }
+
+    #[test]
+    fn should_return_token_not() {
+        let mut lexer = Lexer::new("! ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenNot {});
+    }
+
+    #[test]
+    fn should_return_token_not_equal() {
+        let mut lexer = Lexer::new("!= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenNotEqual {});
+    }
+
+    #[test]
+    fn should_return_token_colon() {
+        let mut lexer = Lexer::new(": ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenColon {});
+    }
+
+    #[test]
+    fn should_return_token_colon_assign() {
+        let mut lexer = Lexer::new(":= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenColonAssign {});
+    }
+
+    #[test]
+    fn should_return_token_xor() {
+        let mut lexer = Lexer::new("^ ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenXor {});
+    }
+
+    #[test]
+    fn should_return_token_xor_assign() {
+        let mut lexer = Lexer::new("^= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenXorAssign {});
+    }
+
+    #[test]
+    fn should_return_token_mul() {
+        let mut lexer = Lexer::new("* ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenMul {});
+    }
+
+    #[test]
+    fn should_return_token_mul_assign() {
+        let mut lexer = Lexer::new("*= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenMulAssign {});
+    }
+
+    #[test]
+    fn should_return_token_mod() {
+        let mut lexer = Lexer::new("% ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenMod {});
+    }
+
+    #[test]
+    fn should_return_token_mod_assign() {
+        let mut lexer = Lexer::new("%= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenModAssign {});
+    }
+
+    #[test]
+    fn should_return_token_add() {
+        let mut lexer = Lexer::new("+ ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenAdd {});
+    }
+
+    #[test]
+    fn should_return_token_add_assign() {
+        let mut lexer = Lexer::new("+= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenAddAssign {});
+    }
+
+    #[test]
+    fn should_return_token_inc_assign() {
+        let mut lexer = Lexer::new("++ ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenInc {});
+    }
+
+    #[test]
+    fn should_return_token_sub() {
+        let mut lexer = Lexer::new("- ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenSub {});
+    }
+
+    #[test]
+    fn should_return_token_sub_assign() {
+        let mut lexer = Lexer::new("-= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenSubAssign {});
+    }
+
+    #[test]
+    fn should_return_token_dec_assign() {
+        let mut lexer = Lexer::new("-- ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenDec {});
+    }
+
+    #[test]
+    fn should_return_token_bor() {
+        let mut lexer = Lexer::new("| ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenBor {});
+    }
+
+    #[test]
+    fn should_return_token_bor_assign() {
+        let mut lexer = Lexer::new("|= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenOrAssign {});
+    }
+
+    #[test]
+    fn should_return_token_or() {
+        let mut lexer = Lexer::new("|| ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenOr {});
+    }
+
+    #[test]
+    fn should_return_token_band() {
+        let mut lexer = Lexer::new("& ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenBand {});
+    }
+
+    #[test]
+    fn should_return_token_and_assign() {
+        let mut lexer = Lexer::new("&= ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenAndAssign {});
+    }
+
+    #[test]
+    fn should_return_token_and() {
+        let mut lexer = Lexer::new("&& ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenAnd {});
     }
 }
