@@ -114,10 +114,9 @@ impl<'a> Lexer<'a> {
         return Ok(Token::TokenFloat { value: doubleVal });
     }
 
-    fn scan_int(&mut self, value: &mut String) -> Result<Token, &'static str> {
+    fn scan_int(&mut self, value: &mut String, mode: bool) -> Result<Token, &'static str> {
         let mut integer: Int = IntOct { value: 0 };
         let mut intVal = 0;
-        println!("{}#", value.trim());
         if value == "0x" {
             self.char_stream.next();
             while Lexer::is_digit(self.char_stream.peek().unwrap()) || Lexer::is_hex_char(self.char_stream.peek().unwrap()) {
@@ -135,7 +134,10 @@ impl<'a> Lexer<'a> {
             intVal = i32::from_str_radix(&value[2..], 2).unwrap();
             integer = IntBin { value: intVal };
         } else {
-            intVal = value.trim().parse::<i32>().unwrap();
+            if mode {
+                value.pop();
+            }
+            intVal = value.parse::<i32>().unwrap();
             integer = IntOct { value: intVal };
         }
         return Ok(Token::TokenInt { int: integer });
@@ -165,12 +167,16 @@ impl<'a> Lexer<'a> {
                     value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
                     self.char_stream.next();
                 }
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '.' || self.char_stream.peek().unwrap().to_ascii_lowercase() == 'e' {
-                    value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
-                    return self.scan_float(&mut value);
+                if self.char_stream.peek().is_some() {
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '.' || self.char_stream.peek().unwrap().to_ascii_lowercase() == 'e' {
+                        value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+                        return self.scan_float(&mut value);
+                    } else {
+                        value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+                        return self.scan_int(&mut value, true);
+                    }
                 } else {
-                    value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
-                    return self.scan_int(&mut value);
+                    return self.scan_int(&mut value, false);
                 }
             }
             Some('a') | Some('b') | Some('c') | Some('d') | Some('e') | Some('f') | Some('g') |
@@ -197,10 +203,12 @@ impl<'a> Lexer<'a> {
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '<' {
                     self.char_stream.next();
                     if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
                         return Ok(Token::TokenLeftShiftAssign {});
                     }
                     return Ok(Token::TokenLeftShift {});
                 } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenLessThanEqual {});
                 }
                 return Ok(Token::TokenLessThan {});
@@ -210,47 +218,60 @@ impl<'a> Lexer<'a> {
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '>' {
                     self.char_stream.next();
                     if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
                         return Ok(Token::TokenRightShiftAssign {});
                     }
                     return Ok(Token::TokenRightShift {});
                 } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenGreaterThanEqual {});
                 }
                 return Ok(Token::TokenGreaterThan {});
             }
             Some('(') => {
+                self.char_stream.next();
                 return Ok(Token::TokenLeftBrackets {});
             }
             Some(')') => {
+                self.char_stream.next();
                 return Ok(Token::TokenRightBrackets {});
             }
             Some('{') => {
+                self.char_stream.next();
                 return Ok(Token::TokenLeftCurlyBrackets {});
             }
             Some('}') => {
+                self.char_stream.next();
                 return Ok(Token::TokenRightCurlyBrackets {});
             }
             Some('[') => {
+                self.char_stream.next();
                 return Ok(Token::TokenLeftSquareBrackets {});
             }
             Some(']') => {
+                self.char_stream.next();
                 return Ok(Token::TokenRightSquareBrackets {});
             }
             Some(',') => {
+                self.char_stream.next();
                 return Ok(Token::TokenComma {});
             }
             Some('#') => {
+                self.char_stream.next();
                 return Ok(Token::TokenHashTag {});
             }
             Some('?') => {
+                self.char_stream.next();
                 return Ok(Token::TokenQuestionMark {});
             }
             Some(';') => {
+                self.char_stream.next();
                 return Ok(Token::TokenSemiColon {});
             }
             Some('!') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenNotEqual {});
                 }
                 return Ok(Token::TokenNot {});
@@ -258,6 +279,7 @@ impl<'a> Lexer<'a> {
             Some(':') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenColonAssign {});
                 }
                 return Ok(Token::TokenColon {});
@@ -265,6 +287,7 @@ impl<'a> Lexer<'a> {
             Some('=') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenEqual {});
                 }
                 return Ok(Token::TokenAssign {});
@@ -272,6 +295,7 @@ impl<'a> Lexer<'a> {
             Some('^') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenXorAssign {});
                 }
                 return Ok(Token::TokenXor {});
@@ -279,6 +303,7 @@ impl<'a> Lexer<'a> {
             Some('*') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenMulAssign {});
                 }
                 return Ok(Token::TokenMul {});
@@ -286,6 +311,7 @@ impl<'a> Lexer<'a> {
             Some('%') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenModAssign {});
                 }
                 return Ok(Token::TokenMod {});
@@ -293,8 +319,10 @@ impl<'a> Lexer<'a> {
             Some('+') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenAddAssign {});
                 } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '+' {
+                    self.char_stream.next();
                     return Ok(Token::TokenInc {});
                 }
                 return Ok(Token::TokenAdd {});
@@ -302,8 +330,10 @@ impl<'a> Lexer<'a> {
             Some('-') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenSubAssign {});
                 } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '-' {
+                    self.char_stream.next();
                     return Ok(Token::TokenDec {});
                 }
                 return Ok(Token::TokenSub {});
@@ -311,8 +341,10 @@ impl<'a> Lexer<'a> {
             Some('&') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenAndAssign {});
                 } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '&' {
+                    self.char_stream.next();
                     return Ok(Token::TokenAnd {});
                 }
                 return Ok(Token::TokenBand {});
@@ -320,8 +352,10 @@ impl<'a> Lexer<'a> {
             Some('|') => {
                 self.char_stream.next();
                 if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                    self.char_stream.next();
                     return Ok(Token::TokenOrAssign {});
                 } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '|' {
+                    self.char_stream.next();
                     return Ok(Token::TokenOr {});
                 }
                 return Ok(Token::TokenBor {});
@@ -973,5 +1007,82 @@ mod tests {
         let mut lexer = Lexer::new("&& ");
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenAnd {});
+    }
+
+    #[test]
+    fn should_return_tokens_when_give_a_complex_str() {
+        let mut lexer = Lexer::new("+ : := ++ -- += -= < > <= << >> >= <<= >>=");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenAdd {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenColon {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenColonAssign {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenInc {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenDec {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenAddAssign {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenSubAssign {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenLessThan {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenGreaterThan {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenLessThanEqual {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenLeftShift {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenRightShift {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenGreaterThanEqual {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenLeftShiftAssign {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenRightShiftAssign {});
+    }
+
+    #[test]
+    fn should_return_tokens_when_give_a_complex_str_2() {
+        let mut lexer = Lexer::new("XY+(XY)_HELLO1,234+2147 ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName { name: "XY".to_string() });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenAdd {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenLeftBrackets {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName { name: "XY".to_string() });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenRightBrackets {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName { name: "_HELLO1".to_string() });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenComma {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenInt { int: IntOct { value: 234 } });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenAdd {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenInt { int: IntOct { value: 2147 } });
+    }
+
+    #[test]
+    fn should_return_tokens_when_give_a_complex_str_3() {
+        let mut lexer = Lexer::new("var x:int = 3 ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword { keyword: KeywordVar { name: "var".to_string() } });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName { name: "x".to_string() });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenColon {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName { name: "int".to_string() });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenAssign {});
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenInt { int: IntOct { value: 3 } });
     }
 }
