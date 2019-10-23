@@ -10,8 +10,18 @@ use crate::dulang::lexer::token::Token;
 use crate::dulang::lexer::token::Token::{TokenName, TokenLeftShift, TokenKeyword};
 use crate::dulang::lexer::int::Int;
 use crate::dulang::lexer::int::Int::{IntOct, IntHex, IntBin};
-use crate::dulang::lexer::keyword::Keyword;
-use crate::dulang::lexer::keyword::Keyword::{KeywordTypeDef, KeywordDefault, KeywordCase, KeywordSwitch, KeywordFor, KeywordDo, KeywordWhile, KeywordElse, KeywordIf, KeywordReturn, KeywordConst, KeywordContinue, KeywordBreak, KeywordTypeOf, KeywordSizeOf, KeywordGoto, KeywordImport, KeywordFunc, KeywordVar, KeywordStruct, KeywordEnum};
+use crate::dulang::lexer::keyword::Keyword::{KeywordTypeDef, KeywordDefault, KeywordCase,
+                                             KeywordSwitch, KeywordFor, KeywordDo, KeywordWhile,
+                                             KeywordElse, KeywordIf, KeywordReturn, KeywordConst,
+                                             KeywordContinue, KeywordBreak, KeywordTypeOf,
+                                             KeywordSizeOf, KeywordGoto, KeywordImport, KeywordFunc,
+                                             KeywordVar, KeywordStruct, KeywordEnum};
+use crate::dulang::lexer::keyword::{Keyword, KEYWORD_TYPE_DEF, KEYWORD_ENUM, KEYWORD_STRUCT,
+                                    KEYWORD_CONST, KEYWORD_VAR, KEYWORD_FUNC, KEYWORD_IMPORT,
+                                    KEYWORD_GOTO, KEYWORD_SIZEOF, KEYWORD_TYPEOF, KEYWORD_BREAK,
+                                    KEYWORD_CONTINUE, KEYWORD_RETURN, KEYWORD_IF, KEYWORD_ELSE,
+                                    KEYWORD_WHILE, KEYWORD_DO, KEYWORD_FOR, KEYWORD_SWITCH,
+                                    KEYWORD_CASE, KEYWORD_DEFAULT};
 
 
 struct Lexer<'a> {
@@ -321,7 +331,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn to_keyword(name: &String) -> Option<Keyword> {
-        match name {
+        match name.as_str() {
             KEYWORD_TYPE_DEF => {
                 return Some(KeywordTypeDef { name: KEYWORD_TYPE_DEF.to_string() });
             }
@@ -609,10 +619,111 @@ mod tests {
         sizeof typeof \
         break continue return \
         if else while do for \
-        switch case default");
+        switch case default ");
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
             keyword: KeywordTypeDef { name: "typedef".to_string() },
         });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordEnum { name: "enum".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordStruct { name: "struct".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordConst { name: "const".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordVar { name: "var".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordFunc { name: "func".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordImport { name: "import".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordGoto { name: "goto".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordSizeOf { name: "sizeof".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordTypeOf { name: "typeof".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordBreak { name: "break".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordContinue { name: "continue".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordReturn { name: "return".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordIf { name: "if".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordElse { name: "else".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordWhile { name: "while".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordDo { name: "do".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordFor { name: "for".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordSwitch { name: "switch".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordCase { name: "case".to_string() },
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordDefault { name: "default".to_string() },
+        });
+
     }
 }
