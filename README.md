@@ -96,6 +96,43 @@
         
 ### 4. Dulang
 - [ ] EBNF
+    - [ ] grammer
+        - [ ] type_list      
+        - [ ] name_list
+        - [ ] base_type
+        - [ ] type
+        - [ ] enum_item
+        - [ ] enum_items
+        - [ ] enum_decl
+        - [ ] aggregate_field
+        - [ ] aggregate_decl
+        - [ ] var_decl
+        - [ ] const_decl
+        - [ ] typedef_decl
+        - [ ] func_param
+        - [ ] func_param_list
+        - [ ] func_decl
+        - [ ] decl
+    - [ ] Statements
+        - [ ] assign_op
+        - [ ] switch_case
+        - [ ] switch_block
+        - [ ] stmt
+        - [ ] type_spec
+        - [ ] operand_expr
+        - [ ] base_expr
+        - [ ] unary_expr
+        - [ ] mul_op
+        - [ ] mul_expr   
+        - [ ] add_op
+        - [ ] add_expr
+        - [ ] cmp_op
+        - [ ] cmp_expr
+        - [ ] and_expr
+        - [ ] or_expr
+        - [ ] ternary_expr
+        - [ ] expr 
+- [ ] Lexer
     - [ ] tokens
         - [ ] Grouping tokens
             - [ ] ( ) [ ] { }
@@ -136,43 +173,6 @@
             - [x] FLOAT = [0-9]*[.][0-9]*([eE][+-]?[0-9]+)?
             - [x] CHAR = '\'' . '\''
             - [x] STR = '"' [^"]* '"
-    - [ ] grammer
-        - [ ] type_list      
-        - [ ] name_list
-        - [ ] base_type
-        - [ ] type
-        - [ ] enum_item
-        - [ ] enum_items
-        - [ ] enum_decl
-        - [ ] aggregate_field
-        - [ ] aggregate_decl
-        - [ ] var_decl
-        - [ ] const_decl
-        - [ ] typedef_decl
-        - [ ] func_param
-        - [ ] func_param_list
-        - [ ] func_decl
-        - [ ] decl
-    - [ ] Statements
-        - [ ] assign_op
-        - [ ] switch_case
-        - [ ] switch_block
-        - [ ] stmt
-        - [ ] type_spec
-        - [ ] operand_expr
-        - [ ] base_expr
-        - [ ] unary_expr
-        - [ ] mul_op
-        - [ ] mul_expr   
-        - [ ] add_op
-        - [ ] add_expr
-        - [ ] cmp_op
-        - [ ] cmp_expr
-        - [ ] and_expr
-        - [ ] or_expr
-        - [ ] ternary_expr
-        - [ ] expr 
-- [ ] Lexer
 - [ ] Parser
 - [ ] Interpreter
 - [ ] Compiler
