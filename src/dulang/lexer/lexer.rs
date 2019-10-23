@@ -724,6 +724,44 @@ mod tests {
         assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
             keyword: KeywordDefault { name: "default".to_string() },
         });
+    }
 
+    #[test]
+    fn should_return_token_name() {
+        let mut lexer = Lexer::new("name age _year address_detail phone_ email1 email2  ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName {
+            name: "name".to_string()
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName {
+            name: "age".to_string()
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName {
+            name: "_year".to_string()
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName {
+            name: "address_detail".to_string()
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName {
+            name: "phone_".to_string()
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName {
+            name: "email1".to_string()
+        });
+
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenName {
+            name: "email2".to_string()
+        });
     }
 }
