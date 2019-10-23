@@ -2,6 +2,8 @@
  * Copyright (c) 2019. NeroYang
  */
 
+use crate::dulang::lexer::int::Int;
+
 pub const TOKEN_LEFT_SHIFT: &str = "<<";
 pub const TOKEN_RIGHT_SHIFT: &str = ">>";
 pub const TOKEN_EQ: &str = "==";
@@ -54,7 +56,7 @@ pub enum Token {
     TokenLastChar {},
 
     TokenFloat { value: f64 },
-    TokenInt {},
+    TokenInt { int:Int },
     TokenStr { value: String },
     TokenChar { value: char },
     TokenName { name: String },

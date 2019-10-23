@@ -5,8 +5,11 @@
 use std::iter::Peekable;
 use std::str::Chars;
 use core::fmt::Alignment::Left;
+use std::i32;
 use crate::dulang::lexer::token::Token;
 use crate::dulang::lexer::token::Token::{TokenName, TokenLeftShift};
+use crate::dulang::lexer::int::Int;
+use crate::dulang::lexer::int::Int::{IntOct, IntHex, IntBin};
 
 
 struct Lexer<'a> {
@@ -99,8 +102,31 @@ impl<'a> Lexer<'a> {
         return Ok(Token::TokenFloat { value: doubleVal });
     }
 
-    fn scan_int(&mut self, str: &mut String) -> Result<Token, &'static str> {
-        return Ok(Token::TokenInt {});
+    fn scan_int(&mut self, value: &mut String) -> Result<Token, &'static str> {
+        let mut integer: Int = IntOct { value: 0 };
+        let mut intVal = 0;
+        println!("{}#",value.trim());
+        if value == "0x" {
+            self.char_stream.next();
+            while Lexer::is_digit(self.char_stream.peek().unwrap()) || Lexer::is_hex_char(self.char_stream.peek().unwrap()) {
+                value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+                self.char_stream.next();
+            }
+            intVal = i32::from_str_radix(&value[2..], 16).unwrap();
+            integer = IntHex { value: intVal };
+        } else if value == "0b" {
+            self.char_stream.next();
+            while Lexer::is_digit(self.char_stream.peek().unwrap()) {
+                value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+                self.char_stream.next();
+            }
+            intVal = i32::from_str_radix(&value[2..], 2).unwrap();
+            integer = IntBin { value: intVal };
+        } else {
+            intVal = value.trim().parse::<i32>().unwrap();
+            integer = IntOct { value: intVal };
+        }
+        return Ok(Token::TokenInt { int: integer });
     }
 
     fn next_token(&mut self) -> Result<Token, &'static str> {
@@ -311,6 +337,10 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    fn is_hex_char(c: &char) -> bool {
+        return (*c >= 'a' && *c <= 'f') || (*c >= 'A' && *c <= 'F');
+    }
+
     fn hex_char_to_digit(c: &char) -> u8 {
         match *c {
             '0' => { return 0; }
@@ -469,5 +499,30 @@ mod tests {
         assert_eq!(result, vec![
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15
         ]);
+    }
+
+    #[test]
+    fn should_return_token_int() {
+        let mut lexer = Lexer::new("0xa 0b110 12345 0 321 ");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenInt {
+            int: IntHex { value: 10 },
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenInt {
+            int: IntBin { value: 6 },
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenInt {
+            int: IntOct { value: 12345 },
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenInt {
+            int: IntOct { value: 0 },
+        });
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenInt {
+            int: IntOct { value: 321 },
+        });
     }
 }
