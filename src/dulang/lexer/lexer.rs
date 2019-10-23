@@ -728,7 +728,7 @@ mod tests {
 
     #[test]
     fn should_return_token_name() {
-        let mut lexer = Lexer::new("name age _year address_detail phone_ email1 email2  ");
+        let mut lexer = Lexer::new("name age _year address_detail phone_ email1 email2 ");
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenName {
             name: "name".to_string()
