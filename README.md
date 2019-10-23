@@ -95,7 +95,7 @@
     - [ ] second pass
         
 ### 4. Dulang
-- [ ] EBNF
+- [x] EBNF
 ```
 Tokens:
 
