@@ -3,6 +3,7 @@
  */
 
 use crate::dulang::lexer::int::Int;
+use crate::dulang::lexer::keyword::Keyword;
 
 pub const TOKEN_LEFT_SHIFT: &str = "<<";
 pub const TOKEN_RIGHT_SHIFT: &str = ">>";
@@ -56,7 +57,7 @@ pub enum Token {
     TokenLastChar {},
 
     TokenFloat { value: f64 },
-    TokenInt { int:Int },
+    TokenInt { int: Int },
     TokenStr { value: String },
     TokenChar { value: char },
     TokenName { name: String },
@@ -92,7 +93,7 @@ pub enum Token {
     TokenDec {},
 
     TokenPound {},
-    TokenKeyword {},
+    TokenKeyword { keyword: Keyword },
     TokenComma {},
     TokenDot {},
 

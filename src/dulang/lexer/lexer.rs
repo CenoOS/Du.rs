@@ -7,9 +7,11 @@ use std::str::Chars;
 use core::fmt::Alignment::Left;
 use std::i32;
 use crate::dulang::lexer::token::Token;
-use crate::dulang::lexer::token::Token::{TokenName, TokenLeftShift};
+use crate::dulang::lexer::token::Token::{TokenName, TokenLeftShift, TokenKeyword};
 use crate::dulang::lexer::int::Int;
 use crate::dulang::lexer::int::Int::{IntOct, IntHex, IntBin};
+use crate::dulang::lexer::keyword::Keyword;
+use crate::dulang::lexer::keyword::Keyword::{KeywordTypeDef, KeywordDefault, KeywordCase, KeywordSwitch, KeywordFor, KeywordDo, KeywordWhile, KeywordElse, KeywordIf, KeywordReturn, KeywordConst, KeywordContinue, KeywordBreak, KeywordTypeOf, KeywordSizeOf, KeywordGoto, KeywordImport, KeywordFunc, KeywordVar, KeywordStruct, KeywordEnum};
 
 
 struct Lexer<'a> {
@@ -105,7 +107,7 @@ impl<'a> Lexer<'a> {
     fn scan_int(&mut self, value: &mut String) -> Result<Token, &'static str> {
         let mut integer: Int = IntOct { value: 0 };
         let mut intVal = 0;
-        println!("{}#",value.trim());
+        println!("{}#", value.trim());
         if value == "0x" {
             self.char_stream.next();
             while Lexer::is_digit(self.char_stream.peek().unwrap()) || Lexer::is_hex_char(self.char_stream.peek().unwrap()) {
@@ -174,7 +176,11 @@ impl<'a> Lexer<'a> {
                     name.push(*self.char_stream.peek().unwrap());
                     self.char_stream.next();
                 }
-                return Ok(TokenName { name });
+                let keyword = Lexer::to_keyword(&name);
+                match keyword {
+                    Some(k) => { return Ok(TokenKeyword { keyword: k }); }
+                    None => { return Ok(TokenName { name }); }
+                }
             }
             Some('<') => {
                 self.char_stream.next();
@@ -311,6 +317,77 @@ impl<'a> Lexer<'a> {
                 return Ok(Token::TokenBor {});
             }
             _ => { Err("") }
+        }
+    }
+
+    fn to_keyword(name: &String) -> Option<Keyword> {
+        match name {
+            KEYWORD_TYPE_DEF => {
+                return Some(KeywordTypeDef { name: KEYWORD_TYPE_DEF.to_string() });
+            }
+            KEYWORD_ENUM => {
+                return Some(KeywordEnum { name: KEYWORD_ENUM.to_string() });
+            }
+            KEYWORD_STRUCT => {
+                return Some(KeywordStruct { name: KEYWORD_STRUCT.to_string() });
+            }
+            KEYWORD_CONST => {
+                return Some(KeywordConst { name: KEYWORD_CONST.to_string() });
+            }
+            KEYWORD_VAR => {
+                return Some(KeywordVar { name: KEYWORD_VAR.to_string() });
+            }
+            KEYWORD_FUNC => {
+                return Some(KeywordFunc { name: KEYWORD_FUNC.to_string() });
+            }
+            KEYWORD_IMPORT => {
+                return Some(KeywordImport { name: KEYWORD_IMPORT.to_string() });
+            }
+            KEYWORD_GOTO => {
+                return Some(KeywordGoto { name: KEYWORD_GOTO.to_string() });
+            }
+            KEYWORD_SIZEOF => {
+                return Some(KeywordSizeOf { name: KEYWORD_SIZEOF.to_string() });
+            }
+            KEYWORD_TYPEOF => {
+                return Some(KeywordTypeOf { name: KEYWORD_TYPEOF.to_string() });
+            }
+            KEYWORD_BREAK => {
+                return Some(KeywordBreak { name: KEYWORD_BREAK.to_string() });
+            }
+            KEYWORD_CONTINUE => {
+                return Some(KeywordContinue { name: KEYWORD_CONTINUE.to_string() });
+            }
+            KEYWORD_RETURN => {
+                return Some(KeywordReturn { name: KEYWORD_RETURN.to_string() });
+            }
+            KEYWORD_IF => {
+                return Some(KeywordIf { name: KEYWORD_IF.to_string() });
+            }
+            KEYWORD_ELSE => {
+                return Some(KeywordElse { name: KEYWORD_ELSE.to_string() });
+            }
+            KEYWORD_WHILE => {
+                return Some(KeywordWhile { name: KEYWORD_WHILE.to_string() });
+            }
+            KEYWORD_DO => {
+                return Some(KeywordDo { name: KEYWORD_DO.to_string() });
+            }
+            KEYWORD_FOR => {
+                return Some(KeywordFor { name: KEYWORD_FOR.to_string() });
+            }
+            KEYWORD_SWITCH => {
+                return Some(KeywordSwitch { name: KEYWORD_SWITCH.to_string() });
+            }
+            KEYWORD_CASE => {
+                return Some(KeywordCase { name: KEYWORD_CASE.to_string() });
+            }
+            KEYWORD_DEFAULT => {
+                return Some(KeywordDefault { name: KEYWORD_DEFAULT.to_string() });
+            }
+            _ => {
+                return None;
+            }
         }
     }
 
@@ -523,6 +600,19 @@ mod tests {
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenInt {
             int: IntOct { value: 321 },
+        });
+    }
+
+    #[test]
+    fn should_return_token_keyword() {
+        let mut lexer = Lexer::new("typedef enum struct const var func import goto \
+        sizeof typeof \
+        break continue return \
+        if else while do for \
+        switch case default");
+        let tokenResult = lexer.next_token();
+        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
+            keyword: KeywordTypeDef { name: "typedef".to_string() },
         });
     }
 }
