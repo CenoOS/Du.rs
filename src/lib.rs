@@ -1,4 +1,4 @@
-pub mod vm;
-pub mod repl;
 pub mod assembler;
 pub mod dulang;
+pub mod repl;
+pub mod vm;

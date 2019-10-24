@@ -1,10 +1,10 @@
-use std::io::Write;
-use std::fs;
-use std::num::ParseIntError;
-use crate::vm::vm::VM;
-use crate::repl::repl::ReplMode::Assembly;
-use crate::assembler::instructions_parser::InstructionParser;
 use crate::assembler::assembler::Assembler;
+use crate::assembler::instructions_parser::InstructionParser;
+use crate::repl::repl::ReplMode::Assembly;
+use crate::vm::vm::VM;
+use std::fs;
+use std::io::Write;
+use std::num::ParseIntError;
 
 pub struct REPL {
     command_buffer: Vec<String>,
@@ -34,7 +34,7 @@ impl REPL {
         for hex_str in split {
             let byte = u8::from_str_radix(&hex_str, 16);
             match byte {
-                Ok(result) => { results.push(result) }
+                Ok(result) => results.push(result),
                 Err(e) => {
                     return Err(e);
                 }
@@ -85,7 +85,10 @@ impl REPL {
             self.command_buffer.push(buffer.to_string());
             let mut commands = buffer.split_ascii_whitespace().peekable();
             if commands.peek().is_some() {
-                if commands.peek().map_or(false, |w| (*w == ".quit") || (*w == ".exit")) {
+                if commands
+                    .peek()
+                    .map_or(false, |w| (*w == ".quit") || (*w == ".exit"))
+                {
                     println!("Bye, have a nice day.");
                     std::process::exit(0);
                 } else if commands.peek().map_or(false, |w| (*w == ".load_asm")) {
@@ -94,7 +97,7 @@ impl REPL {
                         Some(filepath) => {
                             self.run_asm_file(filepath);
                         }
-                        None => { println!("No input: need a file path for asm code.") }
+                        None => println!("No input: need a file path for asm code."),
                     }
                 } else if commands.peek().map_or(false, |w| (*w == ".load_elf")) {
                     // todo : load elf file to execute.
@@ -103,22 +106,20 @@ impl REPL {
                 } else if commands.peek().map_or(false, |w| (*w == ".mode")) {
                     commands.next();
                     match commands.peek() {
-                        Some(mode) => {
-                            match mode {
-                                &"Assembly" => {
-                                    self.mode = ReplMode::Assembly;
-                                    println!("Mode change to Assembly.");
-                                }
-                                &"Instruction" => {
-                                    self.mode = ReplMode::Instruction;
-                                    println!("Mode change to Instruction.");
-                                }
-                                _ => {
-                                    println!("Expect mode: Assembly/Instruction");
-                                }
+                        Some(mode) => match mode {
+                            &"Assembly" => {
+                                self.mode = ReplMode::Assembly;
+                                println!("Mode change to Assembly.");
                             }
-                        }
-                        None => { println!("Need a mode Assembly/Instruction.") }
+                            &"Instruction" => {
+                                self.mode = ReplMode::Instruction;
+                                println!("Mode change to Instruction.");
+                            }
+                            _ => {
+                                println!("Expect mode: Assembly/Instruction");
+                            }
+                        },
+                        None => println!("Need a mode Assembly/Instruction."),
                     }
                 } else if commands.peek().map_or(false, |w| (*w == ".history")) {
                     for command in &self.command_buffer {
@@ -156,7 +157,9 @@ impl REPL {
                     println!("  .program    : Program in current vm");
                     println!("  .clear      : Clear vm program memory");
                     println!("  .reset      : Reset vm");
-                    println!("  .mode       : Change to mode of REPL between Assembly and Instruction");
+                    println!(
+                        "  .mode       : Change to mode of REPL between Assembly and Instruction"
+                    );
                 } else {
                     match &self.mode {
                         ReplMode::Assembly => {

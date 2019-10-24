@@ -12,7 +12,7 @@ pub struct Symbol {
 
 #[derive(Debug)]
 pub struct SymbolTable {
-    pub(crate) symbols: Vec<Symbol>
+    pub(crate) symbols: Vec<Symbol>,
 }
 
 impl Symbol {
@@ -61,7 +61,7 @@ impl SymbolTable {
         None
     }
 
-    pub fn set_symbol_offset(&mut self, s: &str, offset: u32){
+    pub fn set_symbol_offset(&mut self, s: &str, offset: u32) {
         for symbol in &mut self.symbols {
             if symbol.name == s.to_string() {
                 symbol.offset = offset;

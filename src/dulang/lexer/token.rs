@@ -128,5 +128,4 @@ pub enum Token {
     TokenXor {},
 
     TokenHashTag {},
-
 }

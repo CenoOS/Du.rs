@@ -1,7 +1,7 @@
-use crate::vm::instruction::OpCode;
-use std::str::from_utf8;
 use crate::assembler::elf::ELF_HEADER_PREFIX;
+use crate::vm::instruction::OpCode;
 use std::f64::EPSILON;
+use std::str::from_utf8;
 
 pub const DEFAULT_STACK_SIZE: usize = 2097152;
 pub const TMP_REGISTER: u8 = 0x20 - 1;
@@ -26,7 +26,6 @@ pub struct VM {
 
     pub(crate) remainder: u32,
     pub(crate) comparison_flag: bool,
-
 }
 
 impl VM {
@@ -367,9 +366,10 @@ impl VM {
                     Ok(str) => {
                         print!("{}", str);
                     }
-                    Err(e) => {
-                        println!("Error decoding string constant for PTRS instruction:{:#?}", e)
-                    }
+                    Err(e) => println!(
+                        "Error decoding string constant for PTRS instruction:{:#?}",
+                        e
+                    ),
                 }
             }
             OpCode::IGL => {

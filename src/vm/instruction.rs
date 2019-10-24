@@ -1,6 +1,10 @@
-use crate::vm::instruction::OpCode::{HLT, LOAD, ADD, MUL, SUB, DIV, JMP, JMPF, JMPB, EQ, IGL, ALOC, INC, DEC, PRTS, JE, JNE, JL, JG, LT, GT, LTE, GTE, LOADF64, ADDF64, SUBF64, MULF64, DIVF64, EQF64, NEQF64, GTF64, GTEF64, LTF64, LTEF64, AND, OR, XOR, NOT, PUSH, POP, CALL, RET};
-use std::fmt::{Display, Formatter};
+use crate::vm::instruction::OpCode::{
+    ADD, ADDF64, ALOC, AND, CALL, DEC, DIV, DIVF64, EQ, EQF64, GT, GTE, GTEF64, GTF64, HLT, IGL,
+    INC, JE, JG, JL, JMP, JMPB, JMPF, JNE, LOAD, LOADF64, LT, LTE, LTEF64, LTF64, MUL, MULF64,
+    NEQF64, NOT, OR, POP, PRTS, PUSH, RET, SUB, SUBF64, XOR,
+};
 use std::fmt;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum OpCode {
@@ -55,13 +59,10 @@ pub enum OpCode {
     IGL = 41,
 }
 
-
 impl Display for OpCode {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            _ => {
-                f.write_str(&format!("{}", *self as u8))
-            }
+            _ => f.write_str(&format!("{}", *self as u8)),
         }
     }
 }
@@ -127,8 +128,6 @@ impl From<u8> for OpCode {
 
 impl Instruction {
     pub fn new(opcode: OpCode) -> Instruction {
-        Instruction {
-            opcode
-        }
+        Instruction { opcode }
     }
 }

@@ -2,27 +2,26 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use std::iter::Peekable;
-use std::str::Chars;
+use crate::dulang::lexer::int::Int;
+use crate::dulang::lexer::int::Int::{IntBin, IntHex, IntOct};
+use crate::dulang::lexer::keyword::Keyword::{
+    KeywordBreak, KeywordCase, KeywordConst, KeywordContinue, KeywordDefault, KeywordDo,
+    KeywordElse, KeywordEnum, KeywordFor, KeywordFunc, KeywordGoto, KeywordIf, KeywordImport,
+    KeywordReturn, KeywordSizeOf, KeywordStruct, KeywordSwitch, KeywordTypeDef, KeywordTypeOf,
+    KeywordVar, KeywordWhile,
+};
+use crate::dulang::lexer::keyword::{
+    Keyword, KEYWORD_BREAK, KEYWORD_CASE, KEYWORD_CONST, KEYWORD_CONTINUE, KEYWORD_DEFAULT,
+    KEYWORD_DO, KEYWORD_ELSE, KEYWORD_ENUM, KEYWORD_FOR, KEYWORD_FUNC, KEYWORD_GOTO, KEYWORD_IF,
+    KEYWORD_IMPORT, KEYWORD_RETURN, KEYWORD_SIZEOF, KEYWORD_STRUCT, KEYWORD_SWITCH, KEYWORD_TYPEOF,
+    KEYWORD_TYPE_DEF, KEYWORD_VAR, KEYWORD_WHILE,
+};
+use crate::dulang::lexer::token::Token;
+use crate::dulang::lexer::token::Token::{TokenKeyword, TokenLeftShift, TokenName};
 use core::fmt::Alignment::Left;
 use std::i32;
-use crate::dulang::lexer::token::Token;
-use crate::dulang::lexer::token::Token::{TokenName, TokenLeftShift, TokenKeyword};
-use crate::dulang::lexer::int::Int;
-use crate::dulang::lexer::int::Int::{IntOct, IntHex, IntBin};
-use crate::dulang::lexer::keyword::Keyword::{KeywordTypeDef, KeywordDefault, KeywordCase,
-                                             KeywordSwitch, KeywordFor, KeywordDo, KeywordWhile,
-                                             KeywordElse, KeywordIf, KeywordReturn, KeywordConst,
-                                             KeywordContinue, KeywordBreak, KeywordTypeOf,
-                                             KeywordSizeOf, KeywordGoto, KeywordImport, KeywordFunc,
-                                             KeywordVar, KeywordStruct, KeywordEnum};
-use crate::dulang::lexer::keyword::{Keyword, KEYWORD_TYPE_DEF, KEYWORD_ENUM, KEYWORD_STRUCT,
-                                    KEYWORD_CONST, KEYWORD_VAR, KEYWORD_FUNC, KEYWORD_IMPORT,
-                                    KEYWORD_GOTO, KEYWORD_SIZEOF, KEYWORD_TYPEOF, KEYWORD_BREAK,
-                                    KEYWORD_CONTINUE, KEYWORD_RETURN, KEYWORD_IF, KEYWORD_ELSE,
-                                    KEYWORD_WHILE, KEYWORD_DO, KEYWORD_FOR, KEYWORD_SWITCH,
-                                    KEYWORD_CASE, KEYWORD_DEFAULT};
-
+use std::iter::Peekable;
+use std::str::Chars;
 
 struct Lexer<'a> {
     char_stream: Peekable<Chars<'a>>,
@@ -46,7 +45,9 @@ impl<'a> Lexer<'a> {
             return Err("SyntaxError: Char literal cannot contain newline");
         } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '\\' {
             self.char_stream.next();
-            if Lexer::escape_to_char(self.char_stream.peek().unwrap()) == 0 as char || self.char_stream.peek().unwrap().to_ascii_lowercase() == '0' {
+            if Lexer::escape_to_char(self.char_stream.peek().unwrap()) == 0 as char
+                || self.char_stream.peek().unwrap().to_ascii_lowercase() == '0'
+            {
                 return Err("SyntaxError: Invalid char literal escape");
             }
         }
@@ -69,7 +70,8 @@ impl<'a> Lexer<'a> {
             } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '\\' {
                 self.char_stream.next();
                 let val = Lexer::escape_to_char(self.char_stream.peek().unwrap());
-                if val == 0 as char || self.char_stream.peek().unwrap().to_ascii_lowercase() == '0' {
+                if val == 0 as char || self.char_stream.peek().unwrap().to_ascii_lowercase() == '0'
+                {
                     return Err("SyntaxError: Invalid string literal escape");
                 }
             }
@@ -97,7 +99,9 @@ impl<'a> Lexer<'a> {
         if self.char_stream.peek().unwrap().to_ascii_lowercase() == 'e' {
             value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
             self.char_stream.next();
-            if self.char_stream.peek().unwrap().to_ascii_lowercase() == '+' || self.char_stream.peek().unwrap().to_ascii_lowercase() == '-' {
+            if self.char_stream.peek().unwrap().to_ascii_lowercase() == '+'
+                || self.char_stream.peek().unwrap().to_ascii_lowercase() == '-'
+            {
                 value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
                 self.char_stream.next();
             }
@@ -119,7 +123,9 @@ impl<'a> Lexer<'a> {
         let mut intVal = 0;
         if value == "0x" {
             self.char_stream.next();
-            while Lexer::is_digit(self.char_stream.peek().unwrap()) || Lexer::is_hex_char(self.char_stream.peek().unwrap()) {
+            while Lexer::is_digit(self.char_stream.peek().unwrap())
+                || Lexer::is_hex_char(self.char_stream.peek().unwrap())
+            {
                 value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
                 self.char_stream.next();
             }
@@ -160,15 +166,17 @@ impl<'a> Lexer<'a> {
             Some('.') => {
                 return self.scan_float(&mut "0.".to_string());
             }
-            Some('0') | Some('1') | Some('2') | Some('3') | Some('4') | Some('5') | Some('6') |
-            Some('7') | Some('8') | Some('9') => {
+            Some('0') | Some('1') | Some('2') | Some('3') | Some('4') | Some('5') | Some('6')
+            | Some('7') | Some('8') | Some('9') => {
                 let mut value = String::from("");
                 while Lexer::is_digit(self.char_stream.peek().unwrap()) {
                     value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
                     self.char_stream.next();
                 }
                 if self.char_stream.peek().is_some() {
-                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '.' || self.char_stream.peek().unwrap().to_ascii_lowercase() == 'e' {
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '.'
+                        || self.char_stream.peek().unwrap().to_ascii_lowercase() == 'e'
+                    {
                         value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
                         return self.scan_float(&mut value);
                     } else {
@@ -179,23 +187,29 @@ impl<'a> Lexer<'a> {
                     return self.scan_int(&mut value, false);
                 }
             }
-            Some('a') | Some('b') | Some('c') | Some('d') | Some('e') | Some('f') | Some('g') |
-            Some('h') | Some('i') | Some('j') | Some('k') | Some('l') | Some('m') | Some('n') |
-            Some('o') | Some('p') | Some('q') | Some('r') | Some('s') | Some('t') | Some('u') |
-            Some('v') | Some('w') | Some('x') | Some('y') | Some('z') |
-            Some('A') | Some('B') | Some('C') | Some('D') | Some('E') | Some('F') | Some('G') |
-            Some('H') | Some('I') | Some('J') | Some('K') | Some('L') | Some('M') | Some('N') |
-            Some('O') | Some('P') | Some('Q') | Some('R') | Some('S') | Some('T') | Some('U') |
-            Some('V') | Some('W') | Some('X') | Some('Y') | Some('Z') | Some('_') => {
+            Some('a') | Some('b') | Some('c') | Some('d') | Some('e') | Some('f') | Some('g')
+            | Some('h') | Some('i') | Some('j') | Some('k') | Some('l') | Some('m') | Some('n')
+            | Some('o') | Some('p') | Some('q') | Some('r') | Some('s') | Some('t') | Some('u')
+            | Some('v') | Some('w') | Some('x') | Some('y') | Some('z') | Some('A') | Some('B')
+            | Some('C') | Some('D') | Some('E') | Some('F') | Some('G') | Some('H') | Some('I')
+            | Some('J') | Some('K') | Some('L') | Some('M') | Some('N') | Some('O') | Some('P')
+            | Some('Q') | Some('R') | Some('S') | Some('T') | Some('U') | Some('V') | Some('W')
+            | Some('X') | Some('Y') | Some('Z') | Some('_') => {
                 let mut name = String::from("");
-                while Lexer::is_al_num(self.char_stream.peek().unwrap()) || self.char_stream.peek().unwrap().to_ascii_lowercase() == '_' {
+                while Lexer::is_al_num(self.char_stream.peek().unwrap())
+                    || self.char_stream.peek().unwrap().to_ascii_lowercase() == '_'
+                {
                     name.push(*self.char_stream.peek().unwrap());
                     self.char_stream.next();
                 }
                 let keyword = Lexer::to_keyword(&name);
                 match keyword {
-                    Some(k) => { return Ok(TokenKeyword { keyword: k }); }
-                    None => { return Ok(TokenName { name }); }
+                    Some(k) => {
+                        return Ok(TokenKeyword { keyword: k });
+                    }
+                    None => {
+                        return Ok(TokenName { name });
+                    }
                 }
             }
             Some('<') => {
@@ -360,74 +374,116 @@ impl<'a> Lexer<'a> {
                 }
                 return Ok(Token::TokenBor {});
             }
-            _ => { Err("") }
+            _ => Err(""),
         }
     }
 
     fn to_keyword(name: &String) -> Option<Keyword> {
         match name.as_str() {
             KEYWORD_TYPE_DEF => {
-                return Some(KeywordTypeDef { name: KEYWORD_TYPE_DEF.to_string() });
+                return Some(KeywordTypeDef {
+                    name: KEYWORD_TYPE_DEF.to_string(),
+                });
             }
             KEYWORD_ENUM => {
-                return Some(KeywordEnum { name: KEYWORD_ENUM.to_string() });
+                return Some(KeywordEnum {
+                    name: KEYWORD_ENUM.to_string(),
+                });
             }
             KEYWORD_STRUCT => {
-                return Some(KeywordStruct { name: KEYWORD_STRUCT.to_string() });
+                return Some(KeywordStruct {
+                    name: KEYWORD_STRUCT.to_string(),
+                });
             }
             KEYWORD_CONST => {
-                return Some(KeywordConst { name: KEYWORD_CONST.to_string() });
+                return Some(KeywordConst {
+                    name: KEYWORD_CONST.to_string(),
+                });
             }
             KEYWORD_VAR => {
-                return Some(KeywordVar { name: KEYWORD_VAR.to_string() });
+                return Some(KeywordVar {
+                    name: KEYWORD_VAR.to_string(),
+                });
             }
             KEYWORD_FUNC => {
-                return Some(KeywordFunc { name: KEYWORD_FUNC.to_string() });
+                return Some(KeywordFunc {
+                    name: KEYWORD_FUNC.to_string(),
+                });
             }
             KEYWORD_IMPORT => {
-                return Some(KeywordImport { name: KEYWORD_IMPORT.to_string() });
+                return Some(KeywordImport {
+                    name: KEYWORD_IMPORT.to_string(),
+                });
             }
             KEYWORD_GOTO => {
-                return Some(KeywordGoto { name: KEYWORD_GOTO.to_string() });
+                return Some(KeywordGoto {
+                    name: KEYWORD_GOTO.to_string(),
+                });
             }
             KEYWORD_SIZEOF => {
-                return Some(KeywordSizeOf { name: KEYWORD_SIZEOF.to_string() });
+                return Some(KeywordSizeOf {
+                    name: KEYWORD_SIZEOF.to_string(),
+                });
             }
             KEYWORD_TYPEOF => {
-                return Some(KeywordTypeOf { name: KEYWORD_TYPEOF.to_string() });
+                return Some(KeywordTypeOf {
+                    name: KEYWORD_TYPEOF.to_string(),
+                });
             }
             KEYWORD_BREAK => {
-                return Some(KeywordBreak { name: KEYWORD_BREAK.to_string() });
+                return Some(KeywordBreak {
+                    name: KEYWORD_BREAK.to_string(),
+                });
             }
             KEYWORD_CONTINUE => {
-                return Some(KeywordContinue { name: KEYWORD_CONTINUE.to_string() });
+                return Some(KeywordContinue {
+                    name: KEYWORD_CONTINUE.to_string(),
+                });
             }
             KEYWORD_RETURN => {
-                return Some(KeywordReturn { name: KEYWORD_RETURN.to_string() });
+                return Some(KeywordReturn {
+                    name: KEYWORD_RETURN.to_string(),
+                });
             }
             KEYWORD_IF => {
-                return Some(KeywordIf { name: KEYWORD_IF.to_string() });
+                return Some(KeywordIf {
+                    name: KEYWORD_IF.to_string(),
+                });
             }
             KEYWORD_ELSE => {
-                return Some(KeywordElse { name: KEYWORD_ELSE.to_string() });
+                return Some(KeywordElse {
+                    name: KEYWORD_ELSE.to_string(),
+                });
             }
             KEYWORD_WHILE => {
-                return Some(KeywordWhile { name: KEYWORD_WHILE.to_string() });
+                return Some(KeywordWhile {
+                    name: KEYWORD_WHILE.to_string(),
+                });
             }
             KEYWORD_DO => {
-                return Some(KeywordDo { name: KEYWORD_DO.to_string() });
+                return Some(KeywordDo {
+                    name: KEYWORD_DO.to_string(),
+                });
             }
             KEYWORD_FOR => {
-                return Some(KeywordFor { name: KEYWORD_FOR.to_string() });
+                return Some(KeywordFor {
+                    name: KEYWORD_FOR.to_string(),
+                });
             }
             KEYWORD_SWITCH => {
-                return Some(KeywordSwitch { name: KEYWORD_SWITCH.to_string() });
+                return Some(KeywordSwitch {
+                    name: KEYWORD_SWITCH.to_string(),
+                });
             }
             KEYWORD_CASE => {
-                return Some(KeywordCase { name: KEYWORD_CASE.to_string() });
+                return Some(KeywordCase {
+                    name: KEYWORD_CASE.to_string(),
+                });
             }
             KEYWORD_DEFAULT => {
-                return Some(KeywordDefault { name: KEYWORD_DEFAULT.to_string() });
+                return Some(KeywordDefault {
+                    name: KEYWORD_DEFAULT.to_string(),
+                });
             }
             _ => {
                 return None;
@@ -451,10 +507,18 @@ impl<'a> Lexer<'a> {
 
     fn escape_to_char(c: &char) -> char {
         match *c {
-            'n' => { return '\n'; }
-            'r' => { return '\r'; }
-            't' => { return '\t'; }
-            _ => { return *c; }
+            'n' => {
+                return '\n';
+            }
+            'r' => {
+                return '\r';
+            }
+            't' => {
+                return '\t';
+            }
+            _ => {
+                return *c;
+            }
         }
     }
 
@@ -464,23 +528,57 @@ impl<'a> Lexer<'a> {
 
     fn hex_char_to_digit(c: &char) -> u8 {
         match *c {
-            '0' => { return 0; }
-            '1' => { return 1; }
-            '2' => { return 2; }
-            '3' => { return 3; }
-            '4' => { return 4; }
-            '5' => { return 5; }
-            '6' => { return 6; }
-            '7' => { return 7; }
-            '8' => { return 8; }
-            '9' => { return 9; }
-            'A' | 'a' => { return 10; }
-            'B' | 'b' => { return 11; }
-            'C' | 'c' => { return 12; }
-            'D' | 'd' => { return 13; }
-            'E' | 'e' => { return 14; }
-            'F' | 'f' => { return 15; }
-            _ => { return *c as u8; }
+            '0' => {
+                return 0;
+            }
+            '1' => {
+                return 1;
+            }
+            '2' => {
+                return 2;
+            }
+            '3' => {
+                return 3;
+            }
+            '4' => {
+                return 4;
+            }
+            '5' => {
+                return 5;
+            }
+            '6' => {
+                return 6;
+            }
+            '7' => {
+                return 7;
+            }
+            '8' => {
+                return 8;
+            }
+            '9' => {
+                return 9;
+            }
+            'A' | 'a' => {
+                return 10;
+            }
+            'B' | 'b' => {
+                return 11;
+            }
+            'C' | 'c' => {
+                return 12;
+            }
+            'D' | 'd' => {
+                return 13;
+            }
+            'E' | 'e' => {
+                return 14;
+            }
+            'F' | 'f' => {
+                return 15;
+            }
+            _ => {
+                return *c as u8;
+            }
         }
     }
 }
@@ -491,10 +589,12 @@ mod tests {
 
     #[test]
     fn should_return_true_when_give_a_alpha() {
-        for c in vec!['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                      'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-                      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-                      'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'] {
+        for c in vec![
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+            'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+            'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
+            'Z',
+        ] {
             assert_eq!(Lexer::is_alpha(&c), true);
         }
     }
@@ -508,11 +608,12 @@ mod tests {
 
     #[test]
     fn should_return_true_when_give_a_number_or_alpha() {
-        for c in vec!['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                      'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-                      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-                      'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] {
+        for c in vec![
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+            'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+            'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
+            'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        ] {
             assert_eq!(Lexer::is_al_num(&c), true);
         }
     }
@@ -521,29 +622,19 @@ mod tests {
     fn should_return_token_char() {
         let mut lexer = Lexer::new(" 'a' 'b' 'E' '1' '0'");
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
-            value: 'a'
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar { value: 'a' });
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
-            value: 'b'
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar { value: 'b' });
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
-            value: 'E'
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar { value: 'E' });
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
-            value: '1'
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar { value: '1' });
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
-            value: '0'
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar { value: '0' });
     }
 
     #[test]
@@ -551,252 +642,399 @@ mod tests {
     fn should_throw_when_token_char_contains_new_line() {
         let mut lexer = Lexer::new(" '\n'");
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenChar {
-            value: '\n'
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenChar { value: '\n' });
     }
 
     #[test]
     fn should_return_token_str() {
         let mut lexer = Lexer::new("\"xxxx\" \"aaa\" \"111\" \"000000\" \"z\"");
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenStr {
-            value: "xxxx".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenStr {
+                value: "xxxx".to_string()
+            }
+        );
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenStr {
-            value: "aaa".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenStr {
+                value: "aaa".to_string()
+            }
+        );
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenStr {
-            value: "111".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenStr {
+                value: "111".to_string()
+            }
+        );
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenStr {
-            value: "000000".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenStr {
+                value: "000000".to_string()
+            }
+        );
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenStr {
-            value: "z".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenStr {
+                value: "z".to_string()
+            }
+        );
     }
 
     #[test]
     fn should_return_token_float() {
         let mut lexer = Lexer::new("1.324 .23 0.34 1.23e-1 1.22e+12 0.0 ");
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
-            value: 1.324
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat { value: 1.324 });
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
-            value: 0.23
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat { value: 0.23 });
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
-            value: 0.34
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat { value: 0.34 });
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
-            value: 1.23e-1
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat { value: 1.23e-1 });
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
-            value: 1.22e+12
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat { value: 1.22e+12 });
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenFloat {
-            value: 0.0
-        });
+        assert_eq!(tokenResult.unwrap(), Token::TokenFloat { value: 0.0 });
     }
 
     #[test]
     fn should_return_u8_when_give_a_hex_char() {
         let mut result = vec![];
-        for c in vec!['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                      'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'E', 'f', 'F'] {
+        for c in vec![
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'A', 'b', 'B', 'c', 'C', 'd',
+            'D', 'e', 'E', 'f', 'F',
+        ] {
             result.push(Lexer::hex_char_to_digit(&c));
         }
-        assert_eq!(result, vec![
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15
-        ]);
+        assert_eq!(
+            result,
+            vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15]
+        );
     }
 
     #[test]
     fn should_return_token_int() {
         let mut lexer = Lexer::new("0xa 0b110 12345 0 321 ");
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenInt {
-            int: IntHex { value: 10 },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenInt {
+                int: IntHex { value: 10 },
+            }
+        );
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenInt {
-            int: IntBin { value: 6 },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenInt {
+                int: IntBin { value: 6 },
+            }
+        );
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenInt {
-            int: IntOct { value: 12345 },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenInt {
+                int: IntOct { value: 12345 },
+            }
+        );
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenInt {
-            int: IntOct { value: 0 },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenInt {
+                int: IntOct { value: 0 },
+            }
+        );
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenInt {
-            int: IntOct { value: 321 },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenInt {
+                int: IntOct { value: 321 },
+            }
+        );
     }
 
     #[test]
     fn should_return_token_keyword() {
-        let mut lexer = Lexer::new("typedef enum struct const var func import goto \
-        sizeof typeof \
-        break continue return \
-        if else while do for \
-        switch case default ");
+        let mut lexer = Lexer::new(
+            "typedef enum struct const var func import goto \
+             sizeof typeof \
+             break continue return \
+             if else while do for \
+             switch case default ",
+        );
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordTypeDef { name: "typedef".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordTypeDef {
+                    name: "typedef".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordEnum { name: "enum".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordEnum {
+                    name: "enum".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordStruct { name: "struct".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordStruct {
+                    name: "struct".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordConst { name: "const".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordConst {
+                    name: "const".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordVar { name: "var".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordVar {
+                    name: "var".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordFunc { name: "func".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordFunc {
+                    name: "func".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordImport { name: "import".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordImport {
+                    name: "import".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordGoto { name: "goto".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordGoto {
+                    name: "goto".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordSizeOf { name: "sizeof".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordSizeOf {
+                    name: "sizeof".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordTypeOf { name: "typeof".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordTypeOf {
+                    name: "typeof".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordBreak { name: "break".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordBreak {
+                    name: "break".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordContinue { name: "continue".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordContinue {
+                    name: "continue".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordReturn { name: "return".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordReturn {
+                    name: "return".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordIf { name: "if".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordIf {
+                    name: "if".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordElse { name: "else".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordElse {
+                    name: "else".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordWhile { name: "while".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordWhile {
+                    name: "while".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordDo { name: "do".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordDo {
+                    name: "do".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordFor { name: "for".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordFor {
+                    name: "for".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordSwitch { name: "switch".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordSwitch {
+                    name: "switch".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordCase { name: "case".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordCase {
+                    name: "case".to_string()
+                },
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword {
-            keyword: KeywordDefault { name: "default".to_string() },
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordDefault {
+                    name: "default".to_string()
+                },
+            }
+        );
     }
 
     #[test]
     fn should_return_token_name() {
         let mut lexer = Lexer::new("name age _year address_detail phone_ email1 email2 ");
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName {
-            name: "name".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "name".to_string()
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName {
-            name: "age".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "age".to_string()
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName {
-            name: "_year".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "_year".to_string()
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName {
-            name: "address_detail".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "address_detail".to_string()
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName {
-            name: "phone_".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "phone_".to_string()
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName {
-            name: "email1".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "email1".to_string()
+            }
+        );
 
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName {
-            name: "email2".to_string()
-        });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "email2".to_string()
+            }
+        );
     }
 
     #[test]
@@ -1048,41 +1286,88 @@ mod tests {
     fn should_return_tokens_when_give_a_complex_str_2() {
         let mut lexer = Lexer::new("XY+(XY)_HELLO1,234+2147 ");
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName { name: "XY".to_string() });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "XY".to_string()
+            }
+        );
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenAdd {});
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenLeftBrackets {});
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName { name: "XY".to_string() });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "XY".to_string()
+            }
+        );
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenRightBrackets {});
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName { name: "_HELLO1".to_string() });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "_HELLO1".to_string()
+            }
+        );
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenComma {});
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenInt { int: IntOct { value: 234 } });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenInt {
+                int: IntOct { value: 234 }
+            }
+        );
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenAdd {});
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenInt { int: IntOct { value: 2147 } });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenInt {
+                int: IntOct { value: 2147 }
+            }
+        );
     }
 
     #[test]
     fn should_return_tokens_when_give_a_complex_str_3() {
         let mut lexer = Lexer::new("var x:int = 3 ");
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenKeyword { keyword: KeywordVar { name: "var".to_string() } });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenKeyword {
+                keyword: KeywordVar {
+                    name: "var".to_string()
+                }
+            }
+        );
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName { name: "x".to_string() });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "x".to_string()
+            }
+        );
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenColon {});
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenName { name: "int".to_string() });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenName {
+                name: "int".to_string()
+            }
+        );
         let tokenResult = lexer.next_token();
         assert_eq!(tokenResult.unwrap(), Token::TokenAssign {});
         let tokenResult = lexer.next_token();
-        assert_eq!(tokenResult.unwrap(), Token::TokenInt { int: IntOct { value: 3 } });
+        assert_eq!(
+            tokenResult.unwrap(),
+            Token::TokenInt {
+                int: IntOct { value: 3 }
+            }
+        );
     }
 }

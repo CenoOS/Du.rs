@@ -3,8 +3,8 @@
  */
 
 use std::error::Error;
-use std::fmt::{Formatter, Display};
 use std::fmt;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone)]
 pub enum AssemblerError {
@@ -31,7 +31,7 @@ impl Error for AssemblerError {
 impl Display for AssemblerError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            _ => { f.write_str(&format!("Error:")) }
+            _ => f.write_str(&format!("Error:")),
         }
     }
 }

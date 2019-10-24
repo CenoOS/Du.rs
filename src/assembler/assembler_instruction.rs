@@ -12,13 +12,17 @@ pub struct AssemblerInstruction {
     pub operand1: Option<Token>,
     pub operand2: Option<Token>,
     pub operand3: Option<Token>,
-
 }
 
 impl AssemblerInstruction {
-    pub fn new(token: Option<Token>, label: Option<Token>,
-               directive: Option<Token>, operand1: Option<Token>,
-               operand2: Option<Token>, operand3: Option<Token>) -> AssemblerInstruction {
+    pub fn new(
+        token: Option<Token>,
+        label: Option<Token>,
+        directive: Option<Token>,
+        operand1: Option<Token>,
+        operand2: Option<Token>,
+        operand3: Option<Token>,
+    ) -> AssemblerInstruction {
         AssemblerInstruction {
             token,
             label,
@@ -31,54 +35,49 @@ impl AssemblerInstruction {
 
     pub fn is_label_declaration(&self) -> bool {
         match &self.label {
-            Some(label) => {
-                match label {
-                    Token::LabelDeclaration{ name } => {
-                        return true;
-                    }
-                    _ => { return false; }
+            Some(label) => match label {
+                Token::LabelDeclaration { name } => {
+                    return true;
                 }
+                _ => {
+                    return false;
+                }
+            },
+            None => {
+                return false;
             }
-            None => { return false; }
         }
     }
-
 
     pub fn is_label_usage(&self) -> bool {
         let mut label_usage = false;
         match &self.operand1 {
-            Some(label) => {
-                match label {
-                    Token::LabelUsage{ name } => {
-                        label_usage = true;
-                    }
-                    _ => {}
+            Some(label) => match label {
+                Token::LabelUsage { name } => {
+                    label_usage = true;
                 }
-            }
+                _ => {}
+            },
             _ => {}
         }
 
         match &self.operand2 {
-            Some(label) => {
-                match label {
-                    Token::LabelUsage{ name } => {
-                        label_usage = true;
-                    }
-                    _ => {}
+            Some(label) => match label {
+                Token::LabelUsage { name } => {
+                    label_usage = true;
                 }
-            }
+                _ => {}
+            },
             _ => {}
         }
 
         match &self.operand3 {
-            Some(label) => {
-                match label {
-                    Token::LabelUsage{ name } => {
-                        label_usage = true;
-                    }
-                    _ => {}
+            Some(label) => match label {
+                Token::LabelUsage { name } => {
+                    label_usage = true;
                 }
-            }
+                _ => {}
+            },
             _ => {}
         }
         return label_usage;
@@ -90,62 +89,65 @@ impl AssemblerInstruction {
 
     pub fn get_label_declaration_name(&self) -> Option<String> {
         match &self.label {
-            Some(label) => {
-                match label {
-                    Token::LabelDeclaration { name } => {
-                        return Some(name.to_string());
-                    }
-                    _ => {
-                        return None;
-                    }
+            Some(label) => match label {
+                Token::LabelDeclaration { name } => {
+                    return Some(name.to_string());
                 }
+                _ => {
+                    return None;
+                }
+            },
+            _ => {
+                return None;
             }
-            _ => { return None; }
         }
     }
 
-
     pub fn get_label_usage_name(&self) -> Option<String> {
         match &self.label {
-            Some(label) => {
-                match label {
-                    Token::LabelUsage { name } => {
-                        return Some(name.to_string());
-                    }
-                    _ => {
-                        return None;
-                    }
+            Some(label) => match label {
+                Token::LabelUsage { name } => {
+                    return Some(name.to_string());
                 }
+                _ => {
+                    return None;
+                }
+            },
+            _ => {
+                return None;
             }
-            _ => { return None; }
         }
     }
 
     pub fn get_directive_name(&self) -> Option<String> {
         match &self.directive {
-            Some(label) => {
-                match label {
-                    Token::Directive { name } => {
-                        return Some(name.to_string());
-                    }
-                    _ => {
-                        return None;
-                    }
+            Some(label) => match label {
+                Token::Directive { name } => {
+                    return Some(name.to_string());
                 }
+                _ => {
+                    return None;
+                }
+            },
+            _ => {
+                return None;
             }
-            _ => { return None; }
         }
     }
     pub fn get_string_constant(&self) -> Option<String> {
         if self.get_directive_name().is_some() {
             match &self.operand1 {
-                Some(token) => {
-                    match token {
-                        Token::IrString { name } => { return Some(name.to_string()); }
-                        _ => { return None; }
+                Some(token) => match token {
+                    Token::IrString { name } => {
+                        return Some(name.to_string());
                     }
+                    _ => {
+                        return None;
+                    }
+                },
+                None => {
+                    return None;
                 }
-                None => { return None; }
             }
         } else {
             return None;
@@ -176,7 +178,7 @@ impl AssemblerInstruction {
         let mut results: Vec<u8> = Vec::new();
         match self.token {
             Some(Token::Op { opcode }) => match opcode {
-                _ => { results.push(opcode as u8) }
+                _ => results.push(opcode as u8),
             },
             _ => {
                 println!("None opCode found in opCode field.");
@@ -186,24 +188,22 @@ impl AssemblerInstruction {
 
         for operand in vec![&self.operand1, &self.operand2, &self.operand3] {
             match operand {
-                Some(t) => {
-                    match t {
-                        Token::Register { reg_num } => {
-                            results.push(*reg_num);
-                        }
-                        Token::IntegerOperand { value } => {
-                            let converted = *value as u16;
-                            let byte1 = converted;
-                            let byte2 = converted >> 8;
-                            results.push(byte2 as u8);
-                            results.push(byte1 as u8);
-                        }
-                        _ => {
-                            println!("Unexpected opcode in operand field.");
-                            std::process::exit(0);
-                        }
+                Some(t) => match t {
+                    Token::Register { reg_num } => {
+                        results.push(*reg_num);
                     }
-                }
+                    Token::IntegerOperand { value } => {
+                        let converted = *value as u16;
+                        let byte1 = converted;
+                        let byte2 = converted >> 8;
+                        results.push(byte2 as u8);
+                        results.push(byte1 as u8);
+                    }
+                    _ => {
+                        println!("Unexpected opcode in operand field.");
+                        std::process::exit(0);
+                    }
+                },
                 None => {}
             }
         }

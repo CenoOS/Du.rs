@@ -2,22 +2,19 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use crate::assembler::assembler_phase::AssemblerPhase;
-use crate::assembler::assembly_parser::AssemblyProgramParser;
-use crate::assembler::assembler_instruction::AssemblerInstruction;
-use crate::assembler::symbol_table::{SymbolTable, Symbol, SymbolType};
-use crate::assembler::elf::{ELF_HEADER_PREFIX, ELF_HEADER_LENGTH};
-use crate::assembler::token::Token;
-use crate::assembler::assembler_phase::AssemblerPhase::FIRST;
-use crate::assembler::assembler_section::AssemblerSection;
 use crate::assembler::assembler_error::AssemblerError;
 use crate::assembler::assembler_error::AssemblerError::{
-    NoSectionDeclarationFound,
-    NoLabelNameFound,
-    SymbolAlreadyDeclared,
-    UnknownDirectiveFound,
+    NoLabelNameFound, NoSectionDeclarationFound, SymbolAlreadyDeclared, UnknownDirectiveFound,
     UnknownSectionFound,
 };
+use crate::assembler::assembler_instruction::AssemblerInstruction;
+use crate::assembler::assembler_phase::AssemblerPhase;
+use crate::assembler::assembler_phase::AssemblerPhase::FIRST;
+use crate::assembler::assembler_section::AssemblerSection;
+use crate::assembler::assembly_parser::AssemblyProgramParser;
+use crate::assembler::elf::{ELF_HEADER_LENGTH, ELF_HEADER_PREFIX};
+use crate::assembler::symbol_table::{Symbol, SymbolTable, SymbolType};
+use crate::assembler::token::Token;
 use crate::assembler::token::Token::{IntegerOperand, Op, Register};
 use crate::vm::instruction::OpCode;
 use crate::vm::vm::TMP_REGISTER;
@@ -69,12 +66,17 @@ impl Assembler {
                 return self.process_instructions(&ins);
             }
             Err(e) => {
-                return Err(vec![AssemblerError::ParseError { error: e.to_string() }]);
+                return Err(vec![AssemblerError::ParseError {
+                    error: e.to_string(),
+                }]);
             }
         }
     }
 
-    pub fn process_instructions(&mut self, instructions: &Vec<AssemblerInstruction>) -> Result<Vec<u8>, Vec<AssemblerError>> {
+    pub fn process_instructions(
+        &mut self,
+        instructions: &Vec<AssemblerInstruction>,
+    ) -> Result<Vec<u8>, Vec<AssemblerError>> {
         let mut assembled_program: Vec<u8> = self.write_delf_header();
         self.process_first_phase(&instructions);
 
@@ -82,7 +84,8 @@ impl Assembler {
             return Err(self.errors.clone());
         }
 
-        if self.sections.len() < 2 { // at lease code and data section are need.
+        if self.sections.len() < 2 {
+            // at lease code and data section are need.
             self.errors.push(AssemblerError::InsufficientSections);
             return Err(self.errors.clone());
         }
@@ -100,16 +103,22 @@ impl Assembler {
                     let symbol = Symbol::default(name.to_string(), SymbolType::Label);
                     self.symbol_table.add_symbol(symbol);
                 } else {
-                    self.errors.push(SymbolAlreadyDeclared { instruction: self.current_instruction })
+                    self.errors.push(SymbolAlreadyDeclared {
+                        instruction: self.current_instruction,
+                    })
                 }
             }
-            None => {
-                self.errors.push(NoLabelNameFound { instruction: self.current_instruction })
-            }
+            None => self.errors.push(NoLabelNameFound {
+                instruction: self.current_instruction,
+            }),
         }
     }
 
-    fn process_label_declaration_second_phase(&mut self, instruction: &AssemblerInstruction, offset: usize) {
+    fn process_label_declaration_second_phase(
+        &mut self,
+        instruction: &AssemblerInstruction,
+        offset: usize,
+    ) {
         if instruction.token.is_some() {
             match instruction.get_label_declaration_name() {
                 Some(name) => {
@@ -117,22 +126,27 @@ impl Assembler {
                         self.symbol_table.set_symbol_offset(&name, offset as u32);
                     }
                 }
-                None => {
-                    self.errors.push(NoLabelNameFound { instruction: self.current_instruction })
-                }
+                None => self.errors.push(NoLabelNameFound {
+                    instruction: self.current_instruction,
+                }),
             }
         }
     }
 
     fn handle_asciiz(&mut self, instruction: &AssemblerInstruction) {
-        if self.assemble_phase != AssemblerPhase::FIRST { return; }
+        if self.assemble_phase != AssemblerPhase::FIRST {
+            return;
+        }
         match instruction.get_string_constant() {
             Some(s) => {
                 match instruction.get_label_declaration_name() {
                     Some(name) => {
                         self.symbol_table.set_symbol_offset(&name, self.ro_offset);
                     }
-                    None => { self.errors.push(AssemblerError::LabelNotFoundForStringConstant); }
+                    None => {
+                        self.errors
+                            .push(AssemblerError::LabelNotFoundForStringConstant);
+                    }
                 }
                 for byte in s.as_bytes() {
                     if *byte == 92 {
@@ -171,7 +185,9 @@ impl Assembler {
     pub(crate) fn process_section_header(&mut self, header_name: &str) {
         let new_section: AssemblerSection = header_name.into();
         if new_section == AssemblerSection::UnKnown {
-            self.errors.push(UnknownSectionFound { section_name: header_name.to_string() });
+            self.errors.push(UnknownSectionFound {
+                section_name: header_name.to_string(),
+            });
             return;
         }
 
@@ -187,7 +203,7 @@ impl Assembler {
                 }
                 _ => {
                     self.errors.push(UnknownDirectiveFound {
-                        directive: instruction.get_directive_name().unwrap().clone()
+                        directive: instruction.get_directive_name().unwrap().clone(),
                     });
                 }
             }
@@ -200,37 +216,54 @@ impl Assembler {
         let mut bytes = Vec::<u8>::new();
 
         match &instruction.operand1 {
-            Some(Token::LabelUsage { name }) => { self.process_label_offset(&instruction, &mut bytes, &name) }
+            Some(Token::LabelUsage { name }) => {
+                self.process_label_offset(&instruction, &mut bytes, &name)
+            }
             _ => {}
         }
 
         match &instruction.operand2 {
-            Some(Token::LabelUsage { name }) => { self.process_label_offset(&instruction, &mut bytes, &name) }
+            Some(Token::LabelUsage { name }) => {
+                self.process_label_offset(&instruction, &mut bytes, &name)
+            }
             _ => {}
         }
 
         match &instruction.operand3 {
-            Some(Token::LabelUsage { name }) => { self.process_label_offset(&instruction, &mut bytes, &name) }
+            Some(Token::LabelUsage { name }) => {
+                self.process_label_offset(&instruction, &mut bytes, &name)
+            }
             _ => {}
         }
 
         return bytes;
     }
 
-    fn process_label_offset(&mut self, instruction: &AssemblerInstruction, bytes: &mut Vec<u8>, name: &&String) -> () {
+    fn process_label_offset(
+        &mut self,
+        instruction: &AssemblerInstruction,
+        bytes: &mut Vec<u8>,
+        name: &&String,
+    ) -> () {
         let offset = self.symbol_table.get_symbol_offset(&name).unwrap();
         let save_offset_instruction = AssemblerInstruction {
-            token: Some(Op { opcode: OpCode::LOAD }),
+            token: Some(Op {
+                opcode: OpCode::LOAD,
+            }),
             label: None,
             directive: None,
-            operand1: Some(Register { reg_num: TMP_REGISTER }),
-            operand2: Some(IntegerOperand { value: offset as i32 }),
+            operand1: Some(Register {
+                reg_num: TMP_REGISTER,
+            }),
+            operand2: Some(IntegerOperand {
+                value: offset as i32,
+            }),
             operand3: None,
         };
         bytes.append(&mut save_offset_instruction.to_bytes());
         match &instruction.token {
             Some(Token::Op { opcode }) => match opcode {
-                _ => { bytes.push(*opcode as u8) }
+                _ => bytes.push(*opcode as u8),
             },
             _ => {
                 println!("None opCode found in opCode field.");
@@ -247,7 +280,9 @@ impl Assembler {
                 if self.current_section.is_some() {
                     self.process_label_declaration(&instruction);
                 } else {
-                    self.errors.push(NoSectionDeclarationFound { instruction: self.current_instruction })
+                    self.errors.push(NoSectionDeclarationFound {
+                        instruction: self.current_instruction,
+                    })
                 }
             }
             if instruction.is_directive() {

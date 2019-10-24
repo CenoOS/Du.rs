@@ -13,10 +13,14 @@ impl<'a> From<&'a str> for AssemblerSection {
     fn from(name: &str) -> AssemblerSection {
         match name {
             "code" => {
-                return AssemblerSection::Code { instruction_starting: None };
+                return AssemblerSection::Code {
+                    instruction_starting: None,
+                };
             }
             "data" => {
-                return AssemblerSection::Data { instruction_starting: None };
+                return AssemblerSection::Data {
+                    instruction_starting: None,
+                };
             }
             _ => {
                 return AssemblerSection::UnKnown;

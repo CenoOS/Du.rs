@@ -3,10 +3,9 @@
  */
 #[cfg(test)]
 mod tests {
-    use crate::assembler::token::Token::{Op, Register, IntegerOperand};
-    use crate::vm::instruction::OpCode::*;
     use crate::assembler::assembler_instruction::AssemblerInstruction;
-
+    use crate::assembler::token::Token::{IntegerOperand, Op, Register};
+    use crate::vm::instruction::OpCode::*;
 
     #[test]
     fn should_return_bytes_when_give_hlt() {
@@ -268,7 +267,6 @@ mod tests {
         assert_eq!(token.to_bytes(), vec![13, 1]);
     }
 
-
     #[test]
     fn should_return_bytes_when_give_and() {
         let token = AssemblerInstruction {
@@ -320,7 +318,6 @@ mod tests {
         };
         assert_eq!(token.to_bytes(), vec![36, 1, 2]);
     }
-
 
     #[test]
     fn should_return_bytes_when_give_addf64() {
@@ -439,7 +436,6 @@ mod tests {
         assert_eq!(token.to_bytes(), vec![30, 1, 2]);
     }
 
-
     #[test]
     fn should_return_bytes_when_give_push() {
         let token = AssemblerInstruction {
@@ -465,7 +461,6 @@ mod tests {
         };
         assert_eq!(token.to_bytes(), vec![38, 1]);
     }
-
 
     #[test]
     fn should_return_bytes_when_give_ret() {
