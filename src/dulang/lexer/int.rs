@@ -9,7 +9,7 @@ pub enum Int {
 }
 
 impl Int {
-    pub fn setVal(&self, value: i32) -> Int {
+    pub fn set_val(&self, value: i32) -> Int {
         match self {
             IntHex => {
                 return Int::IntHex { value };

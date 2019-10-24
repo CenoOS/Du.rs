@@ -6,14 +6,14 @@ use crate::dulang::parser::expr::Expr;
 pub enum TypeSpec {
     FuncTypeSpec {
         num_args: usize,
-        args_type: Vec<TypeSpec>,
-        ret_type: TypeSpec,
+        args_type: Vec<Box<TypeSpec>>,
+        ret_type: Box<TypeSpec>,
     },
     ArrayTypeSpec {
-        size: Expr,
-        elem_type: TypeSpec,
+        size: Box<Expr>,
+        elem_type: Box<TypeSpec>,
     },
     PtrTypeSpec {
-        ptr_type: TypeSpec,
+        ptr_type: Box<TypeSpec>,
     },
 }

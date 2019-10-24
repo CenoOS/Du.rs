@@ -6,20 +6,20 @@ use crate::dulang::parser::expr::Expr;
 use crate::dulang::parser::stmt::StmtBlock;
 use crate::dulang::parser::type_spec::TypeSpec;
 
-struct EnumItem {
+pub struct EnumItem {
     name: String,
-    typeSpec: TypeSpec,
+    type_spec: TypeSpec,
 }
 
-struct AggregateItem {
+pub struct AggregateItem {
     name: Vec<String>,
     num_names: usize,
-    typeSpec: TypeSpec,
+    type_spec: TypeSpec,
 }
 
-struct FuncParam {
+pub struct FuncParam {
     name: String,
-    typeSpec: TypeSpec,
+    type_spec: TypeSpec,
 }
 
 pub enum Decl {

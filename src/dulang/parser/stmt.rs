@@ -4,14 +4,17 @@
 use crate::dulang::lexer::token::Token;
 use crate::dulang::parser::expr::Expr;
 
-pub(crate) struct StmtBlock {}
+pub struct StmtBlock {
+    num_stmts: usize,
+    stmts: Vec<Stmt>,
+}
 
-struct ElseIfStmt {
+pub struct ElseIfStmt {
     condition: Expr,
     block: StmtBlock,
 }
 
-struct SwitchCaseStmt {
+pub struct SwitchCaseStmt {
     num_expr: usize,
     expr: Vec<Expr>,
     is_default: bool,
@@ -34,9 +37,9 @@ pub enum Stmt {
         block: StmtBlock,
     },
     ForStmt {
-        init: Stmt,
+        init: Box<Stmt>,
         condition: Expr,
-        next: Stmt,
+        next: Box<Stmt>,
         block: StmtBlock,
     },
     SwitchStmt {
@@ -57,7 +60,6 @@ pub enum Stmt {
         expr: Expr,
     },
     StmtBlock {
-        num_stmts: usize,
-        stmts: Vec<Stmt>,
+        stmt_block: StmtBlock,
     },
 }
