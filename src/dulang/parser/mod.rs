@@ -4,4 +4,4 @@
 pub mod decl;
 pub mod expr;
 pub mod stmt;
-pub mod types;
+pub mod type_spec;
