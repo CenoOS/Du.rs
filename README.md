@@ -237,42 +237,42 @@ or_expr = and_expr (OR and_expr)*
 ternary_expr = or_expr ('?' ternary_expr ':' ternary_expr)?
 expr = ternary_expr
 ```
-- [ ] Lexer
-    - [ ] tokens
-        - [ ] Grouping tokens
-            - [ ] ( ) [ ] { }
-        - [ ] Unary/binary operators
-            - [ ] \+ - ! ~ & *
-            - [ ] LSHIFT = '<<'
-            - [ ] RSHIFT = '>>'
-            - [ ] EQ = '=='
-            - [ ] NOTEQ = '!='
-            - [ ] LTEQ = '<='
-            - [ ] RTEQ = '>='
-            - [ ] AND = '&&'
-            - [ ] OR = '||'
-            - [ ] \+ - | ^ LSHIFT RSHIFT
-            - [ ] \* / % &
-            - [ ] EQ NOTEQ < LTEQ > RTEQ
-            - [ ] AND
-            - [ ] OR
-            - [ ] ? :
-        - [ ] Assignment operators
-            - [ ] COLON_ASSIGN  = ':='
-            - [ ] ADD_ASSIGN  = '+='
-            - [ ] SUB_ASSIGN  = '-='
-            - [ ] AND_ASSIGN = '&='
-            - [ ] OR_ASSIGN  = '|='
-            - [ ] XOR_ASSIGN  = '^='
-            - [ ] LSHIFT_ASSIGN  = '<<='
-            - [ ] RSHIFT_ASSIGN  = '>>='
-            - [ ] MUL_ASSIGN  = '*='
-            - [ ] DIV_ASSIGN  = '/='
-            - [ ] MOD_ASSIGN  = '%='
-            - [ ] =
-            - [ ] INC = '++'
-            - [ ] DEC = '--'
-        - [ ] Names/literals
+- [x] Lexer
+    - [x] tokens
+        - [x] Grouping tokens
+            - [x] ( ) [ ] { }
+        - [x] Unary/binary operators
+            - [x] \+ - ! ~ & *
+            - [x] LSHIFT = '<<'
+            - [x] RSHIFT = '>>'
+            - [x] EQ = '=='
+            - [x] NOTEQ = '!='
+            - [x] LTEQ = '<='
+            - [x] RTEQ = '>='
+            - [x] AND = '&&'
+            - [x] OR = '||'
+            - [x] \+ - | ^ LSHIFT RSHIFT
+            - [x] \* / % &
+            - [x] EQ NOTEQ < LTEQ > RTEQ
+            - [x] AND
+            - [x] OR
+            - [x] ? :
+        - [x] Assignment operators
+            - [x] COLON_ASSIGN  = ':='
+            - [x] ADD_ASSIGN  = '+='
+            - [x] SUB_ASSIGN  = '-='
+            - [x] AND_ASSIGN = '&='
+            - [x] OR_ASSIGN  = '|='
+            - [x] XOR_ASSIGN  = '^='
+            - [x] LSHIFT_ASSIGN  = '<<='
+            - [x] RSHIFT_ASSIGN  = '>>='
+            - [x] MUL_ASSIGN  = '*='
+            - [x] DIV_ASSIGN  = '/='
+            - [x] MOD_ASSIGN  = '%='
+            - [x] =
+            - [x] INC = '++'
+            - [x] DEC = '--'
+        - [x] Names/literals
             - [x] NAME = [a-zA-Z_][a-zA-Z0-9_]*
             - [x] INT = [1-9][0-9]* | 0[xX][0-9a-fA-F]+ | 0[0-7]+ | 0[0bB][0-1]+
             - [x] FLOAT = [0-9]*[.][0-9]*([eE][+-]?[0-9]+)?
