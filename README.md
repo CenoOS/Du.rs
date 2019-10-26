@@ -1,6 +1,7 @@
-# DuVM
-### just a new computer language project write in rust
 ![DuVM](./assets/logo.png)
+# DuVM
+### VM & Computer Language Project.
+
 ### 1. VM
   - [ ] CPU
     - [ ] instruction
