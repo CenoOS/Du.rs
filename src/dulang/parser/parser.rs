@@ -7,14 +7,7 @@ use crate::dulang::lexer::keyword::Keyword::{
 };
 use crate::dulang::lexer::lexer::Lexer;
 use crate::dulang::lexer::token::Token;
-use crate::dulang::lexer::token::Token::{
-    TokenAdd, TokenAddAssign, TokenAndAssign, TokenAssign, TokenBand, TokenBor, TokenColon,
-    TokenColonAssign, TokenDiv, TokenDivAssign, TokenEqual, TokenGreaterThan,
-    TokenGreaterThanEqual, TokenKeyword, TokenLeftShift, TokenLeftShiftAssign, TokenLessThan,
-    TokenLessThanEqual, TokenMod, TokenModAssign, TokenMul, TokenMulAssign, TokenName,
-    TokenNotEqual, TokenOr, TokenOrAssign, TokenQuestionMark, TokenRightShift,
-    TokenRightShiftAssign, TokenSemiColon, TokenSub, TokenSubAssign, TokenXor, TokenXorAssign,
-};
+use crate::dulang::lexer::token::Token::{TokenAdd, TokenAddAssign, TokenAndAssign, TokenAssign, TokenBand, TokenBor, TokenColon, TokenColonAssign, TokenDiv, TokenDivAssign, TokenEqual, TokenGreaterThan, TokenGreaterThanEqual, TokenKeyword, TokenLeftShift, TokenLeftShiftAssign, TokenLessThan, TokenLessThanEqual, TokenMod, TokenModAssign, TokenMul, TokenMulAssign, TokenName, TokenNotEqual, TokenOr, TokenOrAssign, TokenQuestionMark, TokenRightShift, TokenRightShiftAssign, TokenSemiColon, TokenSub, TokenSubAssign, TokenXor, TokenXorAssign, TokenHashTag};
 use crate::dulang::parser::decl::Decl;
 use crate::dulang::parser::decl::Decl::VarDecl;
 use crate::dulang::parser::expr::Expr;
@@ -26,6 +19,7 @@ use crate::vm::instruction::OpCode::POP;
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer<'a>,
+    current_token: Result<Token, &'static str>,
     errors: Vec<ParserError>,
 }
 
@@ -33,15 +27,16 @@ impl<'a> Parser<'a> {
     fn new(lexer: &'a mut Lexer<'a>) -> Parser<'a> {
         Parser {
             lexer,
+            current_token: Ok(TokenHashTag {}),
             errors: Vec::new(),
         }
     }
 
     fn match_token(&mut self, expected_token: Token) -> bool {
-        let token = self.lexer.next_token();
-        match token {
+        self.current_token = self.lexer.next_token();
+        match &self.current_token {
             Ok(token) => {
-                if token == expected_token {
+                if *token == expected_token {
                     return true;
                 }
                 return false;
@@ -53,10 +48,10 @@ impl<'a> Parser<'a> {
     }
 
     fn expect_token(&mut self, expected_token: Token) {
-        let token = self.lexer.next_token();
-        match token {
+        self.current_token = self.lexer.next_token();
+        match &self.current_token {
             Ok(token) => {
-                if token != expected_token {
+                if *token != expected_token {
                     panic!("SyntaxError: expect token :{}", expected_token);
                 }
             }
@@ -167,14 +162,15 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_name(&mut self) -> Option<String> {
-        let name = self.lexer.next_token();
-        match name {
+        let token = self.lexer.next_token();
+        self.current_token = token.clone();
+        match token {
             Ok(TokenName { name }) => {
-                return Some(name);
+                return Some(name.parse().unwrap());
             }
             _ => {
                 let error = UnexpectedTokenError {
-                    token: name.unwrap(),
+                    token: token.unwrap(),
                     line: 0,
                 };
                 self.errors.push(error);
@@ -195,6 +191,7 @@ impl<'a> Parser<'a> {
     fn parse_decl_var(&mut self) -> Option<Decl> {
         let name = self.parse_name();
         let token = self.lexer.next_token();
+        self.current_token = token.clone();
         match token {
             Ok(token) => match token {
                 TokenColon {} => {
