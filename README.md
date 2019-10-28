@@ -318,4 +318,6 @@ expr = ternary_expr
         - [ ] expr 
 - [ ] Interpreter
 - [ ] Compiler
+    - [ ] VM instruction
+    - [ ] X86 & IA32 instruction
 - [ ] JIT

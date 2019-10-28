@@ -78,7 +78,7 @@ impl<'a> Parser<'a> {
                     Token => {}
                 }
             }
-            Err(e) => { println!("") }
+            _ => { return None; }
         }
         return None;
     }
