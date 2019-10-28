@@ -23,7 +23,7 @@ use std::i32;
 use std::iter::Peekable;
 use std::str::Chars;
 
-struct Lexer<'a> {
+pub struct Lexer<'a> {
     char_stream: Peekable<Chars<'a>>,
     current_line: usize,
 }
@@ -149,7 +149,7 @@ impl<'a> Lexer<'a> {
         return Ok(Token::TokenInt { int: integer });
     }
 
-    fn next_token(&mut self) -> Result<Token, &'static str> {
+    pub fn next_token(&mut self) -> Result<Token, &'static str> {
         match self.char_stream.peek() {
             Some(' ') | Some('\n') | Some('\r') | Some('\t') => {
                 while Lexer::is_space(self.char_stream.peek().unwrap()) {
