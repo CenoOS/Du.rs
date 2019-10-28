@@ -46,8 +46,8 @@ pub enum Decl {
     },
     VarDecl {
         name: String,
-        type_spec: TypeSpec,
-        expr: Expr,
+        type_spec: Option<TypeSpec>,
+        expr: Option<Expr>,
     },
     ConstDecl {
         name: String,

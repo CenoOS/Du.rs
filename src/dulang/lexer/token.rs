@@ -4,6 +4,8 @@
 
 use crate::dulang::lexer::int::Int;
 use crate::dulang::lexer::keyword::Keyword;
+use std::fmt::{Display, Formatter};
+use std::fmt;
 
 pub const TOKEN_LEFT_SHIFT: &str = "<<";
 pub const TOKEN_RIGHT_SHIFT: &str = ">>";
@@ -128,4 +130,12 @@ pub enum Token {
     TokenXor {},
 
     TokenHashTag {},
+}
+
+impl Display for Token {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match *self {
+            _ => f.write_str(&format!("token:")),
+        }
+    }
 }
