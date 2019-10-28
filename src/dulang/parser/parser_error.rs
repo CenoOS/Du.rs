@@ -2,14 +2,14 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use std::fmt::{Write, Display, Formatter};
+use crate::dulang::lexer::token::Token;
 use std::error::Error;
 use std::fmt;
-use crate::dulang::lexer::token::Token;
+use std::fmt::{Display, Formatter, Write};
 
 #[derive(Debug, Clone)]
 pub enum ParserError {
-    UnexpectedTokenError { token: Token, line: usize }
+    UnexpectedTokenError { token: Token, line: usize },
 }
 
 impl Error for ParserError {

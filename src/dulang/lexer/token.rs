@@ -4,8 +4,8 @@
 
 use crate::dulang::lexer::int::Int;
 use crate::dulang::lexer::keyword::Keyword;
-use std::fmt::{Display, Formatter};
 use std::fmt;
+use std::fmt::{Display, Formatter};
 
 pub const TOKEN_LEFT_SHIFT: &str = "<<";
 pub const TOKEN_RIGHT_SHIFT: &str = ">>";
