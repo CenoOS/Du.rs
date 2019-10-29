@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2019. NeroYang
  */
+use crate::dulang::ast::expr::Expr;
 use crate::dulang::lexer::token::Token;
-use crate::dulang::parser::expr::Expr;
 
 pub struct StmtBlock {
     num_stmts: usize,

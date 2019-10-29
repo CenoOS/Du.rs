@@ -1,7 +1,8 @@
 /*
  * Copyright (c) 2019. NeroYang
  */
-use crate::dulang::parser::expr::Expr;
+
+use crate::dulang::ast::expr::Expr;
 
 pub enum TypeSpec {
     FuncTypeSpec {

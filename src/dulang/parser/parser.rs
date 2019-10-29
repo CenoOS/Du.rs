@@ -1,6 +1,11 @@
 /*
  * Copyright (c) 2019. NeroYang
  */
+use crate::dulang::ast::decl::Decl;
+use crate::dulang::ast::decl::Decl::VarDecl;
+use crate::dulang::ast::expr::Expr;
+use crate::dulang::ast::expr::Expr::{BinaryExpr, TernaryExpr};
+use crate::dulang::ast::type_spec::TypeSpec;
 use crate::dulang::lexer::keyword::Keyword::{
     KeywordConst, KeywordEnum, KeywordFunc, KeywordGoto, KeywordImport, KeywordStruct,
     KeywordTypeDef, KeywordVar,
@@ -15,13 +20,8 @@ use crate::dulang::lexer::token::Token::{
     TokenName, TokenNotEqual, TokenOr, TokenOrAssign, TokenQuestionMark, TokenRightShift,
     TokenRightShiftAssign, TokenSemiColon, TokenSub, TokenSubAssign, TokenXor, TokenXorAssign,
 };
-use crate::dulang::parser::decl::Decl;
-use crate::dulang::parser::decl::Decl::VarDecl;
-use crate::dulang::parser::expr::Expr;
-use crate::dulang::parser::expr::Expr::{BinaryExpr, TernaryExpr};
 use crate::dulang::parser::parser_error::ParserError;
 use crate::dulang::parser::parser_error::ParserError::UnexpectedTokenError;
-use crate::dulang::parser::type_spec::TypeSpec;
 use crate::vm::instruction::OpCode::POP;
 
 pub struct Parser<'a> {

@@ -2,9 +2,9 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use crate::dulang::parser::expr::Expr;
-use crate::dulang::parser::stmt::StmtBlock;
-use crate::dulang::parser::type_spec::TypeSpec;
+use crate::dulang::ast::expr::Expr;
+use crate::dulang::ast::stmt::StmtBlock;
+use crate::dulang::ast::type_spec::TypeSpec;
 
 pub struct EnumItem {
     name: String,
