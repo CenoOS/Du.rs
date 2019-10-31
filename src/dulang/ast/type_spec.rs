@@ -4,6 +4,7 @@
 
 use crate::dulang::ast::expr::Expr;
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum TypeSpec {
     FuncTypeSpec {
         num_args: usize,

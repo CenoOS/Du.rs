@@ -5,6 +5,7 @@
 use crate::dulang::ast::type_spec::TypeSpec;
 use crate::dulang::lexer::token::Token;
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     IntExpr {
         op: Token,

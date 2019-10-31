@@ -4,7 +4,7 @@
 use crate::dulang::ast::decl::Decl;
 use crate::dulang::ast::decl::Decl::VarDecl;
 use crate::dulang::ast::expr::Expr;
-use crate::dulang::ast::expr::Expr::{BinaryExpr, TernaryExpr};
+use crate::dulang::ast::expr::Expr::{BinaryExpr, TernaryExpr, UnaryExpr};
 use crate::dulang::ast::type_spec::TypeSpec;
 use crate::dulang::lexer::keyword::Keyword::{
     KeywordConst, KeywordEnum, KeywordFunc, KeywordGoto, KeywordImport, KeywordStruct,
@@ -68,60 +68,131 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn is_cmp_op(&mut self, token: Token) -> bool {
-        return token == TokenEqual {}
-            || token == TokenNotEqual {}
-            || token == TokenLessThan {}
-            || token == TokenGreaterThan {}
-            || token == TokenGreaterThanEqual {}
-            || token == TokenLessThanEqual {};
+    fn is_cmp_op(&self, token: &Token) -> bool {
+        return match token {
+            TokenEqual {}
+            | TokenNotEqual {}
+            | TokenLessThan {}
+            | TokenGreaterThan {}
+            | TokenGreaterThanEqual {}
+            | TokenLessThanEqual {} => true,
+            _ => false,
+        };
     }
 
-    fn is_add_op(&mut self, token: Token) -> bool {
-        return token == TokenAdd {}
-            || token == TokenSub {}
-            || token == TokenXor {}
-            || token == TokenBor {};
+    fn is_add_op(&self, token: &Token) -> bool {
+        return match token {
+            TokenAdd {} | TokenSub {} | TokenXor {} | TokenBor {} => true,
+            _ => false,
+        };
     }
 
-    fn is_mul_op(&mut self, token: Token) -> bool {
-        return token == TokenMul {}
-            || token == TokenMod {}
-            || token == TokenDiv {}
-            || token == TokenBand {}
-            || token == TokenLeftShift {}
-            || token == TokenRightShift {};
+    fn is_mul_op(&self, token: &Token) -> bool {
+        return match token {
+            TokenMul {}
+            | TokenMod {}
+            | TokenDiv {}
+            | TokenBand {}
+            | TokenLeftShift {}
+            | TokenRightShift {} => true,
+            _ => false,
+        };
     }
 
-    fn is_unary_op(&mut self, token: Token) -> bool {
-        return token == TokenMul {}
-            || token == TokenBand {}
-            || token == TokenSub {}
-            || token == TokenAdd {};
+    fn is_unary_op(&self, token: &Token) -> bool {
+        return match token {
+            TokenMul {} | TokenBand {} | TokenSub {} | TokenAdd {} => true,
+            _ => false,
+        };
     }
 
-    fn is_assign_op(&mut self, token: Token) -> bool {
-        return token == TokenAssign {}
-            || token == TokenColonAssign {}
-            || token == TokenAddAssign {}
-            || token == TokenSubAssign {}
-            || token == TokenAndAssign {}
-            || token == TokenOrAssign {}
-            || token == TokenXorAssign {}
-            || token == TokenMulAssign {}
-            || token == TokenDivAssign {}
-            || token == TokenModAssign {}
-            || token == TokenLeftShiftAssign {}
-            || token == TokenRightShiftAssign {};
+    fn is_assign_op(&self, token: &Token) -> bool {
+        return match token {
+            TokenAssign {}
+            | TokenColonAssign {}
+            | TokenAddAssign {}
+            | TokenSubAssign {}
+            | TokenAndAssign {}
+            | TokenOrAssign {}
+            | TokenXorAssign {}
+            | TokenMulAssign {}
+            | TokenDivAssign {}
+            | TokenModAssign {}
+            | TokenLeftShiftAssign {}
+            | TokenRightShiftAssign {} => true,
+            _ => false,
+        };
     }
 
     fn parse_type_spec(&mut self) -> Option<TypeSpec> {
         return None;
     }
 
-    fn parse_expr_cmp(&mut self) -> Option<Expr> {
-        let expr = self.parse_expr_and();
+    fn parse_expr_base(&mut self) -> Option<Expr> {
         return None;
+    }
+
+    fn parse_expr_unary(&mut self) -> Option<Expr> {
+        let token = self.current_token.clone().unwrap();
+        if self.is_unary_op(&token) {
+            let token = self.lexer.next_token();
+            self.current_token = token.clone();
+            let right = self.parse_expr_unary().unwrap();
+            return Some(UnaryExpr {
+                op: token.unwrap(),
+                operand: Box::new(self.parse_expr_unary().unwrap()),
+            });
+        } else {
+            return self.parse_expr_base();
+        }
+    }
+
+    fn parse_expr_mul(&mut self) -> Option<Expr> {
+        let mut expr = self.parse_expr_unary();
+        let token = self.current_token.clone().unwrap();
+        while self.is_unary_op(&token) {
+            let token = self.lexer.next_token();
+            self.current_token = token.clone();
+            let right = self.parse_expr_unary().unwrap();
+            expr = Some(BinaryExpr {
+                op: token.unwrap(),
+                left: Box::new(expr.unwrap()),
+                right: Box::new(right),
+            });
+        }
+        return expr;
+    }
+
+    fn parse_expr_add(&mut self) -> Option<Expr> {
+        let mut expr = self.parse_expr_mul();
+        let token = self.current_token.clone().unwrap();
+        while self.is_add_op(&token) {
+            let token = self.lexer.next_token();
+            self.current_token = token.clone();
+            let right = self.parse_expr_mul().unwrap();
+            expr = Some(BinaryExpr {
+                op: token.unwrap(),
+                left: Box::new(expr.unwrap()),
+                right: Box::new(right),
+            });
+        }
+        return expr;
+    }
+
+    fn parse_expr_cmp(&mut self) -> Option<Expr> {
+        let mut expr = self.parse_expr_add();
+        let token = self.current_token.clone().unwrap();
+        while self.is_cmp_op(&token) {
+            let token = self.lexer.next_token();
+            self.current_token = token.clone();
+            let right = self.parse_expr_add().unwrap();
+            expr = Some(BinaryExpr {
+                op: token.unwrap(),
+                left: Box::new(expr.unwrap()),
+                right: Box::new(right),
+            });
+        }
+        return expr;
     }
 
     fn parse_expr_and(&mut self) -> Option<Expr> {
@@ -296,6 +367,14 @@ pub mod tests {
     fn should_parse_var_decl() {
         let mut lexer = Lexer::new("var a = 1;");
         let mut parser = Parser::new(&mut lexer);
-        parser.parse_decl();
+        let decl = parser.parse_decl();
+        assert_eq!(
+            decl.unwrap(),
+            VarDecl {
+                name: "a".to_string(),
+                type_spec: None,
+                expr: None,
+            }
+        );
     }
 }

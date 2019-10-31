@@ -150,7 +150,7 @@ impl Assembler {
                 }
                 for byte in s.as_bytes() {
                     if *byte == 92 {
-                        let byte_addr: *const u8 = unsafe { byte as *const u8 };
+                        let byte_addr: *const u8 = byte as *const u8;
                         let byte_addr = unsafe { byte_addr.add(1) };
                         if unsafe { *byte_addr } == 110 {
                             self.ro_section.push(0xA);
@@ -161,7 +161,7 @@ impl Assembler {
                         }
                     } else {
                         if *byte == 110 {
-                            let byte_addr: *const u8 = unsafe { byte as *const u8 };
+                            let byte_addr: *const u8 = byte as *const u8;
                             let byte_addr = unsafe { byte_addr.sub(1) };
                             if unsafe { *byte_addr } != 92 {
                                 self.ro_section.push(*byte);

@@ -6,22 +6,26 @@ use crate::dulang::ast::expr::Expr;
 use crate::dulang::ast::stmt::StmtBlock;
 use crate::dulang::ast::type_spec::TypeSpec;
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct EnumItem {
     name: String,
     type_spec: TypeSpec,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct AggregateItem {
     name: Vec<String>,
     num_names: usize,
     type_spec: TypeSpec,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct FuncParam {
     name: String,
     type_spec: TypeSpec,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum Decl {
     EnumDecl {
         name: String,
