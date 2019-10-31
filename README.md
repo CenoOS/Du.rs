@@ -319,5 +319,6 @@ expr = ternary_expr
 - [ ] Interpreter
 - [ ] Compiler
     - [ ] VM instruction
+	- [ ] Register Allocation
     - [ ] X86 & IA32 instruction
 - [ ] JIT
