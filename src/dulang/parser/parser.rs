@@ -4,7 +4,9 @@
 use crate::dulang::ast::decl::Decl;
 use crate::dulang::ast::decl::Decl::VarDecl;
 use crate::dulang::ast::expr::Expr;
-use crate::dulang::ast::expr::Expr::{BinaryExpr, TernaryExpr, UnaryExpr};
+use crate::dulang::ast::expr::Expr::{
+    BinaryExpr, CallExpr, FieldExpr, IndexExpr, TernaryExpr, UnaryExpr,
+};
 use crate::dulang::ast::type_spec::TypeSpec;
 use crate::dulang::lexer::keyword::Keyword::{
     KeywordConst, KeywordEnum, KeywordFunc, KeywordGoto, KeywordImport, KeywordStruct,
@@ -14,15 +16,17 @@ use crate::dulang::lexer::lexer::Lexer;
 use crate::dulang::lexer::token::Token;
 use crate::dulang::lexer::token::Token::{
     TokenAdd, TokenAddAssign, TokenAndAssign, TokenAssign, TokenBand, TokenBor, TokenColon,
-    TokenColonAssign, TokenDiv, TokenDivAssign, TokenEqual, TokenGreaterThan,
-    TokenGreaterThanEqual, TokenHashTag, TokenKeyword, TokenLeftShift, TokenLeftShiftAssign,
-    TokenLessThan, TokenLessThanEqual, TokenMod, TokenModAssign, TokenMul, TokenMulAssign,
-    TokenName, TokenNotEqual, TokenOr, TokenOrAssign, TokenQuestionMark, TokenRightShift,
-    TokenRightShiftAssign, TokenSemiColon, TokenSub, TokenSubAssign, TokenXor, TokenXorAssign,
+    TokenColonAssign, TokenComma, TokenDiv, TokenDivAssign, TokenDot, TokenEqual, TokenGreaterThan,
+    TokenGreaterThanEqual, TokenHashTag, TokenKeyword, TokenLeftBrackets, TokenLeftShift,
+    TokenLeftShiftAssign, TokenLeftSquareBrackets, TokenLessThan, TokenLessThanEqual, TokenMod,
+    TokenModAssign, TokenMul, TokenMulAssign, TokenName, TokenNotEqual, TokenOr, TokenOrAssign,
+    TokenQuestionMark, TokenRightBrackets, TokenRightShift, TokenRightShiftAssign,
+    TokenRightSquareBrackets, TokenSemiColon, TokenSub, TokenSubAssign, TokenXor, TokenXorAssign,
 };
 use crate::dulang::parser::parser_error::ParserError;
 use crate::dulang::parser::parser_error::ParserError::UnexpectedTokenError;
 use crate::vm::instruction::OpCode::POP;
+use std::process::exit;
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer<'a>,
@@ -106,6 +110,34 @@ impl<'a> Parser<'a> {
         };
     }
 
+    fn is_token_left_bracket(&self, token: &Token) -> bool {
+        return match token {
+            TokenLeftBrackets {} => true,
+            _ => false,
+        };
+    }
+
+    fn is_token_left_square_bracket(&self, token: &Token) -> bool {
+        return match token {
+            TokenLeftSquareBrackets {} => true,
+            _ => false,
+        };
+    }
+
+    fn is_token_dot(&self, token: &Token) -> bool {
+        return match token {
+            TokenDot {} => true,
+            _ => false,
+        };
+    }
+
+    fn is_token_comma(&self, token: &Token) -> bool {
+        return match token {
+            TokenComma {} => true,
+            _ => false,
+        };
+    }
+
     fn is_assign_op(&self, token: &Token) -> bool {
         return match token {
             TokenAssign {}
@@ -128,8 +160,57 @@ impl<'a> Parser<'a> {
         return None;
     }
 
-    fn parse_expr_base(&mut self) -> Option<Expr> {
+    fn parse_expr_compound(&mut self) -> Option<Expr> {
         return None;
+    }
+
+    fn parse_expr_operand(&mut self) -> Option<Expr> {
+        return None;
+    }
+
+    fn parse_expr_base(&mut self) -> Option<Expr> {
+        let mut expr = self.parse_expr_operand();
+        while self.is_token_left_bracket(&self.current_token.clone().unwrap())
+            || self.is_token_left_square_bracket(&self.current_token.clone().unwrap())
+            || self.is_token_dot(&self.current_token.clone().unwrap())
+        {
+            if self.match_token(TokenLeftBrackets {}) {
+                let mut args = Vec::new();
+                args.push(Box::new(self.parse_expr().unwrap()));
+                while self.is_token_comma(&self.current_token.clone().unwrap()) {
+                    args.push(Box::new(self.parse_expr().unwrap()));
+                }
+                self.expect_token(TokenRightBrackets {});
+                expr = Some(CallExpr {
+                    expr: Box::new(expr.unwrap()),
+                    num_args: args.len(),
+                    args,
+                })
+            } else if self.match_token(TokenLeftSquareBrackets {}) {
+                let index = self.parse_expr();
+                self.expect_token(TokenRightSquareBrackets {});
+                expr = Some(IndexExpr {
+                    expr: Box::new(expr.unwrap()),
+                    index: Box::new(index.unwrap()),
+                });
+            } else {
+                let token = self.lexer.next_token();
+                self.current_token = token.clone();
+                match &self.current_token {
+                    Ok(token) => match token {
+                        TokenName { name } => {
+                            expr = Some(FieldExpr {
+                                expr: Box::new(expr.unwrap()),
+                                name: name.to_string(),
+                            })
+                        }
+                        _ => {}
+                    },
+                    _ => {}
+                }
+            }
+        }
+        return expr;
     }
 
     fn parse_expr_unary(&mut self) -> Option<Expr> {

@@ -49,18 +49,15 @@ pub enum Expr {
         else_expr: Box<Expr>,
     },
     CallExpr {
-        op: Token,
         expr: Box<Expr>,
-        num_args: Box<Expr>,
+        num_args: usize,
         args: Vec<Box<Expr>>,
     },
     IndexExpr {
-        op: Token,
         expr: Box<Expr>,
         index: Box<Expr>,
     },
     FieldExpr {
-        op: Token,
         expr: Box<Expr>,
         name: String,
     },
