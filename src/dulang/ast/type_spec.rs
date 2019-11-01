@@ -6,6 +6,9 @@ use crate::dulang::ast::expr::Expr;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TypeSpec {
+    NameTypeSpec {
+        name_spec: String,
+    },
     FuncTypeSpec {
         num_args: usize,
         args_type: Vec<Box<TypeSpec>>,

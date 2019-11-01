@@ -1,13 +1,16 @@
 /*
  * Copyright (c) 2019. NeroYang
  */
+use crate::assembler::assembler_error::AssemblerError::ParseError;
 use crate::dulang::ast::decl::Decl;
 use crate::dulang::ast::decl::Decl::VarDecl;
 use crate::dulang::ast::expr::Expr;
 use crate::dulang::ast::expr::Expr::{
-    BinaryExpr, CallExpr, FieldExpr, IndexExpr, TernaryExpr, UnaryExpr,
+    BinaryExpr, CallExpr, FieldExpr, FloatExpr, IndexExpr, IntExpr, NameExpr, StringExpr,
+    TernaryExpr, UnaryExpr,
 };
 use crate::dulang::ast::type_spec::TypeSpec;
+use crate::dulang::ast::type_spec::TypeSpec::{FuncTypeSpec, NameTypeSpec};
 use crate::dulang::lexer::keyword::Keyword::{
     KeywordConst, KeywordEnum, KeywordFunc, KeywordGoto, KeywordImport, KeywordStruct,
     KeywordTypeDef, KeywordVar,
@@ -16,12 +19,13 @@ use crate::dulang::lexer::lexer::Lexer;
 use crate::dulang::lexer::token::Token;
 use crate::dulang::lexer::token::Token::{
     TokenAdd, TokenAddAssign, TokenAndAssign, TokenAssign, TokenBand, TokenBor, TokenColon,
-    TokenColonAssign, TokenComma, TokenDiv, TokenDivAssign, TokenDot, TokenEqual, TokenGreaterThan,
-    TokenGreaterThanEqual, TokenHashTag, TokenKeyword, TokenLeftBrackets, TokenLeftShift,
-    TokenLeftShiftAssign, TokenLeftSquareBrackets, TokenLessThan, TokenLessThanEqual, TokenMod,
-    TokenModAssign, TokenMul, TokenMulAssign, TokenName, TokenNotEqual, TokenOr, TokenOrAssign,
-    TokenQuestionMark, TokenRightBrackets, TokenRightShift, TokenRightShiftAssign,
-    TokenRightSquareBrackets, TokenSemiColon, TokenSub, TokenSubAssign, TokenXor, TokenXorAssign,
+    TokenColonAssign, TokenComma, TokenDiv, TokenDivAssign, TokenDot, TokenEqual, TokenFloat,
+    TokenGreaterThan, TokenGreaterThanEqual, TokenHashTag, TokenInt, TokenKeyword,
+    TokenLeftBrackets, TokenLeftCurlyBrackets, TokenLeftShift, TokenLeftShiftAssign,
+    TokenLeftSquareBrackets, TokenLessThan, TokenLessThanEqual, TokenMod, TokenModAssign, TokenMul,
+    TokenMulAssign, TokenName, TokenNotEqual, TokenOr, TokenOrAssign, TokenQuestionMark,
+    TokenRightBrackets, TokenRightShift, TokenRightShiftAssign, TokenRightSquareBrackets,
+    TokenSemiColon, TokenStr, TokenSub, TokenSubAssign, TokenXor, TokenXorAssign,
 };
 use crate::dulang::parser::parser_error::ParserError;
 use crate::dulang::parser::parser_error::ParserError::UnexpectedTokenError;
@@ -156,16 +160,73 @@ impl<'a> Parser<'a> {
         };
     }
 
+    fn next_token(&mut self) -> Result<Token, &'static str> {
+        let token = self.lexer.next_token();
+        self.current_token = token.clone();
+        return token;
+    }
+
     fn parse_type_spec(&mut self) -> Option<TypeSpec> {
         return None;
     }
 
-    fn parse_expr_compound(&mut self) -> Option<Expr> {
+    fn parse_expr_compound(&mut self, type_spec: Option<TypeSpec>) -> Option<Expr> {
         return None;
     }
 
     fn parse_expr_operand(&mut self) -> Option<Expr> {
-        return None;
+        match self.current_token.clone() {
+            Ok(ref token) => match token {
+                TokenName { name } => {
+                    self.next_token();
+                    match token {
+                        TokenLeftCurlyBrackets {} => {
+                            return self.parse_expr_compound(Some(NameTypeSpec {
+                                name_spec: name.to_string(),
+                            }));
+                        }
+                        _ => {
+                            return Some(NameExpr {
+                                name: name.to_string(),
+                            });
+                        }
+                    }
+                }
+                TokenInt { value } => {
+                    return Some(IntExpr {
+                        value: value.clone(),
+                    });
+                }
+                TokenFloat { value } => {
+                    return Some(FloatExpr { value: *value });
+                }
+                TokenStr { value } => {
+                    return Some(StringExpr {
+                        value: value.to_string(),
+                    });
+                }
+                TokenLeftCurlyBrackets {} => {
+                    return self.parse_expr_compound(None);
+                }
+                TokenLeftBrackets {} => {
+                    return None;
+                }
+                _ => {
+                    self.errors.push(UnexpectedTokenError {
+                        token: self.current_token.clone().unwrap(),
+                        line: 0,
+                    });
+                    return None;
+                }
+            },
+            _ => {
+                self.errors.push(UnexpectedTokenError {
+                    token: self.current_token.clone().unwrap(),
+                    line: 0,
+                });
+                return None;
+            }
+        }
     }
 
     fn parse_expr_base(&mut self) -> Option<Expr> {
@@ -204,9 +265,21 @@ impl<'a> Parser<'a> {
                                 name: name.to_string(),
                             })
                         }
-                        _ => {}
+                        _ => {
+                            self.errors.push(UnexpectedTokenError {
+                                token: self.current_token.clone().unwrap(),
+                                line: 0,
+                            });
+                            return None;
+                        }
                     },
-                    _ => {}
+                    _ => {
+                        self.errors.push(UnexpectedTokenError {
+                            token: self.current_token.clone().unwrap(),
+                            line: 0,
+                        });
+                        return None;
+                    }
                 }
             }
         }
@@ -429,6 +502,10 @@ impl<'a> Parser<'a> {
             },
             _ => {
                 return None;
+                self.errors.push(UnexpectedTokenError {
+                    token: self.current_token.clone().unwrap(),
+                    line: 0,
+                });
             }
         }
         return None;

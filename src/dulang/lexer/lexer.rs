@@ -146,7 +146,7 @@ impl<'a> Lexer<'a> {
             int_val = value.parse::<i32>().unwrap();
             integer = IntOct { value: int_val };
         }
-        return Ok(Token::TokenInt { int: integer });
+        return Ok(Token::TokenInt { value: integer });
     }
 
     pub fn next_token(&mut self) -> Result<Token, &'static str> {
@@ -724,35 +724,35 @@ mod tests {
         assert_eq!(
             token_result.unwrap(),
             Token::TokenInt {
-                int: IntHex { value: 10 },
+                value: IntHex { value: 10 },
             }
         );
         let token_result = lexer.next_token();
         assert_eq!(
             token_result.unwrap(),
             Token::TokenInt {
-                int: IntBin { value: 6 },
+                value: IntBin { value: 6 },
             }
         );
         let token_result = lexer.next_token();
         assert_eq!(
             token_result.unwrap(),
             Token::TokenInt {
-                int: IntOct { value: 12345 },
+                value: IntOct { value: 12345 },
             }
         );
         let token_result = lexer.next_token();
         assert_eq!(
             token_result.unwrap(),
             Token::TokenInt {
-                int: IntOct { value: 0 },
+                value: IntOct { value: 0 },
             }
         );
         let token_result = lexer.next_token();
         assert_eq!(
             token_result.unwrap(),
             Token::TokenInt {
-                int: IntOct { value: 321 },
+                value: IntOct { value: 321 },
             }
         );
     }
@@ -1318,7 +1318,7 @@ mod tests {
         assert_eq!(
             token_result.unwrap(),
             Token::TokenInt {
-                int: IntOct { value: 234 }
+                value: IntOct { value: 234 }
             }
         );
         let token_result = lexer.next_token();
@@ -1327,7 +1327,7 @@ mod tests {
         assert_eq!(
             token_result.unwrap(),
             Token::TokenInt {
-                int: IntOct { value: 2147 }
+                value: IntOct { value: 2147 }
             }
         );
     }
@@ -1366,7 +1366,7 @@ mod tests {
         assert_eq!(
             token_result.unwrap(),
             Token::TokenInt {
-                int: IntOct { value: 3 }
+                value: IntOct { value: 3 }
             }
         );
     }

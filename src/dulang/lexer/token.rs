@@ -59,7 +59,7 @@ pub enum Token {
     TokenLastChar {},
 
     TokenFloat { value: f64 },
-    TokenInt { int: Int },
+    TokenInt { value: Int },
     TokenStr { value: String },
     TokenChar { value: char },
     TokenName { name: String },

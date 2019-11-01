@@ -3,24 +3,21 @@
  */
 
 use crate::dulang::ast::type_spec::TypeSpec;
+use crate::dulang::lexer::int::Int;
 use crate::dulang::lexer::token::Token;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     IntExpr {
-        op: Token,
-        value: i32,
+        value: Int,
     },
     FloatExpr {
-        op: Token,
         value: f64,
     },
     StringExpr {
-        op: Token,
         value: String,
     },
     NameExpr {
-        op: Token,
         name: String,
     },
     CompoundExpr {
