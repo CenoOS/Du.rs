@@ -160,13 +160,13 @@ impl Display for Token {
                 return f.write_str(&format!("Int"));
             }
             TokenStr { ref value } => {
-                return f.write_str(&format!("String"));
+                return f.write_str(&format!("String \"{}\"", value));
             }
             TokenChar { ref value } => {
-                return f.write_str(&format!("Char"));
+                return f.write_str(&format!("Char '{}'", value));
             }
             TokenName { ref name } => {
-                return f.write_str(&format!("Name"));
+                return f.write_str(&format!("Name {}", name));
             }
             TokenLeftShift {} => {
                 return f.write_str(&format!("{}", TOKEN_LEFT_SHIFT));
@@ -253,7 +253,7 @@ impl Display for Token {
                 return f.write_str(&format!("{}", TOKEN_SEMICOLON));
             }
             TokenAssign {} => {
-                return f.write_str(&format!("{}", TOKEN_COLON));
+                return f.write_str(&format!("{}", TOKEN_ASSIGN));
             }
             TokenLeftBrackets {} => {
                 return f.write_str(&format!("{}", TOKEN_LEFT_BRACKETS));

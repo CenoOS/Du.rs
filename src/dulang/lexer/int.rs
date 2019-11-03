@@ -1,6 +1,10 @@
 /*
  * Copyright (c) 2019. NeroYang
  */
+use crate::dulang::lexer::int::Int::{IntBin, IntHex, IntOct};
+use std::fmt;
+use std::fmt::{Display, Formatter};
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Int {
     IntHex { value: i32 },
@@ -11,14 +15,33 @@ pub enum Int {
 impl Int {
     pub fn set_val(&self, value: i32) -> Int {
         match self {
-            IntHex => {
-                return Int::IntHex { value };
+            IntHex { value } => {
+                return Int::IntHex { value: *value };
             }
-            IntOct => {
-                return Int::IntOct { value };
+            IntOct { value } => {
+                return Int::IntOct { value: *value };
             }
-            IntBin => {
-                return Int::IntBin { value };
+            IntBin { value } => {
+                return Int::IntBin { value: *value };
+            }
+        }
+    }
+}
+
+impl Display for Int {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match *self {
+            IntHex { ref value } => {
+                return f.write_str(&format!("IntHex(0x{})", value));
+            }
+            IntOct { ref value } => {
+                return f.write_str(&format!("IntHex({})", value));
+            }
+            IntBin { ref value } => {
+                return f.write_str(&format!("IntBin(0b{})", value));
+            }
+            _ => {
+                return f.write_str(&format!("Unknown Int"));
             }
         }
     }
