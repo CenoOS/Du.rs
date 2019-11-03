@@ -48,8 +48,8 @@ impl<'a> Parser<'a> {
     }
 
     fn match_token(&mut self, expected_token: Token) -> bool {
-        self.current_token = self.lexer.next_token();
-        match &self.current_token {
+        let token = self.current_token.clone();
+        match &token {
             Ok(token) => {
                 if *token == expected_token {
                     return true;
@@ -63,16 +63,15 @@ impl<'a> Parser<'a> {
     }
 
     fn expect_token(&mut self, expected_token: Token) {
-        self.next_token();
-        println!("expect_token {}", self.current_token.clone().unwrap());
-        match &self.current_token {
-            Ok(token) => {
+        let token = self.next_token();
+        match token {
+            Ok(ref token) => {
                 if *token != expected_token {
-                    panic!("SyntaxError: expect token :{}", expected_token);
+                    panic!("SyntaxError1: expect token :{}", expected_token);
                 }
             }
             _ => {
-                panic!("SyntaxError: expect token :{}", expected_token);
+                panic!("SyntaxError2: expect token :{}", expected_token);
             }
         }
     }
@@ -163,6 +162,10 @@ impl<'a> Parser<'a> {
 
     fn next_token(&mut self) -> Result<Token, &'static str> {
         let token = self.lexer.next_token();
+        if token.is_err() {
+            panic!("Token EOF.");
+        }
+        println!("Next Token: {:?}", token);
         self.current_token = token.clone();
         return token;
     }
@@ -176,8 +179,8 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expr_operand(&mut self) -> Option<Expr> {
-        self.next_token();
-        match self.current_token.clone() {
+        let token = self.next_token();
+        match token {
             Ok(ref token) => match token {
                 TokenName { name } => {
                     self.next_token();
@@ -257,8 +260,7 @@ impl<'a> Parser<'a> {
                     index: Box::new(index.unwrap()),
                 });
             } else {
-                let token = self.lexer.next_token();
-                self.current_token = token.clone();
+                let token = self.next_token();
                 match &self.current_token {
                     Ok(token) => match token {
                         TokenName { name } => {
@@ -291,8 +293,7 @@ impl<'a> Parser<'a> {
     fn parse_expr_unary(&mut self) -> Option<Expr> {
         let token = self.current_token.clone().unwrap();
         if self.is_unary_op(&token) {
-            let token = self.lexer.next_token();
-            self.current_token = token.clone();
+            let token = self.next_token();
             let right = self.parse_expr_unary().unwrap();
             return Some(UnaryExpr {
                 op: token.unwrap(),
@@ -307,8 +308,7 @@ impl<'a> Parser<'a> {
         let mut expr = self.parse_expr_unary();
         let token = self.current_token.clone().unwrap();
         while self.is_unary_op(&token) {
-            let token = self.lexer.next_token();
-            self.current_token = token.clone();
+            let token = self.next_token();
             let right = self.parse_expr_unary().unwrap();
             expr = Some(BinaryExpr {
                 op: token.unwrap(),
@@ -323,8 +323,7 @@ impl<'a> Parser<'a> {
         let mut expr = self.parse_expr_mul();
         let token = self.current_token.clone().unwrap();
         while self.is_add_op(&token) {
-            let token = self.lexer.next_token();
-            self.current_token = token.clone();
+            let token = self.next_token();
             let right = self.parse_expr_mul().unwrap();
             expr = Some(BinaryExpr {
                 op: token.unwrap(),
@@ -339,8 +338,7 @@ impl<'a> Parser<'a> {
         let mut expr = self.parse_expr_add();
         let token = self.current_token.clone().unwrap();
         while self.is_cmp_op(&token) {
-            let token = self.lexer.next_token();
-            self.current_token = token.clone();
+            let token = self.next_token();
             let right = self.parse_expr_add().unwrap();
             expr = Some(BinaryExpr {
                 op: token.unwrap(),
@@ -396,8 +394,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_name(&mut self) -> Option<String> {
-        let token = self.lexer.next_token();
-        self.current_token = token.clone();
+        let token = self.next_token();
         match token {
             Ok(TokenName { name }) => {
                 return Some(name.parse().unwrap());
@@ -473,7 +470,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_decl_opt(&mut self) -> Option<Decl> {
-        match self.lexer.next_token() {
+        match self.next_token() {
             Ok(keyword) => match keyword {
                 TokenKeyword { keyword } => match keyword {
                     KeywordEnum { name } => {
@@ -594,18 +591,18 @@ pub mod tests {
 
     #[test]
     fn should_parse_var_decl() {
-//        let mut lexer = Lexer::new("var a = 1;");
-//        let mut parser = Parser::new(&mut lexer);
-//        let decl = parser.parse_decl();
-//        assert_eq!(
-//            decl.unwrap(),
-//            VarDecl {
-//                name: "a".to_string(),
-//                type_spec: None,
-//                expr: Some(IntExpr {
-//                    value: IntOct { value: 1 }
-//                }),
-//            }
-//        );
+        let mut lexer = Lexer::new("var a = 1;");
+        let mut parser = Parser::new(&mut lexer);
+        let decl = parser.parse_decl();
+        assert_eq!(
+            decl.unwrap(),
+            VarDecl {
+                name: "a".to_string(),
+                type_spec: None,
+                expr: Some(IntExpr {
+                    value: IntOct { value: 1 }
+                }),
+            }
+        );
     }
 }
