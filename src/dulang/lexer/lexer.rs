@@ -123,7 +123,8 @@ impl<'a> Lexer<'a> {
         let mut int_val = 0;
         if value == "0x" {
             self.char_stream.next();
-            while Lexer::is_digit(self.char_stream.peek().unwrap())
+            while self.char_stream.peek().is_some()
+                && Lexer::is_digit(self.char_stream.peek().unwrap())
                 || Lexer::is_hex_char(self.char_stream.peek().unwrap())
             {
                 value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
@@ -133,7 +134,9 @@ impl<'a> Lexer<'a> {
             integer = IntHex { value: int_val };
         } else if value == "0b" {
             self.char_stream.next();
-            while Lexer::is_digit(self.char_stream.peek().unwrap()) {
+            while self.char_stream.peek().is_some()
+                && Lexer::is_digit(self.char_stream.peek().unwrap())
+            {
                 value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
                 self.char_stream.next();
             }
@@ -150,231 +153,239 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn next_token(&mut self) -> Result<Token, &'static str> {
-        match self.char_stream.peek() {
-            Some(' ') | Some('\n') | Some('\r') | Some('\t') => {
-                while Lexer::is_space(self.char_stream.peek().unwrap()) {
-                    self.char_stream.next();
+        if self.char_stream.peek().is_some() {
+            match self.char_stream.peek() {
+                Some(' ') | Some('\n') | Some('\r') | Some('\t') => {
+                    while Lexer::is_space(self.char_stream.peek().unwrap()) {
+                        self.char_stream.next();
+                    }
+                    return self.next_token();
                 }
-                return self.next_token();
-            }
-            Some('\'') => {
-                return self.scan_char();
-            }
-            Some('"') => {
-                return self.scan_str();
-            }
-            Some('.') => {
-                return self.scan_float(&mut "0.".to_string());
-            }
-            Some('0') | Some('1') | Some('2') | Some('3') | Some('4') | Some('5') | Some('6')
-            | Some('7') | Some('8') | Some('9') => {
-                let mut value = String::from("");
-                while Lexer::is_digit(self.char_stream.peek().unwrap()) {
-                    value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
-                    self.char_stream.next();
+                Some('\'') => {
+                    return self.scan_char();
                 }
-                if self.char_stream.peek().is_some() {
-                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '.'
-                        || self.char_stream.peek().unwrap().to_ascii_lowercase() == 'e'
+                Some('"') => {
+                    return self.scan_str();
+                }
+                Some('.') => {
+                    return self.scan_float(&mut "0.".to_string());
+                }
+                Some('0') | Some('1') | Some('2') | Some('3') | Some('4') | Some('5')
+                | Some('6') | Some('7') | Some('8') | Some('9') => {
+                    let mut value = String::from("");
+                    while self.char_stream.peek().is_some()
+                        && Lexer::is_digit(self.char_stream.peek().unwrap())
                     {
                         value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
-                        return self.scan_float(&mut value);
+                        self.char_stream.next();
+                    }
+                    if self.char_stream.peek().is_some() {
+                        if self.char_stream.peek().unwrap().to_ascii_lowercase() == '.'
+                            || self.char_stream.peek().unwrap().to_ascii_lowercase() == 'e'
+                        {
+                            value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+                            return self.scan_float(&mut value);
+                        } else {
+                            value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
+                            return self.scan_int(&mut value, true);
+                        }
                     } else {
-                        value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
-                        return self.scan_int(&mut value, true);
+                        return self.scan_int(&mut value, false);
                     }
-                } else {
-                    return self.scan_int(&mut value, false);
                 }
-            }
-            Some('a') | Some('b') | Some('c') | Some('d') | Some('e') | Some('f') | Some('g')
-            | Some('h') | Some('i') | Some('j') | Some('k') | Some('l') | Some('m') | Some('n')
-            | Some('o') | Some('p') | Some('q') | Some('r') | Some('s') | Some('t') | Some('u')
-            | Some('v') | Some('w') | Some('x') | Some('y') | Some('z') | Some('A') | Some('B')
-            | Some('C') | Some('D') | Some('E') | Some('F') | Some('G') | Some('H') | Some('I')
-            | Some('J') | Some('K') | Some('L') | Some('M') | Some('N') | Some('O') | Some('P')
-            | Some('Q') | Some('R') | Some('S') | Some('T') | Some('U') | Some('V') | Some('W')
-            | Some('X') | Some('Y') | Some('Z') | Some('_') => {
-                let mut name = String::from("");
-                while Lexer::is_al_num(self.char_stream.peek().unwrap())
-                    || self.char_stream.peek().unwrap().to_ascii_lowercase() == '_'
-                {
-                    name.push(*self.char_stream.peek().unwrap());
+                Some('a') | Some('b') | Some('c') | Some('d') | Some('e') | Some('f')
+                | Some('g') | Some('h') | Some('i') | Some('j') | Some('k') | Some('l')
+                | Some('m') | Some('n') | Some('o') | Some('p') | Some('q') | Some('r')
+                | Some('s') | Some('t') | Some('u') | Some('v') | Some('w') | Some('x')
+                | Some('y') | Some('z') | Some('A') | Some('B') | Some('C') | Some('D')
+                | Some('E') | Some('F') | Some('G') | Some('H') | Some('I') | Some('J')
+                | Some('K') | Some('L') | Some('M') | Some('N') | Some('O') | Some('P')
+                | Some('Q') | Some('R') | Some('S') | Some('T') | Some('U') | Some('V')
+                | Some('W') | Some('X') | Some('Y') | Some('Z') | Some('_') => {
+                    let mut name = String::from("");
+                    while self.char_stream.peek().is_some()
+                        && (Lexer::is_al_num(self.char_stream.peek().unwrap())
+                            || self.char_stream.peek().unwrap().to_ascii_lowercase() == '_')
+                    {
+                        name.push(*self.char_stream.peek().unwrap());
+                        self.char_stream.next();
+                    }
+                    let keyword = Lexer::to_keyword(&name);
+                    match keyword {
+                        Some(k) => {
+                            return Ok(TokenKeyword { keyword: k });
+                        }
+                        None => {
+                            return Ok(TokenName { name });
+                        }
+                    }
+                }
+                Some('<') => {
                     self.char_stream.next();
-                }
-                let keyword = Lexer::to_keyword(&name);
-                match keyword {
-                    Some(k) => {
-                        return Ok(TokenKeyword { keyword: k });
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '<' {
+                        self.char_stream.next();
+                        if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                            self.char_stream.next();
+                            return Ok(Token::TokenLeftShiftAssign {});
+                        }
+                        return Ok(Token::TokenLeftShift {});
+                    } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenLessThanEqual {});
                     }
-                    None => {
-                        return Ok(TokenName { name });
-                    }
+                    return Ok(Token::TokenLessThan {});
                 }
-            }
-            Some('<') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '<' {
+                Some('>') => {
+                    self.char_stream.next();
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '>' {
+                        self.char_stream.next();
+                        if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                            self.char_stream.next();
+                            return Ok(Token::TokenRightShiftAssign {});
+                        }
+                        return Ok(Token::TokenRightShift {});
+                    } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenGreaterThanEqual {});
+                    }
+                    return Ok(Token::TokenGreaterThan {});
+                }
+                Some('(') => {
+                    self.char_stream.next();
+                    return Ok(Token::TokenLeftBrackets {});
+                }
+                Some(')') => {
+                    self.char_stream.next();
+                    return Ok(Token::TokenRightBrackets {});
+                }
+                Some('{') => {
+                    self.char_stream.next();
+                    return Ok(Token::TokenLeftCurlyBrackets {});
+                }
+                Some('}') => {
+                    self.char_stream.next();
+                    return Ok(Token::TokenRightCurlyBrackets {});
+                }
+                Some('[') => {
+                    self.char_stream.next();
+                    return Ok(Token::TokenLeftSquareBrackets {});
+                }
+                Some(']') => {
+                    self.char_stream.next();
+                    return Ok(Token::TokenRightSquareBrackets {});
+                }
+                Some(',') => {
+                    self.char_stream.next();
+                    return Ok(Token::TokenComma {});
+                }
+                Some('#') => {
+                    self.char_stream.next();
+                    return Ok(Token::TokenHashTag {});
+                }
+                Some('?') => {
+                    self.char_stream.next();
+                    return Ok(Token::TokenQuestionMark {});
+                }
+                Some(';') => {
+                    self.char_stream.next();
+                    return Ok(Token::TokenSemiColon {});
+                }
+                Some('!') => {
                     self.char_stream.next();
                     if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
                         self.char_stream.next();
-                        return Ok(Token::TokenLeftShiftAssign {});
+                        return Ok(Token::TokenNotEqual {});
                     }
-                    return Ok(Token::TokenLeftShift {});
-                } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
-                    self.char_stream.next();
-                    return Ok(Token::TokenLessThanEqual {});
+                    return Ok(Token::TokenNot {});
                 }
-                return Ok(Token::TokenLessThan {});
-            }
-            Some('>') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '>' {
+                Some(':') => {
                     self.char_stream.next();
                     if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
                         self.char_stream.next();
-                        return Ok(Token::TokenRightShiftAssign {});
+                        return Ok(Token::TokenColonAssign {});
                     }
-                    return Ok(Token::TokenRightShift {});
-                } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
-                    self.char_stream.next();
-                    return Ok(Token::TokenGreaterThanEqual {});
+                    return Ok(Token::TokenColon {});
                 }
-                return Ok(Token::TokenGreaterThan {});
-            }
-            Some('(') => {
-                self.char_stream.next();
-                return Ok(Token::TokenLeftBrackets {});
-            }
-            Some(')') => {
-                self.char_stream.next();
-                return Ok(Token::TokenRightBrackets {});
-            }
-            Some('{') => {
-                self.char_stream.next();
-                return Ok(Token::TokenLeftCurlyBrackets {});
-            }
-            Some('}') => {
-                self.char_stream.next();
-                return Ok(Token::TokenRightCurlyBrackets {});
-            }
-            Some('[') => {
-                self.char_stream.next();
-                return Ok(Token::TokenLeftSquareBrackets {});
-            }
-            Some(']') => {
-                self.char_stream.next();
-                return Ok(Token::TokenRightSquareBrackets {});
-            }
-            Some(',') => {
-                self.char_stream.next();
-                return Ok(Token::TokenComma {});
-            }
-            Some('#') => {
-                self.char_stream.next();
-                return Ok(Token::TokenHashTag {});
-            }
-            Some('?') => {
-                self.char_stream.next();
-                return Ok(Token::TokenQuestionMark {});
-            }
-            Some(';') => {
-                self.char_stream.next();
-                return Ok(Token::TokenSemiColon {});
-            }
-            Some('!') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                Some('=') => {
                     self.char_stream.next();
-                    return Ok(Token::TokenNotEqual {});
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenEqual {});
+                    }
+                    return Ok(Token::TokenAssign {});
                 }
-                return Ok(Token::TokenNot {});
-            }
-            Some(':') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                Some('^') => {
                     self.char_stream.next();
-                    return Ok(Token::TokenColonAssign {});
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenXorAssign {});
+                    }
+                    return Ok(Token::TokenXor {});
                 }
-                return Ok(Token::TokenColon {});
-            }
-            Some('=') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                Some('*') => {
                     self.char_stream.next();
-                    return Ok(Token::TokenEqual {});
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenMulAssign {});
+                    }
+                    return Ok(Token::TokenMul {});
                 }
-                return Ok(Token::TokenAssign {});
-            }
-            Some('^') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                Some('%') => {
                     self.char_stream.next();
-                    return Ok(Token::TokenXorAssign {});
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenModAssign {});
+                    }
+                    return Ok(Token::TokenMod {});
                 }
-                return Ok(Token::TokenXor {});
-            }
-            Some('*') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                Some('+') => {
                     self.char_stream.next();
-                    return Ok(Token::TokenMulAssign {});
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenAddAssign {});
+                    } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '+' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenInc {});
+                    }
+                    return Ok(Token::TokenAdd {});
                 }
-                return Ok(Token::TokenMul {});
-            }
-            Some('%') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                Some('-') => {
                     self.char_stream.next();
-                    return Ok(Token::TokenModAssign {});
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenSubAssign {});
+                    } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '-' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenDec {});
+                    }
+                    return Ok(Token::TokenSub {});
                 }
-                return Ok(Token::TokenMod {});
-            }
-            Some('+') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                Some('&') => {
                     self.char_stream.next();
-                    return Ok(Token::TokenAddAssign {});
-                } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '+' {
-                    self.char_stream.next();
-                    return Ok(Token::TokenInc {});
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenAndAssign {});
+                    } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '&' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenAnd {});
+                    }
+                    return Ok(Token::TokenBand {});
                 }
-                return Ok(Token::TokenAdd {});
-            }
-            Some('-') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                Some('|') => {
                     self.char_stream.next();
-                    return Ok(Token::TokenSubAssign {});
-                } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '-' {
-                    self.char_stream.next();
-                    return Ok(Token::TokenDec {});
+                    if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenOrAssign {});
+                    } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '|' {
+                        self.char_stream.next();
+                        return Ok(Token::TokenOr {});
+                    }
+                    return Ok(Token::TokenBor {});
                 }
-                return Ok(Token::TokenSub {});
+                _ => Err(""),
             }
-            Some('&') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
-                    self.char_stream.next();
-                    return Ok(Token::TokenAndAssign {});
-                } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '&' {
-                    self.char_stream.next();
-                    return Ok(Token::TokenAnd {});
-                }
-                return Ok(Token::TokenBand {});
-            }
-            Some('|') => {
-                self.char_stream.next();
-                if self.char_stream.peek().unwrap().to_ascii_lowercase() == '=' {
-                    self.char_stream.next();
-                    return Ok(Token::TokenOrAssign {});
-                } else if self.char_stream.peek().unwrap().to_ascii_lowercase() == '|' {
-                    self.char_stream.next();
-                    return Ok(Token::TokenOr {});
-                }
-                return Ok(Token::TokenBor {});
-            }
-            _ => Err(""),
+        } else {
+            return Ok(Token::TokenEof {});
         }
     }
 

@@ -176,7 +176,6 @@ impl<'a> Parser<'a> {
 
     fn next_token(&mut self) -> Result<Token, &'static str> {
         let token = self.lexer.next_token();
-        println!("Next Token: {:?}", token);
         self.current_token = token.clone();
         return token;
     }
@@ -190,7 +189,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expr_operand(&mut self) -> Option<Expr> {
-        let token = self.next_token();
+        let token = self.current_token.clone();
         match token {
             Ok(ref token) => match token {
                 TokenName { name } => {
@@ -308,7 +307,7 @@ impl<'a> Parser<'a> {
             let right = self.parse_expr_unary().unwrap();
             return Some(UnaryExpr {
                 op: token.unwrap(),
-                operand: Box::new(self.parse_expr_unary().unwrap()),
+                operand: Box::new(right),
             });
         } else {
             return self.parse_expr_base();
@@ -318,7 +317,7 @@ impl<'a> Parser<'a> {
     fn parse_expr_mul(&mut self) -> Option<Expr> {
         let mut expr = self.parse_expr_unary();
         let token = self.current_token.clone().unwrap();
-        while self.is_unary_op(&token) {
+        while self.is_mul_op(&token) {
             let token = self.next_token();
             let right = self.parse_expr_unary().unwrap();
             expr = Some(BinaryExpr {
@@ -334,10 +333,10 @@ impl<'a> Parser<'a> {
         let mut expr = self.parse_expr_mul();
         let token = self.current_token.clone().unwrap();
         while self.is_add_op(&token) {
-            let token = self.next_token();
+            self.next_token();
             let right = self.parse_expr_mul().unwrap();
             expr = Some(BinaryExpr {
-                op: token.unwrap(),
+                op: token.clone(),
                 left: Box::new(expr.unwrap()),
                 right: Box::new(right),
             });
@@ -362,7 +361,7 @@ impl<'a> Parser<'a> {
 
     fn parse_expr_and(&mut self) -> Option<Expr> {
         let mut expr = self.parse_expr_cmp();
-        while self.match_token(TokenAdd {}) {
+        while self.is_token(TokenAdd {}) {
             expr = Some(BinaryExpr {
                 op: TokenAdd {},
                 left: Box::new(expr.unwrap()),
@@ -374,7 +373,7 @@ impl<'a> Parser<'a> {
 
     fn parse_expr_or(&mut self) -> Option<Expr> {
         let mut expr = self.parse_expr_and();
-        while self.match_token(TokenOr {}) {
+        while self.is_token(TokenOr {}) {
             expr = Some(BinaryExpr {
                 op: TokenOr {},
                 left: Box::new(expr.unwrap()),
@@ -386,7 +385,7 @@ impl<'a> Parser<'a> {
 
     fn parse_expr_ternary(&mut self) -> Option<Expr> {
         let mut expr = self.parse_expr_or();
-        if self.match_token(TokenQuestionMark {}) {
+        if self.is_token(TokenQuestionMark {}) {
             let expr_then = self.parse_expr();
             self.expect_token(TokenColon {});
             let expr_else = self.parse_expr();
@@ -530,7 +529,7 @@ impl<'a> Parser<'a> {
 pub mod tests {
     use super::*;
     use crate::dulang::lexer::int::Int;
-    use crate::dulang::lexer::int::Int::IntOct;
+    use crate::dulang::lexer::int::Int::{IntHex, IntOct};
     use crate::dulang::lexer::token::Token::TokenInc;
 
     #[test]
@@ -563,7 +562,7 @@ pub mod tests {
 
     #[test]
     fn should_return_true_when_token_is_unary() {
-        let mut lexer = Lexer::new("var a = 1;");
+        let mut lexer = Lexer::new("");
         let mut parser = Parser::new(&mut lexer);
         assert_eq!(true, parser.is_unary_op(&TokenAdd {}));
         assert_eq!(true, parser.is_unary_op(&TokenSub {}));
@@ -571,49 +570,96 @@ pub mod tests {
         assert_eq!(true, parser.is_unary_op(&TokenBand {}));
     }
 
-    //    #[test]
-    //    fn should_parse_add_expr() {
-    //        let mut lexer = Lexer::new("+b");
-    //        let mut parser = Parser::new(&mut lexer);
-    //        let decl = parser.parse_expr();
-    //        assert_eq!(
-    //            decl.unwrap(),
-    //            BinaryExpr {
-    //                op: TokenAdd {},
-    //                left: Box::new(NameExpr { name: "a".to_string() }),
-    //                right: Box::new(NameExpr { name: "b".to_string() }),
-    //            }
-    //        )
-    //    }
-    //
-    //    #[test]
-    //    fn should_parse_inc_expr() {
-    //        let mut lexer = Lexer::new("++b");
-    //        let mut parser = Parser::new(&mut lexer);
-    //        let decl = parser.parse_expr();
-    //        assert_eq!(
-    //            decl.unwrap(),
-    //            UnaryExpr {
-    //                op: TokenInc {},
-    //                operand: Box::new(NameExpr { name: "b".to_string() }),
-    //            }
-    //        )
-    //    }
+    #[test]
+    fn should_parse_expr_operand() {
+        let mut lexer = Lexer::new("a");
+        let mut parser = Parser::new(&mut lexer);
+        parser.next_token();
+        assert_eq!(
+            NameExpr {
+                name: "a".to_string()
+            },
+            parser.parse_expr_operand().unwrap()
+        );
+    }
 
     #[test]
-    fn should_parse_var_decl() {
-        //        let mut lexer = Lexer::new("var a = 1;");
-        //        let mut parser = Parser::new(&mut lexer);
-        //        let decl = parser.parse_decl();
-        //        assert_eq!(
-        //            decl.unwrap(),
-        //            VarDecl {
-        //                name: "a".to_string(),
-        //                type_spec: None,
-        //                expr: Some(IntExpr {
-        //                    value: IntOct { value: 1 }
-        //                }),
-        //            }
-        //        );
+    fn should_parse_expr_operand_int() {
+        let mut lexer = Lexer::new("120");
+        let mut parser = Parser::new(&mut lexer);
+        parser.next_token();
+        assert_eq!(
+            IntExpr {
+                value: IntOct { value: 120 },
+            },
+            parser.parse_expr_operand().unwrap()
+        );
     }
+
+//    #[test]
+//    fn should_parse_expr_operand_int_hex() {
+//        let mut lexer = Lexer::new("0x120");
+//        let mut parser = Parser::new(&mut lexer);
+//        parser.next_token();
+//        assert_eq!(
+//            IntExpr {
+//                value: IntHex { value: 120 },
+//            },
+//            parser.parse_expr_operand().unwrap()
+//        );
+//    }
+//
+//    #[test]
+//    fn should_parse_add_expr() {
+//        let mut lexer = Lexer::new("a+b");
+//        let mut parser = Parser::new(&mut lexer);
+//        parser.next_token();
+//        let decl = parser.parse_expr();
+//        assert_eq!(
+//            decl.unwrap(),
+//            BinaryExpr {
+//                op: TokenAdd {},
+//                left: Box::new(NameExpr {
+//                    name: "a".to_string()
+//                }),
+//                right: Box::new(NameExpr {
+//                    name: "b".to_string()
+//                }),
+//            }
+//        )
+//    }
+//
+//    #[test]
+//    fn should_parse_inc_expr() {
+//        let mut lexer = Lexer::new("++b");
+//        let mut parser = Parser::new(&mut lexer);
+//        parser.next_token();
+//        let decl = parser.parse_expr();
+//        assert_eq!(
+//            decl.unwrap(),
+//            UnaryExpr {
+//                op: TokenInc {},
+//                operand: Box::new(NameExpr {
+//                    name: "b".to_string()
+//                }),
+//            }
+//        )
+//    }
+//
+//    #[test]
+//    fn should_parse_var_decl() {
+//        let mut lexer = Lexer::new("var a = 1;");
+//        let mut parser = Parser::new(&mut lexer);
+//        let decl = parser.parse_decl();
+//        assert_eq!(
+//            decl.unwrap(),
+//            VarDecl {
+//                name: "a".to_string(),
+//                type_spec: None,
+//                expr: Some(IntExpr {
+//                    value: IntOct { value: 1 }
+//                }),
+//            }
+//        );
+//    }
 }
