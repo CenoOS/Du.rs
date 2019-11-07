@@ -124,8 +124,8 @@ impl<'a> Lexer<'a> {
         if value == "0x" {
             self.char_stream.next();
             while self.char_stream.peek().is_some()
-                && Lexer::is_digit(self.char_stream.peek().unwrap())
-                || Lexer::is_hex_char(self.char_stream.peek().unwrap())
+                && (Lexer::is_digit(self.char_stream.peek().unwrap())
+                    || Lexer::is_hex_char(self.char_stream.peek().unwrap()))
             {
                 value.push(self.char_stream.peek().unwrap().to_ascii_lowercase());
                 self.char_stream.next();
