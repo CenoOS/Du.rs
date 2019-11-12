@@ -309,44 +309,69 @@ pub mod tests {
         );
     }
 
-    //    #[test]
-    //    fn should_parse_add_expr_decl() {
-    //        let mut lexer = Lexer::new("c + d + e;");
-    //        let mut parser = Parser::new(&mut lexer);
-    //        let decl = parser.parse_expr();
-    //        assert_eq!(
-    //            decl.unwrap(),
-    //            BinaryExpr {
-    //                op: TokenAdd {},
-    //                left: Box::new(BinaryExpr {
-    //                    op: TokenAdd {},
-    //                    left: Box::new(NameExpr { name: "c".to_string() }),
-    //                    right: Box::new(NameExpr { name: "d".to_string() }),
-    //                }),
-    //                right: Box::new(NameExpr { name: "e".to_string() }),
-    //            });
-    //    }
-    //
-    //    #[test]
-    //    fn should_parse_var_add_variable_decl() {
-    //        let mut lexer = Lexer::new("var a_b = c + d + e;");
-    //        let mut parser = Parser::new(&mut lexer);
-    //        let decl = parser.parse_decl();
-    //        assert_eq!(
-    //            decl.unwrap(),
-    //            VarDecl {
-    //                name: "a_b".to_string(),
-    //                type_spec: None,
-    //                expr: Some(BinaryExpr {
-    //                    op: TokenAdd {},
-    //                    left: Box::new(BinaryExpr {
-    //                        op: TokenAdd {},
-    //                        left: Box::new(NameExpr { name: "c".to_string() }),
-    //                        right: Box::new(NameExpr { name: "d".to_string() }),
-    //                    }),
-    //                    right: Box::new(NameExpr { name: "e".to_string() }),
-    //                }),
-    //            }
-    //        );
-    //    }
+
+    #[test]
+    fn should_parse_var_add_variable_binary_decl() {
+        let mut lexer = Lexer::new("var a = a + b;");
+        let mut parser = Parser::new(&mut lexer);
+        let decl = parser.parse_decl();
+        assert_eq!(
+            decl.unwrap(),
+            VarDecl {
+                name: "a".to_string(),
+                type_spec: None,
+                expr: Some(BinaryExpr {
+                    op: TokenAdd {},
+                    left: Box::new(NameExpr {
+                        name: "a".to_string(),
+                    }),
+                    right: Box::new(NameExpr {
+                        name: "b".to_string()
+                    }),
+                }),
+            }
+        );
+    }
+
+    #[test]
+    fn should_parse_add_expr_decl() {
+        let mut lexer = Lexer::new("c + d + e;");
+        let mut parser = Parser::new(&mut lexer);
+        let decl = parser.parse_expr();
+        assert_eq!(
+            decl.unwrap(),
+            BinaryExpr {
+                op: TokenAdd {},
+                left: Box::new(BinaryExpr {
+                    op: TokenAdd {},
+                    left: Box::new(NameExpr { name: "c".to_string() }),
+                    right: Box::new(NameExpr { name: "d".to_string() }),
+                }),
+                right: Box::new(NameExpr { name: "e".to_string() }),
+            });
+    }
+
+
+    #[test]
+    fn should_parse_var_add_variable_decl() {
+        let mut lexer = Lexer::new("var a_b = c + d + e;");
+        let mut parser = Parser::new(&mut lexer);
+        let decl = parser.parse_decl();
+        assert_eq!(
+            decl.unwrap(),
+            VarDecl {
+                name: "a_b".to_string(),
+                type_spec: None,
+                expr: Some(BinaryExpr {
+                    op: TokenAdd {},
+                    left: Box::new(BinaryExpr {
+                        op: TokenAdd {},
+                        left: Box::new(NameExpr { name: "c".to_string() }),
+                        right: Box::new(NameExpr { name: "d".to_string() }),
+                    }),
+                    right: Box::new(NameExpr { name: "e".to_string() }),
+                }),
+            }
+        );
+    }
 }
