@@ -188,8 +188,30 @@ impl<'a> Parser<'a> {
         return token;
     }
 
-    fn parse_type_func(&mut self) -> Option<TypeSpec> {
+    fn parse_type_func_param(&mut self) -> Option<TypeSpec> {
         None
+    }
+
+    fn parse_type_func(&mut self) -> Option<TypeSpec> {
+        self.match_token(TokenLeftSquareBrackets {});
+        let mut args: Vec<Box<TypeSpec>> = Vec::new();
+        if !self.is_token(TokenRightSquareBrackets {}) {
+            args.push(Box::new(self.parse_type_func_param().unwrap()));
+            while self.match_token(TokenComma {}) {
+                args.push(Box::new(self.parse_type_func_param().unwrap()));
+            }
+        }
+        self.match_token(TokenRightSquareBrackets {});
+        let mut ret = None;
+        if self.match_token(TokenColon {}) {
+            ret = self.parse_type_spec();
+        }
+
+        return Some(FuncTypeSpec {
+            num_args: args.len(),
+            args_type: args,
+            ret_type: Box::new(ret.unwrap()),
+        });
     }
 
     fn parse_type_base(&mut self) -> Option<TypeSpec> {
