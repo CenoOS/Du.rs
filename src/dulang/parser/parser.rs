@@ -10,7 +10,9 @@ use crate::dulang::ast::expr::Expr::{
     TernaryExpr, UnaryExpr,
 };
 use crate::dulang::ast::type_spec::TypeSpec;
-use crate::dulang::ast::type_spec::TypeSpec::{FuncTypeSpec, NameTypeSpec};
+use crate::dulang::ast::type_spec::TypeSpec::{
+    ArrayTypeSpec, FuncTypeSpec, NameTypeSpec, PtrTypeSpec,
+};
 use crate::dulang::lexer::keyword::Keyword::{
     KeywordConst, KeywordEnum, KeywordFunc, KeywordGoto, KeywordImport, KeywordStruct,
     KeywordTypeDef, KeywordVar,
@@ -186,8 +188,67 @@ impl<'a> Parser<'a> {
         return token;
     }
 
+    fn parse_type_func(&mut self) -> Option<TypeSpec> {
+        None
+    }
+
+    fn parse_type_base(&mut self) -> Option<TypeSpec> {
+        match self.current_token.clone().unwrap() {
+            TokenName { ref name } => {
+                return Some(NameTypeSpec {
+                    name_spec: name.to_string(),
+                });
+            }
+            TokenKeyword { ref keyword } => match keyword {
+                KeywordFunc { ref name } => {
+                    return self.parse_type_func();
+                }
+                _ => None,
+            },
+            TokenRightSquareBrackets {} => {
+                return self.parse_type_spec();
+            }
+            _ => {
+                self.errors.push(UnexpectedTokenError {
+                    token: self.current_token.clone().unwrap(),
+                    line: 0,
+                });
+                return None;
+            }
+        }
+    }
+
     fn parse_type_spec(&mut self) -> Option<TypeSpec> {
-        return None;
+        let mut type_spec = self.parse_type_base();
+        while self.is_token(TokenLeftSquareBrackets {}) || self.is_token(TokenMul {}) {
+            match self.current_token {
+                Ok(ref token) => match token {
+                    TokenLeftSquareBrackets {} => {
+                        let mut expr = None;
+                        if (self.current_token.clone().unwrap() != TokenRightSquareBrackets {}) {
+                            expr = self.parse_expr();
+                        }
+                        self.match_token(TokenRightSquareBrackets {});
+                        type_spec = Some(ArrayTypeSpec {
+                            size: Box::new(expr.unwrap()),
+                            elem_type: Box::new(type_spec.unwrap()),
+                        })
+                    }
+                    TokenMul {} => {
+                        type_spec = Some(PtrTypeSpec {
+                            ptr_type: Box::new(type_spec.unwrap()),
+                        })
+                    }
+                    _ => {
+                        return None;
+                    }
+                },
+                _ => {
+                    return None;
+                }
+            }
+        }
+        return type_spec;
     }
 
     fn parse_expr_compound(&mut self, type_spec: Option<TypeSpec>) -> Option<Expr> {
@@ -434,12 +495,15 @@ impl<'a> Parser<'a> {
     fn parse_decl_enum(&self) -> Option<Decl> {
         return None;
     }
+
     fn parse_decl_type_def(&self) -> Option<Decl> {
         return None;
     }
+
     fn parse_decl_struct(&self) -> Option<Decl> {
         return None;
     }
+
     fn parse_decl_var(&mut self) -> Option<Decl> {
         let name = self.parse_name();
         let token = self.next_token();
@@ -481,12 +545,15 @@ impl<'a> Parser<'a> {
         }
         return None;
     }
+
     fn parse_decl_const(&self) -> Option<Decl> {
         return None;
     }
+
     fn parse_decl_func(&self) -> Option<Decl> {
         return None;
     }
+
     fn parse_decl_import(&self) -> Option<Decl> {
         return None;
     }
