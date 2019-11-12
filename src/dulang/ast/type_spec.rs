@@ -28,6 +28,15 @@ pub enum TypeSpec {
     },
 }
 
+impl TypeSpec {
+    pub(crate) fn is_name(&self) -> bool {
+        match self {
+            NameTypeSpec { ref name_spec } => true,
+            _ => false,
+        }
+    }
+}
+
 impl Display for TypeSpec {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {

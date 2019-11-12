@@ -189,7 +189,18 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_type_func_param(&mut self) -> Option<TypeSpec> {
-        None
+        let mut type_spec = self.parse_type_spec();
+        if self.match_token(TokenColon {}) {
+            if type_spec.unwrap().is_name() {
+                self.errors.push(UnexpectedTokenError {
+                    token: self.current_token.clone().unwrap(),
+                    line: 0,
+                });
+                return None;
+            }
+            type_spec = self.parse_type_spec();
+        }
+        return type_spec;
     }
 
     fn parse_type_func(&mut self) -> Option<TypeSpec> {
