@@ -5,6 +5,7 @@ use crate::vm::vm::VM;
 use std::fs;
 use std::io::Write;
 use std::num::ParseIntError;
+use crate::repl::color_print::ColorPrint;
 
 pub struct REPL {
     command_buffer: Vec<String>,
@@ -70,21 +71,17 @@ impl REPL {
         }
     }
 
-    fn print_err(&self, msg: &str) {
-        println!("\x1b[0;31m{}\x1b[0m", msg);
-    }
-
     pub fn run(&mut self) {
-        println!("             __    |   Du.rs release_0.1.0");
-        println!("  ____      |  |   |   (default, Oct 15 2019, 23:12:15)");
-        println!(" |    \\  ___|  |   |   Type \".help\" for more information.");
-        println!(" |  |  | |  |__|   |         \".exit\" to quit.");
-        println!(" |____/|____|__|   |");
-        print!("");
+        ColorPrint::println_cyan("             __    |   Du.rs release_0.1.0");
+        ColorPrint::println_cyan("  ____      |  |   |   (default, Oct 15 2019, 23:12:15)");
+        ColorPrint::println_cyan(" |    \\  ___|  |   |   Type \".help\" for more information.");
+        ColorPrint::println_cyan(" |  |  | |  |__|   |         \".exit\" to quit.");
+        ColorPrint::println_cyan(" |____/|____|__|   |");
+        ColorPrint::println_cyan("");
         loop {
             let mut buffer = String::new();
             let stdin = std::io::stdin();
-            print!("du> ");
+            ColorPrint::print_green("du> ");
             std::io::stdout().flush().expect("Unable to flush stdout.");
 
             stdin.read_line(&mut buffer).expect("Unable to read line.");
@@ -182,7 +179,7 @@ impl REPL {
                                     self.vm.run_once();
                                 }
                                 Err(e) => {
-                                    self.print_err(format!("[ERROR]: {:?}", e).as_str());
+                                    ColorPrint::println_red(format!("[ERROR]: {:?}", e).as_str());
                                 }
                             }
                         }
