@@ -13,13 +13,13 @@ impl ColorPrint {
     fn println_blue(msg: &str) {
         println!("\x1b[0;34m {} \x1b[0m", msg);
     }
-    fn println_light_blue(msg: &str) {
+    pub(crate) fn println_light_blue(msg: &str) {
         println!("\x1b[1;34m {} \x1b[0m", msg);
     }
     pub(crate) fn println_green(msg: &str) {
         println!("\x1b[0;32m {} \x1b[0m", msg);
     }
-    fn println_light_green(msg: &str) {
+    pub(crate) fn println_light_green(msg: &str) {
         println!("\x1b[1;32m {} \x1b[0m", msg);
     }
     pub(crate) fn println_cyan(msg: &str) {
@@ -31,7 +31,7 @@ impl ColorPrint {
     pub(crate) fn println_red(msg: &str) {
         println!("\x1b[0;31m {} \x1b[0m", msg);
     }
-    fn println_light_red(msg: &str) {
+    pub(crate) fn println_light_red(msg: &str) {
         println!("\x1b[1;31m {} \x1b[0m", msg);
     }
     pub(crate) fn println_purple(msg: &str) {
@@ -68,7 +68,7 @@ impl ColorPrint {
     pub(crate) fn print_green(msg: &str) {
         print!("\x1b[0;32m {} \x1b[0m", msg);
     }
-    fn print_light_green(msg: &str) {
+    pub(crate) fn print_light_green(msg: &str) {
         print!("\x1b[1;32m {} \x1b[0m", msg);
     }
     pub(crate) fn print_cyan(msg: &str) {

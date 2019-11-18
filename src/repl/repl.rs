@@ -72,16 +72,20 @@ impl REPL {
     }
 
     pub fn run(&mut self) {
-        ColorPrint::println_cyan("             __    |   Du.rs release_0.1.0");
-        ColorPrint::println_cyan("  ____      |  |   |   (default, Oct 15 2019, 23:12:15)");
-        ColorPrint::println_cyan(" |    \\  ___|  |   |   Type \".help\" for more information.");
-        ColorPrint::println_cyan(" |  |  | |  |__|   |         \".exit\" to quit.");
-        ColorPrint::println_cyan(" |____/|____|__|   |");
-        ColorPrint::println_cyan("");
+        ColorPrint::println_light_blue("");
+       ColorPrint::println_light_blue("                   |   Du.rs release_0.1.0");
+        ColorPrint::println_light_purple("             __    |   (default, Oct 15 2019, 23:12:15)");
+        ColorPrint::println_light_purple("  ____      |  |   |   ");
+        ColorPrint::println_light_purple(" |    \\  ___|  |   |   Type \".help\" for more information.");
+        ColorPrint::println_light_purple(" |  |  | |  |__|   |         \".exit\" to quit.");
+        ColorPrint::println_light_purple(" |____/|____|__|   |");
+        ColorPrint::println_light_purple("                   |   More information on: ");
+        ColorPrint::println_light_blue("                   |       http://github.com/CenoOS/Du.rs");
+        ColorPrint::println_light_purple("");
         loop {
             let mut buffer = String::new();
             let stdin = std::io::stdin();
-            ColorPrint::print_green("du> ");
+            ColorPrint::print_light_green("du> ");
             std::io::stdout().flush().expect("Unable to flush stdout.");
 
             stdin.read_line(&mut buffer).expect("Unable to read line.");
@@ -93,7 +97,7 @@ impl REPL {
                     .peek()
                     .map_or(false, |w| (*w == ".quit") || (*w == ".exit"))
                 {
-                    println!("Bye, have a nice day.");
+                    ColorPrint::println_light_green("Bye, have a nice day.");
                     std::process::exit(0);
                 } else if commands.peek().map_or(false, |w| (*w == ".load_asm")) {
                     commands.next();
@@ -101,7 +105,7 @@ impl REPL {
                         Some(filepath) => {
                             self.run_asm_file(filepath);
                         }
-                        None => println!("No input: need a file path for asm code."),
+                        None => ColorPrint::println_light_red("No input: need a file path for asm code."),
                     }
                 } else if commands.peek().map_or(false, |w| (*w == ".load_elf")) {
                     // todo : load elf file to execute.
@@ -113,55 +117,55 @@ impl REPL {
                         Some(mode) => match mode {
                             &"Assembly" => {
                                 self.mode = ReplMode::Assembly;
-                                println!("Mode change to Assembly.");
+                                ColorPrint::println_light_purple("Mode change to Assembly.");
                             }
                             &"Instruction" => {
                                 self.mode = ReplMode::Instruction;
-                                println!("Mode change to Instruction.");
+                                ColorPrint::println_light_purple("Mode change to Instruction.");
                             }
                             _ => {
-                                println!("Expect mode: Assembly/Instruction");
+                                ColorPrint::println_light_red("Expect mode: Assembly/Instruction");
                             }
                         },
-                        None => println!("Need a mode Assembly/Instruction."),
+                        None => ColorPrint::println_light_red("Need a mode Assembly/Instruction."),
                     }
                 } else if commands.peek().map_or(false, |w| (*w == ".history")) {
                     for command in &self.command_buffer {
-                        println!("{}", command);
+                        ColorPrint::println_light_green(format!("{}", command).as_str());
                     }
                 } else if commands.peek().map_or(false, |w| (*w == ".program")) {
-                    println!("Listing instructions currently in VM's program vector:");
+                    ColorPrint::println_light_green("Listing instructions currently in VM's program vector:");
                     for instruction in &self.vm.program {
-                        println!("{}", instruction);
+                        ColorPrint::println_light_blue(format!("{}", instruction).as_str());
                     }
-                    println!("End of Program Listing.")
+                    ColorPrint::println_light_green("End of Program Listing.")
                 } else if commands.peek().map_or(false, |w| (*w == ".clear")) {
-                    println!("Clearing in VM's program vector:");
+                    ColorPrint::println_light_green("Clearing in VM's program vector:");
                     let len = self.vm.program.len();
                     self.vm.program.clear();
-                    println!("  {} instructions cleared.", len)
+                    ColorPrint::println_light_green(format!("  {} instructions cleared.", len).as_str())
                 } else if commands.peek().map_or(false, |w| (*w == ".reset")) {
-                    println!("Resetting vm:");
+                    ColorPrint::println_light_green("Resetting vm:");
                     self.vm.registers = [0; 32];
-                    println!("  registers reset.");
+                    ColorPrint::println_light_green("  registers reset.");
                     self.vm.program.clear();
-                    println!("  program reset.");
+                    ColorPrint::println_light_green("  program reset.");
                     self.vm.ro_data.clear();
-                    println!("  read-only data reset.");
-                    println!("  vm reset.")
+                    ColorPrint::println_light_green("  read-only data reset.");
+                    ColorPrint::println_light_green("  vm reset.")
                 } else if commands.peek().map_or(false, |w| (*w == ".registers")) {
-                    println!("Listing registers and all contents:");
-                    println!("{:#?}", self.vm.registers);
-                    println!("End of Registers Listing.")
+                    ColorPrint::println_light_green("Listing registers and all contents:");
+                    ColorPrint::println_light_blue(format!("{:?}", self.vm.registers).as_str());
+                    ColorPrint::println_light_green("End of Registers Listing.")
                 } else if commands.peek().map_or(false, |w| (*w == ".help")) {
-                    println!("Command Usage:");
-                    println!("  .load_asm   : Load asm file and run. e.g. .load_asm xxx.asm");
-                    println!("  .history    : Command history");
-                    println!("  .registers  : Registers and content in current vm");
-                    println!("  .program    : Program in current vm");
-                    println!("  .clear      : Clear vm program memory");
-                    println!("  .reset      : Reset vm");
-                    println!(
+                    ColorPrint::println_light_green("Command Usage:");
+                    ColorPrint::println_light_blue("  .load_asm   : Load asm file and run. e.g. .load_asm xxx.asm");
+                    ColorPrint::println_light_blue("  .history    : Command history");
+                    ColorPrint::println_light_blue("  .registers  : Registers and content in current vm");
+                    ColorPrint::println_light_blue("  .program    : Program in current vm");
+                    ColorPrint::println_light_blue("  .clear      : Clear vm program memory");
+                    ColorPrint::println_light_blue("  .reset      : Reset vm");
+                    ColorPrint::println_light_blue(
                         "  .mode       : Change to mode of REPL between Assembly and Instruction"
                     );
                 } else {
@@ -179,7 +183,7 @@ impl REPL {
                                     self.vm.run_once();
                                 }
                                 Err(e) => {
-                                    ColorPrint::println_red(format!("[ERROR]: {:?}", e).as_str());
+                                    ColorPrint::println_light_red(format!("[ERROR]: {:?}", e).as_str());
                                 }
                             }
                         }
@@ -193,7 +197,7 @@ impl REPL {
                                     self.vm.run_once();
                                 }
                                 Err(e) => {
-                                    println!("Error: {:?}", e);
+                                    ColorPrint::println_light_red(format!("[ERROR]: {:?}", e).as_str());
                                 }
                             }
                         }
