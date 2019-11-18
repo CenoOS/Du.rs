@@ -70,8 +70,11 @@ impl REPL {
         }
     }
 
+    fn print_err(&self, msg: &str) {
+        println!("\x1b[0;31m{}\x1b[0m", msg);
+    }
+
     pub fn run(&mut self) {
-        println!("");
         println!("             __    |   Du.rs release_0.1.0");
         println!("  ____      |  |   |   (default, Oct 15 2019, 23:12:15)");
         println!(" |    \\  ___|  |   |   Type \".help\" for more information.");
@@ -179,7 +182,7 @@ impl REPL {
                                     self.vm.run_once();
                                 }
                                 Err(e) => {
-                                    println!("Error: {:?}", e);
+                                    self.print_err(format!("[ERROR]: {:?}", e).as_str());
                                 }
                             }
                         }
