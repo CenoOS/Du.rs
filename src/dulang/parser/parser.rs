@@ -251,7 +251,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_type_spec(&mut self) -> Option<TypeSpec> {
+    pub(crate) fn parse_type_spec(&mut self) -> Option<TypeSpec> {
         let mut type_spec = self.parse_type_base();
         while self.is_token(TokenLeftSquareBrackets {}) || self.is_token(TokenMul {}) {
             match self.current_token {

@@ -71,13 +71,17 @@ impl REPL {
     }
 
     pub fn run(&mut self) {
-        println!("Du.rs release_0.1.0 (default, Oct 15 2019, 23:12:15)");
-        println!("Type \".help\" for more information, \".exit\" to quit.");
+        println!("");
+        println!("             __    |   Du.rs release_0.1.0");
+        println!("  ____      |  |   |   (default, Oct 15 2019, 23:12:15)");
+        println!(" |    \\  ___|  |   |   Type \".help\" for more information.");
+        println!(" |  |  | |  |__|   |         \".exit\" to quit.");
+        println!(" |____/|____|__|   |");
+        print!("");
         loop {
             let mut buffer = String::new();
             let stdin = std::io::stdin();
-
-            print!(">>> ");
+            print!("du> ");
             std::io::stdout().flush().expect("Unable to flush stdout.");
 
             stdin.read_line(&mut buffer).expect("Unable to read line.");
