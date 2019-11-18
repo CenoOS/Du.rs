@@ -131,8 +131,9 @@ impl REPL {
                         "Listing instructions currently in VM's program vector:",
                     );
                     for instruction in &self.vm.program {
-                        ColorPrint::println_light_blue(format!("{}", instruction).as_str());
+                        ColorPrint::print_light_blue(format!("{:?}", instruction).as_str());
                     }
+                    ColorPrint::println_light_green("");
                     ColorPrint::println_light_green("End of Program Listing.")
                 } else if commands.peek().map_or(false, |w| (*w == ".clear")) {
                     ColorPrint::println_light_green("Clearing in VM's program vector:");
@@ -152,7 +153,12 @@ impl REPL {
                     ColorPrint::println_light_green("  vm reset.")
                 } else if commands.peek().map_or(false, |w| (*w == ".registers")) {
                     ColorPrint::println_light_green("Listing registers and all contents:");
-                    ColorPrint::println_light_blue(format!("{:?}", self.vm.registers).as_str());
+                    ColorPrint::println_light_purple(format!("PC: {:?}", self.vm.pc).as_str());
+                    ColorPrint::println_light_purple(format!("SP: {:?}", self.vm.sp).as_str());
+                    ColorPrint::println_light_purple(format!("BP: {:?}", self.vm.bp).as_str());
+                    ColorPrint::println_light_purple(format!("CF: {:?}", self.vm.comparison_flag).as_str());
+                    ColorPrint::println_light_purple(format!("RE: {:?}", self.vm.remainder).as_str());
+                    ColorPrint::println_light_blue(format!("R0-R31 {:?}", self.vm.registers).as_str());
                     ColorPrint::println_light_green("End of Registers Listing.")
                 } else if commands.peek().map_or(false, |w| (*w == ".help")) {
                     ColorPrint::println_light_green("Command Usage:");

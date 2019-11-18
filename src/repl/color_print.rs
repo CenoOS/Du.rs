@@ -62,7 +62,7 @@ impl ColorPrint {
     fn print_blue(msg: &str) {
         print!("\x1b[0;34m {} \x1b[0m", msg);
     }
-    fn print_light_blue(msg: &str) {
+    pub(crate) fn print_light_blue(msg: &str) {
         print!("\x1b[1;34m {} \x1b[0m", msg);
     }
     pub(crate) fn print_green(msg: &str) {
