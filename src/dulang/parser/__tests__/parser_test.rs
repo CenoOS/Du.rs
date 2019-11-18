@@ -334,36 +334,36 @@ pub mod tests {
     }
 
     #[test]
-    fn should_parse_type_spec(){
+    fn should_parse_type_spec() {
         let mut lexer = Lexer::new("int");
         let mut parser = Parser::new(&mut lexer);
         let type_spec = parser.parse_type_spec();
     }
 
-    #[test]
-    fn should_parse_var_add_variable_binary_decl_with_type_spec() {
-        let mut lexer = Lexer::new("var a:int = a + b;");
-        let mut parser = Parser::new(&mut lexer);
-        let decl = parser.parse_decl();
-        assert_eq!(
-            decl.unwrap(),
-            VarDecl {
-                name: "a".to_string(),
-                type_spec: Some(NameTypeSpec {
-                    name_spec: "int".to_string()
-                }),
-                expr: Some(BinaryExpr {
-                    op: TokenAdd {},
-                    left: Box::new(NameExpr {
-                        name: "a".to_string(),
-                    }),
-                    right: Box::new(NameExpr {
-                        name: "b".to_string()
-                    }),
-                }),
-            }
-        );
-    }
+//    #[test]
+//    fn should_parse_var_add_variable_binary_decl_with_type_spec() {
+//        let mut lexer = Lexer::new("var a:int = a + b;");
+//        let mut parser = Parser::new(&mut lexer);
+//        let decl = parser.parse_decl();
+//        assert_eq!(
+//            decl.unwrap(),
+//            VarDecl {
+//                name: "a".to_string(),
+//                type_spec: Some(NameTypeSpec {
+//                    name_spec: "int".to_string()
+//                }),
+//                expr: Some(BinaryExpr {
+//                    op: TokenAdd {},
+//                    left: Box::new(NameExpr {
+//                        name: "a".to_string(),
+//                    }),
+//                    right: Box::new(NameExpr {
+//                        name: "b".to_string()
+//                    }),
+//                }),
+//            }
+//        );
+//    }
 
     //    #[test]
     //    fn should_parse_add_expr_decl() {

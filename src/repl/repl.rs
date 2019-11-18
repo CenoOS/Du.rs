@@ -1,11 +1,11 @@
 use crate::assembler::assembler::Assembler;
 use crate::assembler::instructions_parser::InstructionParser;
+use crate::repl::color_print::ColorPrint;
 use crate::repl::repl::ReplMode::Assembly;
 use crate::vm::vm::VM;
 use std::fs;
 use std::io::Write;
 use std::num::ParseIntError;
-use crate::repl::color_print::ColorPrint;
 
 pub struct REPL {
     command_buffer: Vec<String>,
@@ -72,16 +72,7 @@ impl REPL {
     }
 
     pub fn run(&mut self) {
-        ColorPrint::println_light_blue("");
-       ColorPrint::println_light_blue("                   |   Du.rs release_0.1.0");
-        ColorPrint::println_light_purple("             __    |   (default, Oct 15 2019, 23:12:15)");
-        ColorPrint::println_light_purple("  ____      |  |   |   ");
-        ColorPrint::println_light_purple(" |    \\  ___|  |   |   Type \".help\" for more information.");
-        ColorPrint::println_light_purple(" |  |  | |  |__|   |         \".exit\" to quit.");
-        ColorPrint::println_light_purple(" |____/|____|__|   |");
-        ColorPrint::println_light_purple("                   |   More information on: ");
-        ColorPrint::println_light_blue("                   |       http://github.com/CenoOS/Du.rs");
-        ColorPrint::println_light_purple("");
+        REPL::printSplash();
         loop {
             let mut buffer = String::new();
             let stdin = std::io::stdin();
@@ -105,7 +96,9 @@ impl REPL {
                         Some(filepath) => {
                             self.run_asm_file(filepath);
                         }
-                        None => ColorPrint::println_light_red("No input: need a file path for asm code."),
+                        None => ColorPrint::println_light_red(
+                            "No input: need a file path for asm code.",
+                        ),
                     }
                 } else if commands.peek().map_or(false, |w| (*w == ".load_elf")) {
                     // todo : load elf file to execute.
@@ -134,7 +127,9 @@ impl REPL {
                         ColorPrint::println_light_green(format!("{}", command).as_str());
                     }
                 } else if commands.peek().map_or(false, |w| (*w == ".program")) {
-                    ColorPrint::println_light_green("Listing instructions currently in VM's program vector:");
+                    ColorPrint::println_light_green(
+                        "Listing instructions currently in VM's program vector:",
+                    );
                     for instruction in &self.vm.program {
                         ColorPrint::println_light_blue(format!("{}", instruction).as_str());
                     }
@@ -143,7 +138,9 @@ impl REPL {
                     ColorPrint::println_light_green("Clearing in VM's program vector:");
                     let len = self.vm.program.len();
                     self.vm.program.clear();
-                    ColorPrint::println_light_green(format!("  {} instructions cleared.", len).as_str())
+                    ColorPrint::println_light_green(
+                        format!("  {} instructions cleared.", len).as_str(),
+                    )
                 } else if commands.peek().map_or(false, |w| (*w == ".reset")) {
                     ColorPrint::println_light_green("Resetting vm:");
                     self.vm.registers = [0; 32];
@@ -159,14 +156,18 @@ impl REPL {
                     ColorPrint::println_light_green("End of Registers Listing.")
                 } else if commands.peek().map_or(false, |w| (*w == ".help")) {
                     ColorPrint::println_light_green("Command Usage:");
-                    ColorPrint::println_light_blue("  .load_asm   : Load asm file and run. e.g. .load_asm xxx.asm");
+                    ColorPrint::println_light_blue(
+                        "  .load_asm   : Load asm file and run. e.g. .load_asm xxx.asm",
+                    );
                     ColorPrint::println_light_blue("  .history    : Command history");
-                    ColorPrint::println_light_blue("  .registers  : Registers and content in current vm");
+                    ColorPrint::println_light_blue(
+                        "  .registers  : Registers and content in current vm",
+                    );
                     ColorPrint::println_light_blue("  .program    : Program in current vm");
                     ColorPrint::println_light_blue("  .clear      : Clear vm program memory");
                     ColorPrint::println_light_blue("  .reset      : Reset vm");
                     ColorPrint::println_light_blue(
-                        "  .mode       : Change to mode of REPL between Assembly and Instruction"
+                        "  .mode       : Change to mode of REPL between Assembly and Instruction",
                     );
                 } else {
                     match &self.mode {
@@ -183,7 +184,9 @@ impl REPL {
                                     self.vm.run_once();
                                 }
                                 Err(e) => {
-                                    ColorPrint::println_light_red(format!("[ERROR]: {:?}", e).as_str());
+                                    ColorPrint::println_light_red(
+                                        format!("[ERROR]: {:?}", e).as_str(),
+                                    );
                                 }
                             }
                         }
@@ -197,7 +200,9 @@ impl REPL {
                                     self.vm.run_once();
                                 }
                                 Err(e) => {
-                                    ColorPrint::println_light_red(format!("[ERROR]: {:?}", e).as_str());
+                                    ColorPrint::println_light_red(
+                                        format!("[ERROR]: {:?}", e).as_str(),
+                                    );
                                 }
                             }
                         }
@@ -205,5 +210,18 @@ impl REPL {
                 }
             }
         }
+    }
+
+    fn printSplash() {
+        ColorPrint::println_light_blue("");
+        ColorPrint::println_light_blue("                   |   Du.rs release_0.1.0");
+        ColorPrint::println_light_purple("             __    |   (default, Oct 15 2019, 23:12:15)");
+        ColorPrint::println_light_purple("  ____      |  |   |   ");
+        ColorPrint::println_light_purple(" |    \\  ___|  |   |   Type \".help\" for more information.", );
+        ColorPrint::println_light_purple(" |  |  | |  |__|   |        \".exit\" to quit.");
+        ColorPrint::println_light_purple(" |____/|____|__|   |");
+        ColorPrint::println_light_purple("                   |   More information on: ");
+        ColorPrint::println_light_blue("                   |       http://github.com/CenoOS/Du.rs");
+        ColorPrint::println_light_purple("");
     }
 }
