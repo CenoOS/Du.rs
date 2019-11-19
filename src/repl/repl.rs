@@ -1,11 +1,11 @@
 use crate::assembler::assembler::Assembler;
 use crate::assembler::instructions_parser::InstructionParser;
-use crate::repl::color_print::ColorPrint;
 use crate::repl::repl::ReplMode::Assembly;
 use crate::vm::vm::VM;
 use std::fs;
 use std::io::Write;
 use std::num::ParseIntError;
+use crate::repl::terminal::color_print::ColorPrint;
 
 pub struct REPL {
     command_buffer: Vec<String>,
