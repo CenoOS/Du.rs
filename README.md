@@ -1,7 +1,7 @@
 ![DuVM](./assets/logo.png)
 # DuVM
 ### VM & Computer Language Project.
-![Demo](https://raw.githubusercontent.com/CenoOS/Du.rs/master/assets/WechatIMG2575.png)
+![Demo](https://raw.githubusercontent.com/CenoOS/Du.rs/master/assets/WechatIMG2575_w.png)
 ### 1. VM
   - [ ] CPU
     - [ ] instruction
