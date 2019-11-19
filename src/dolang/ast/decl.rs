@@ -2,12 +2,12 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use crate::dulang::ast::decl::Decl::{
+use crate::dolang::ast::decl::Decl::{
     AggregateDecl, ConstDecl, EnumDecl, FuncDecl, TypedefDecl, VarDecl,
 };
-use crate::dulang::ast::expr::Expr;
-use crate::dulang::ast::stmt::StmtBlock;
-use crate::dulang::ast::type_spec::TypeSpec;
+use crate::dolang::ast::expr::Expr;
+use crate::dolang::ast::stmt::StmtBlock;
+use crate::dolang::ast::type_spec::TypeSpec;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 

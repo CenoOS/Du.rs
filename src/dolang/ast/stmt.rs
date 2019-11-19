@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2019. NeroYang
  */
-use crate::dulang::ast::expr::Expr;
-use crate::dulang::ast::stmt::Stmt::{
+use crate::dolang::ast::expr::Expr;
+use crate::dolang::ast::stmt::Stmt::{
     AssignStmt, BlockStmt, ForStmt, IfStmt, InitStmt, ReturnStmt, SwitchStmt, WhileStmt,
 };
-use crate::dulang::lexer::token::Token;
+use crate::dolang::lexer::token::Token;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 

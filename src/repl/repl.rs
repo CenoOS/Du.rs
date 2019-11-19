@@ -60,7 +60,9 @@ impl REPL {
                     }
                     Err(errs) => {
                         for e in errs {
-                            ColorPrint::println_light_red(format!("Error in assemble : {:#?}", e).as_str());
+                            ColorPrint::println_light_red(
+                                format!("Error in assemble : {:#?}", e).as_str(),
+                            );
                         }
                     }
                 }
@@ -156,9 +158,15 @@ impl REPL {
                     ColorPrint::println_light_purple(format!("PC: {:?}", self.vm.pc).as_str());
                     ColorPrint::println_light_purple(format!("SP: {:?}", self.vm.sp).as_str());
                     ColorPrint::println_light_purple(format!("BP: {:?}", self.vm.bp).as_str());
-                    ColorPrint::println_light_purple(format!("CF: {:?}", self.vm.comparison_flag).as_str());
-                    ColorPrint::println_light_purple(format!("RE: {:?}", self.vm.remainder).as_str());
-                    ColorPrint::println_light_blue(format!("R0-R31 {:?}", self.vm.registers).as_str());
+                    ColorPrint::println_light_purple(
+                        format!("CF: {:?}", self.vm.comparison_flag).as_str(),
+                    );
+                    ColorPrint::println_light_purple(
+                        format!("RE: {:?}", self.vm.remainder).as_str(),
+                    );
+                    ColorPrint::println_light_blue(
+                        format!("R0-R31 {:?}", self.vm.registers).as_str(),
+                    );
                     ColorPrint::println_light_green("End of Registers Listing.")
                 } else if commands.peek().map_or(false, |w| (*w == ".help")) {
                     ColorPrint::println_light_green("Command Usage:");
@@ -223,7 +231,9 @@ impl REPL {
         ColorPrint::println_light_blue("                   |   Du.rs release_0.1.0");
         ColorPrint::println_light_purple("             __    |   (default, Oct 15 2019, 23:12:15)");
         ColorPrint::println_light_purple("  ____      |  |   |   ");
-        ColorPrint::println_light_purple(" |    \\  ___|  |   |   Type \".help\" for more information.", );
+        ColorPrint::println_light_purple(
+            " |    \\  ___|  |   |   Type \".help\" for more information.",
+        );
         ColorPrint::println_light_purple(" |  |  | |  |__|   |        \".exit\" to quit.");
         ColorPrint::println_light_purple(" |____/|____|__|   |");
         ColorPrint::println_light_purple("                   |   More information on: ");

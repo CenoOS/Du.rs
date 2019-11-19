@@ -1,4 +1,4 @@
 pub mod assembler;
-pub mod dulang;
+pub mod dolang;
 pub mod repl;
 pub mod vm;

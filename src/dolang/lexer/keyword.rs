@@ -2,13 +2,13 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use crate::dulang::lexer::keyword::Keyword::{
+use crate::dolang::lexer::keyword::Keyword::{
     KeywordBreak, KeywordCase, KeywordConst, KeywordContinue, KeywordDefault, KeywordDo,
     KeywordElse, KeywordEnum, KeywordFor, KeywordFunc, KeywordGoto, KeywordIf, KeywordImport,
     KeywordReturn, KeywordSizeOf, KeywordStruct, KeywordSwitch, KeywordTypeDef, KeywordTypeOf,
     KeywordVar, KeywordWhile,
 };
-use crate::dulang::lexer::token::Token::TokenEof;
+use crate::dolang::lexer::token::Token::TokenEof;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 

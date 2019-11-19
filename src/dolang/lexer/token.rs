@@ -2,9 +2,9 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use crate::dulang::lexer::int::Int;
-use crate::dulang::lexer::keyword::Keyword;
-use crate::dulang::lexer::token::Token::{
+use crate::dolang::lexer::int::Int;
+use crate::dolang::lexer::keyword::Keyword;
+use crate::dolang::lexer::token::Token::{
     TokenAdd, TokenAddAssign, TokenAnd, TokenAndAssign, TokenAssign, TokenBand, TokenBor,
     TokenChar, TokenColon, TokenColonAssign, TokenComma, TokenDec, TokenDiv, TokenDivAssign,
     TokenDot, TokenEof, TokenEqual, TokenFloat, TokenGreaterThan, TokenGreaterThanEqual,

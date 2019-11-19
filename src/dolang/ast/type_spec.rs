@@ -2,8 +2,8 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use crate::dulang::ast::expr::Expr;
-use crate::dulang::ast::type_spec::TypeSpec::{
+use crate::dolang::ast::expr::Expr;
+use crate::dolang::ast::type_spec::TypeSpec::{
     ArrayTypeSpec, FuncTypeSpec, NameTypeSpec, PtrTypeSpec,
 };
 use std::fmt;

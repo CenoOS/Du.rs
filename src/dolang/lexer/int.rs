@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019. NeroYang
  */
-use crate::dulang::lexer::int::Int::{IntBin, IntHex, IntOct};
+use crate::dolang::lexer::int::Int::{IntBin, IntHex, IntOct};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 

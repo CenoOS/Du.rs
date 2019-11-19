@@ -2,13 +2,13 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use crate::dulang::ast::expr::Expr::{
+use crate::dolang::ast::expr::Expr::{
     BinaryExpr, CallExpr, CastExpr, CompoundExpr, FieldExpr, FloatExpr, IndexExpr, IntExpr,
     NameExpr, StringExpr, TernaryExpr, UnaryExpr,
 };
-use crate::dulang::ast::type_spec::TypeSpec;
-use crate::dulang::lexer::int::Int;
-use crate::dulang::lexer::token::Token;
+use crate::dolang::ast::type_spec::TypeSpec;
+use crate::dolang::lexer::int::Int;
+use crate::dolang::lexer::token::Token;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 

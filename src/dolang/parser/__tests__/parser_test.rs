@@ -5,19 +5,19 @@
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::dulang::ast::decl::Decl::VarDecl;
-    use crate::dulang::ast::expr::Expr::{BinaryExpr, IntExpr, NameExpr, UnaryExpr};
-    use crate::dulang::ast::type_spec::TypeSpec::NameTypeSpec;
-    use crate::dulang::lexer::int::Int;
-    use crate::dulang::lexer::int::Int::{IntBin, IntHex, IntOct};
-    use crate::dulang::lexer::keyword::Keyword::KeywordVar;
-    use crate::dulang::lexer::lexer::Lexer;
-    use crate::dulang::lexer::token::Token::{
+    use crate::dolang::ast::decl::Decl::VarDecl;
+    use crate::dolang::ast::expr::Expr::{BinaryExpr, IntExpr, NameExpr, UnaryExpr};
+    use crate::dolang::ast::type_spec::TypeSpec::NameTypeSpec;
+    use crate::dolang::lexer::int::Int;
+    use crate::dolang::lexer::int::Int::{IntBin, IntHex, IntOct};
+    use crate::dolang::lexer::keyword::Keyword::KeywordVar;
+    use crate::dolang::lexer::lexer::Lexer;
+    use crate::dolang::lexer::token::Token::{
         TokenAdd, TokenAssign, TokenBand, TokenDec, TokenGreaterThan, TokenGreaterThanEqual,
         TokenInc, TokenInt, TokenKeyword, TokenLessThan, TokenLessThanEqual, TokenMul, TokenName,
         TokenSemiColon, TokenSub,
     };
-    use crate::dulang::parser::parser::Parser;
+    use crate::dolang::parser::parser::Parser;
 
     #[test]
     fn should_match_token() {
@@ -340,30 +340,30 @@ pub mod tests {
         let type_spec = parser.parse_type_spec();
     }
 
-//    #[test]
-//    fn should_parse_var_add_variable_binary_decl_with_type_spec() {
-//        let mut lexer = Lexer::new("var a:int = a + b;");
-//        let mut parser = Parser::new(&mut lexer);
-//        let decl = parser.parse_decl();
-//        assert_eq!(
-//            decl.unwrap(),
-//            VarDecl {
-//                name: "a".to_string(),
-//                type_spec: Some(NameTypeSpec {
-//                    name_spec: "int".to_string()
-//                }),
-//                expr: Some(BinaryExpr {
-//                    op: TokenAdd {},
-//                    left: Box::new(NameExpr {
-//                        name: "a".to_string(),
-//                    }),
-//                    right: Box::new(NameExpr {
-//                        name: "b".to_string()
-//                    }),
-//                }),
-//            }
-//        );
-//    }
+    //    #[test]
+    //    fn should_parse_var_add_variable_binary_decl_with_type_spec() {
+    //        let mut lexer = Lexer::new("var a:int = a + b;");
+    //        let mut parser = Parser::new(&mut lexer);
+    //        let decl = parser.parse_decl();
+    //        assert_eq!(
+    //            decl.unwrap(),
+    //            VarDecl {
+    //                name: "a".to_string(),
+    //                type_spec: Some(NameTypeSpec {
+    //                    name_spec: "int".to_string()
+    //                }),
+    //                expr: Some(BinaryExpr {
+    //                    op: TokenAdd {},
+    //                    left: Box::new(NameExpr {
+    //                        name: "a".to_string(),
+    //                    }),
+    //                    right: Box::new(NameExpr {
+    //                        name: "b".to_string()
+    //                    }),
+    //                }),
+    //            }
+    //        );
+    //    }
 
     //    #[test]
     //    fn should_parse_add_expr_decl() {

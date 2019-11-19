@@ -2,8 +2,8 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use crate::dulang::lexer::token::Token;
-use crate::dulang::parser::parser_error::ParserError::UnexpectedTokenError;
+use crate::dolang::lexer::token::Token;
+use crate::dolang::parser::parser_error::ParserError::UnexpectedTokenError;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter, Write};

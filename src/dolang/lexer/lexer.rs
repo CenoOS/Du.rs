@@ -2,22 +2,22 @@
  * Copyright (c) 2019. NeroYang
  */
 
-use crate::dulang::lexer::int::Int;
-use crate::dulang::lexer::int::Int::{IntBin, IntHex, IntOct};
-use crate::dulang::lexer::keyword::Keyword::{
+use crate::dolang::lexer::int::Int;
+use crate::dolang::lexer::int::Int::{IntBin, IntHex, IntOct};
+use crate::dolang::lexer::keyword::Keyword::{
     KeywordBreak, KeywordCase, KeywordConst, KeywordContinue, KeywordDefault, KeywordDo,
     KeywordElse, KeywordEnum, KeywordFor, KeywordFunc, KeywordGoto, KeywordIf, KeywordImport,
     KeywordReturn, KeywordSizeOf, KeywordStruct, KeywordSwitch, KeywordTypeDef, KeywordTypeOf,
     KeywordVar, KeywordWhile,
 };
-use crate::dulang::lexer::keyword::{
+use crate::dolang::lexer::keyword::{
     Keyword, KEYWORD_BREAK, KEYWORD_CASE, KEYWORD_CONST, KEYWORD_CONTINUE, KEYWORD_DEFAULT,
     KEYWORD_DO, KEYWORD_ELSE, KEYWORD_ENUM, KEYWORD_FOR, KEYWORD_FUNC, KEYWORD_GOTO, KEYWORD_IF,
     KEYWORD_IMPORT, KEYWORD_RETURN, KEYWORD_SIZEOF, KEYWORD_STRUCT, KEYWORD_SWITCH, KEYWORD_TYPEOF,
     KEYWORD_TYPE_DEF, KEYWORD_VAR, KEYWORD_WHILE,
 };
-use crate::dulang::lexer::token::Token;
-use crate::dulang::lexer::token::Token::{TokenKeyword, TokenLeftShift, TokenName};
+use crate::dolang::lexer::token::Token;
+use crate::dolang::lexer::token::Token::{TokenKeyword, TokenLeftShift, TokenName};
 use core::fmt::Alignment::Left;
 use std::i32;
 use std::iter::Peekable;

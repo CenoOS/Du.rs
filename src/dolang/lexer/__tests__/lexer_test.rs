@@ -4,15 +4,15 @@
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dulang::lexer::int::Int::{IntBin, IntHex, IntOct};
-    use crate::dulang::lexer::keyword::Keyword::{
+    use crate::dolang::lexer::int::Int::{IntBin, IntHex, IntOct};
+    use crate::dolang::lexer::keyword::Keyword::{
         KeywordBreak, KeywordCase, KeywordConst, KeywordContinue, KeywordDefault, KeywordDo,
         KeywordElse, KeywordEnum, KeywordFor, KeywordFunc, KeywordGoto, KeywordIf, KeywordImport,
         KeywordReturn, KeywordSizeOf, KeywordStruct, KeywordSwitch, KeywordTypeDef, KeywordTypeOf,
         KeywordVar, KeywordWhile,
     };
-    use crate::dulang::lexer::lexer::Lexer;
-    use crate::dulang::lexer::token::Token;
+    use crate::dolang::lexer::lexer::Lexer;
+    use crate::dolang::lexer::token::Token;
     use std::string::ToString;
 
     #[test]

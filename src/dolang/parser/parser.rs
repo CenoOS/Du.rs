@@ -2,24 +2,24 @@
  * Copyright (c) 2019. NeroYang
  */
 use crate::assembler::assembler_error::AssemblerError::ParseError;
-use crate::dulang::ast::decl::Decl;
-use crate::dulang::ast::decl::Decl::VarDecl;
-use crate::dulang::ast::expr::Expr;
-use crate::dulang::ast::expr::Expr::{
+use crate::dolang::ast::decl::Decl;
+use crate::dolang::ast::decl::Decl::VarDecl;
+use crate::dolang::ast::expr::Expr;
+use crate::dolang::ast::expr::Expr::{
     BinaryExpr, CallExpr, FieldExpr, FloatExpr, IndexExpr, IntExpr, NameExpr, StringExpr,
     TernaryExpr, UnaryExpr,
 };
-use crate::dulang::ast::type_spec::TypeSpec;
-use crate::dulang::ast::type_spec::TypeSpec::{
+use crate::dolang::ast::type_spec::TypeSpec;
+use crate::dolang::ast::type_spec::TypeSpec::{
     ArrayTypeSpec, FuncTypeSpec, NameTypeSpec, PtrTypeSpec,
 };
-use crate::dulang::lexer::keyword::Keyword::{
+use crate::dolang::lexer::keyword::Keyword::{
     KeywordConst, KeywordEnum, KeywordFunc, KeywordGoto, KeywordImport, KeywordStruct,
     KeywordTypeDef, KeywordVar,
 };
-use crate::dulang::lexer::lexer::Lexer;
-use crate::dulang::lexer::token::Token;
-use crate::dulang::lexer::token::Token::{
+use crate::dolang::lexer::lexer::Lexer;
+use crate::dolang::lexer::token::Token;
+use crate::dolang::lexer::token::Token::{
     TokenAdd, TokenAddAssign, TokenAndAssign, TokenAssign, TokenBand, TokenBor, TokenColon,
     TokenColonAssign, TokenComma, TokenDec, TokenDiv, TokenDivAssign, TokenDot, TokenEqual,
     TokenFloat, TokenGreaterThan, TokenGreaterThanEqual, TokenHashTag, TokenInc, TokenInt,
@@ -29,8 +29,8 @@ use crate::dulang::lexer::token::Token::{
     TokenRightBrackets, TokenRightShift, TokenRightShiftAssign, TokenRightSquareBrackets,
     TokenSemiColon, TokenStr, TokenSub, TokenSubAssign, TokenXor, TokenXorAssign,
 };
-use crate::dulang::parser::parser_error::ParserError;
-use crate::dulang::parser::parser_error::ParserError::UnexpectedTokenError;
+use crate::dolang::parser::parser_error::ParserError;
+use crate::dolang::parser::parser_error::ParserError::UnexpectedTokenError;
 use crate::vm::instruction::OpCode::POP;
 use std::process::exit;
 
