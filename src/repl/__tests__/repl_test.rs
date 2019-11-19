@@ -8,7 +8,7 @@ mod tests {
     #[test]
     fn should_run_asm() {
         let mut repl = REPL::new();
-        repl.run_asm_file("/Users/xingfeng.yang/project/live-code/rust/Dulang/asm/for_each.asm");
+        repl.run_asm_file("asm/for_each.asm");
         assert_eq!(
             repl.vm.program,
             vec![

@@ -48,7 +48,7 @@ impl REPL {
         let src = fs::read_to_string(filename);
         match src {
             Ok(asm_src) => {
-                println!("Loading ASM : \n{}\nASM loaded.", asm_src);
+                ColorPrint::println_light_blue(format!("{}\n", asm_src).as_str());
 
                 let mut assembler = Assembler::new();
                 let instructions = assembler.process(&asm_src);
@@ -60,13 +60,13 @@ impl REPL {
                     }
                     Err(errs) => {
                         for e in errs {
-                            println!("Error in assemble : {:#?}", e);
+                            ColorPrint::println_light_red(format!("Error in assemble : {:#?}", e).as_str());
                         }
                     }
                 }
             }
             Err(e) => {
-                println!("Asm load failed: {:#?}", e);
+                ColorPrint::println_light_red(format!("Asm load failed: {:#?}", e).as_str());
             }
         }
     }
@@ -124,7 +124,7 @@ impl REPL {
                     }
                 } else if commands.peek().map_or(false, |w| (*w == ".history")) {
                     for command in &self.command_buffer {
-                        ColorPrint::println_light_green(format!("{}", command).as_str());
+                        ColorPrint::println_light_blue(format!("{}", command).as_str());
                     }
                 } else if commands.peek().map_or(false, |w| (*w == ".program")) {
                     ColorPrint::println_light_green(
