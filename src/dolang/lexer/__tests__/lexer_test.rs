@@ -188,7 +188,7 @@ mod tests {
     #[test]
     fn should_return_token_keyword() {
         let mut lexer = Lexer::new(
-            "typedef enum struct const var func import goto \
+            "typedef enum struct const let fn import goto \
              sizeof typeof \
              break continue return \
              if else while do for \
@@ -239,7 +239,7 @@ mod tests {
             token_result.unwrap(),
             Token::TokenKeyword {
                 keyword: KeywordVar {
-                    name: "var".to_string()
+                    name: "let".to_string()
                 },
             }
         );
@@ -249,7 +249,7 @@ mod tests {
             token_result.unwrap(),
             Token::TokenKeyword {
                 keyword: KeywordFunc {
-                    name: "func".to_string()
+                    name: "fn".to_string()
                 },
             }
         );
@@ -762,13 +762,13 @@ mod tests {
 
     #[test]
     fn should_return_tokens_when_give_a_complex_str_3() {
-        let mut lexer = Lexer::new("var x:int = 3 ");
+        let mut lexer = Lexer::new("let x:int = 3 ");
         let token_result = lexer.next_token();
         assert_eq!(
             token_result.unwrap(),
             Token::TokenKeyword {
                 keyword: KeywordVar {
-                    name: "var".to_string()
+                    name: "let".to_string()
                 }
             }
         );
