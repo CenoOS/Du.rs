@@ -119,8 +119,8 @@ impl<'a> Lexer<'a> {
     }
 
     fn scan_int(&mut self, value: &mut String, mode: bool) -> Result<Token, &'static str> {
-        let mut integer: Int = IntOct { value: 0 };
-        let mut int_val = 0;
+        let mut integer: Int = IntHex { value: 0 };
+        let mut int_val;
         if value == "0x" {
             self.char_stream.next();
             while self.char_stream.peek().is_some()

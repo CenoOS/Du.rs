@@ -226,6 +226,8 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_type_base(&mut self) -> Option<TypeSpec> {
+        self.next_token();
+        println!("curr_base {:?}", self.current_token);
         match self.current_token.clone().unwrap() {
             TokenName { ref name } => {
                 return Some(NameTypeSpec {
@@ -253,6 +255,9 @@ impl<'a> Parser<'a> {
 
     pub(crate) fn parse_type_spec(&mut self) -> Option<TypeSpec> {
         let mut type_spec = self.parse_type_base();
+
+        println!("curr {:?}", self.current_token);
+
         while self.is_token(TokenLeftSquareBrackets {}) || self.is_token(TokenMul {}) {
             match self.current_token {
                 Ok(ref token) => match token {
@@ -284,7 +289,7 @@ impl<'a> Parser<'a> {
         return type_spec;
     }
 
-    fn parse_expr_compound(&mut self, type_spec: Option<TypeSpec>) -> Option<Expr> {
+    fn parse_expr_compound(&mut self, _type_spec: Option<TypeSpec>) -> Option<Expr> {
         return None;
     }
 
@@ -371,7 +376,7 @@ impl<'a> Parser<'a> {
                     index: Box::new(index.unwrap()),
                 });
             } else {
-                let token = self.next_token();
+                let _token = self.next_token();
                 match &self.current_token {
                     Ok(token) => match token {
                         TokenName { name } => {
@@ -556,8 +561,10 @@ impl<'a> Parser<'a> {
                     let type_spec = self.parse_type_spec();
                     let mut expr = None;
                     if self.match_token(TokenAssign {}) {
+                        self.next_token();
                         expr = self.parse_expr();
                     }
+
                     self.expect_token(TokenSemiColon {});
                     return Some(VarDecl {
                         name: name.unwrap(),
