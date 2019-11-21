@@ -290,7 +290,7 @@ expr = ternary_expr
         - [ ] enum_decl
         - [ ] aggregate_field
         - [ ] aggregate_decl
-        - [ ] var_decl
+        - [x] var_decl
         - [ ] const_decl
         - [ ] typedef_decl
         - [ ] func_param
@@ -298,24 +298,24 @@ expr = ternary_expr
         - [ ] func_decl
         - [ ] decl
     - [ ] Statements
-        - [ ] assign_op
+        - [x] assign_op
         - [ ] switch_case
         - [ ] switch_block
         - [ ] stmt
         - [ ] type_spec
-        - [ ] operand_expr
-        - [ ] base_expr
-        - [ ] unary_expr
-        - [ ] mul_op
-        - [ ] mul_expr   
-        - [ ] add_op
-        - [ ] add_expr
-        - [ ] cmp_op
-        - [ ] cmp_expr
-        - [ ] and_expr
-        - [ ] or_expr
+        - [x] operand_expr
+        - [x] base_expr
+        - [x] unary_expr
+        - [x] mul_op
+        - [x] mul_expr   
+        - [x] add_op
+        - [x] add_expr
+        - [x] cmp_op
+        - [x] cmp_expr
+        - [x] and_expr
+        - [x] or_expr
         - [ ] ternary_expr
-        - [ ] expr 
+        - [x] expr 
 - [ ] Interpreter
 - [ ] Compiler
     - [ ] VM instruction
