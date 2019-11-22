@@ -49,7 +49,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn is_token(&mut self, expected_token: Token) -> bool {
+    fn is_token(&self, expected_token: Token) -> bool {
         match self.current_token {
             Ok(ref token) => {
                 if *token == expected_token {
@@ -226,8 +226,6 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_type_base(&mut self) -> Option<TypeSpec> {
-        self.next_token();
-        println!("curr_base {:?}", self.current_token);
         match self.current_token.clone().unwrap() {
             TokenName { ref name } => {
                 return Some(NameTypeSpec {
@@ -256,8 +254,6 @@ impl<'a> Parser<'a> {
     pub(crate) fn parse_type_spec(&mut self) -> Option<TypeSpec> {
         let mut type_spec = self.parse_type_base();
 
-        println!("curr {:?}", self.current_token);
-
         while self.is_token(TokenLeftSquareBrackets {}) || self.is_token(TokenMul {}) {
             match self.current_token {
                 Ok(ref token) => match token {
@@ -273,9 +269,11 @@ impl<'a> Parser<'a> {
                         })
                     }
                     TokenMul {} => {
+                        self.next_token();
+                        type_spec = self.parse_type_base();
                         type_spec = Some(PtrTypeSpec {
                             ptr_type: Box::new(type_spec.unwrap()),
-                        })
+                        });
                     }
                     _ => {
                         return None;
@@ -558,6 +556,7 @@ impl<'a> Parser<'a> {
                     });
                 }
                 TokenColon {} => {
+                    self.next_token();
                     let type_spec = self.parse_type_spec();
                     let mut expr = None;
                     if self.match_token(TokenAssign {}) {

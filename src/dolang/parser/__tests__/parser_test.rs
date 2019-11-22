@@ -7,7 +7,7 @@ pub mod tests {
     use super::*;
     use crate::dolang::ast::decl::Decl::VarDecl;
     use crate::dolang::ast::expr::Expr::{BinaryExpr, IntExpr, NameExpr, UnaryExpr};
-    use crate::dolang::ast::type_spec::TypeSpec::NameTypeSpec;
+    use crate::dolang::ast::type_spec::TypeSpec::{NameTypeSpec, PtrTypeSpec};
     use crate::dolang::lexer::int::Int;
     use crate::dolang::lexer::int::Int::{IntBin, IntHex, IntOct};
     use crate::dolang::lexer::keyword::Keyword::KeywordVar;
@@ -337,6 +337,7 @@ pub mod tests {
     fn should_parse_type_spec() {
         let mut lexer = Lexer::new("int");
         let mut parser = Parser::new(&mut lexer);
+        parser.next_token();
         let type_spec = parser.parse_type_spec();
         assert_eq!(
             type_spec.unwrap(),
@@ -357,6 +358,33 @@ pub mod tests {
                 name: "a".to_string(),
                 type_spec: Some(NameTypeSpec {
                     name_spec: "int".to_string()
+                }),
+                expr: Some(BinaryExpr {
+                    op: TokenAdd {},
+                    left: Box::new(NameExpr {
+                        name: "a".to_string(),
+                    }),
+                    right: Box::new(NameExpr {
+                        name: "b".to_string()
+                    }),
+                }),
+            }
+        );
+    }
+
+    #[test]
+    fn should_parse_var_add_variable_binary_decl_with_type_spec_ptr() {
+        let mut lexer = Lexer::new("let a:*int = a + b;");
+        let mut parser = Parser::new(&mut lexer);
+        let decl = parser.parse_decl();
+        assert_eq!(
+            decl.unwrap(),
+            VarDecl {
+                name: "a".to_string(),
+                type_spec: Some(PtrTypeSpec {
+                    ptr_type: Box::new(NameTypeSpec {
+                        name_spec: "int".to_string()
+                    }),
                 }),
                 expr: Some(BinaryExpr {
                     op: TokenAdd {},
