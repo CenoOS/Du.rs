@@ -3,7 +3,7 @@
  */
 use crate::assembler::assembler_error::AssemblerError::ParseError;
 use crate::dolang::ast::decl::Decl;
-use crate::dolang::ast::decl::Decl::VarDecl;
+use crate::dolang::ast::decl::Decl::{VarDecl, ConstDecl};
 use crate::dolang::ast::expr::Expr;
 use crate::dolang::ast::expr::Expr::{
     BinaryExpr, CallExpr, FieldExpr, FloatExpr, IndexExpr, IntExpr, NameExpr, StringExpr,
@@ -67,11 +67,11 @@ impl<'a> Parser<'a> {
         match self.current_token {
             Ok(ref token) => {
                 if *token != expected_token {
-                    panic!("SyntaxError1: expect token :{}", expected_token);
+                    panic!("SyntaxError: expect token :{}", expected_token);
                 }
             }
             _ => {
-                panic!("SyntaxError2: expect token :{}", expected_token);
+                panic!("SyntaxError: expect token :{}", expected_token);
             }
         }
     }
@@ -252,13 +252,15 @@ impl<'a> Parser<'a> {
     }
 
     pub(crate) fn parse_type_spec(&mut self) -> Option<TypeSpec> {
+        self.next_token();
         let mut type_spec = self.parse_type_base();
-
+//        self.next_token();
         while self.is_token(TokenLeftSquareBrackets {}) || self.is_token(TokenMul {}) {
             match self.current_token {
                 Ok(ref token) => match token {
                     TokenLeftSquareBrackets {} => {
                         let mut expr = None;
+                        self.next_token();
                         if (self.current_token.clone().unwrap() != TokenRightSquareBrackets {}) {
                             expr = self.parse_expr();
                         }
@@ -266,7 +268,7 @@ impl<'a> Parser<'a> {
                         type_spec = Some(ArrayTypeSpec {
                             size: Box::new(expr.unwrap()),
                             elem_type: Box::new(type_spec.unwrap()),
-                        })
+                        });
                     }
                     TokenMul {} => {
                         self.next_token();
@@ -353,36 +355,44 @@ impl<'a> Parser<'a> {
         while self.is_token_left_bracket(&self.current_token.clone().unwrap())
             || self.is_token_left_square_bracket(&self.current_token.clone().unwrap())
             || self.is_token_dot(&self.current_token.clone().unwrap())
-        {
-            if self.is_token(TokenLeftBrackets {}) {
-                let mut args = Vec::new();
-                args.push(Box::new(self.parse_expr().unwrap()));
-                while self.is_token_comma(&self.current_token.clone().unwrap()) {
+            {
+                if self.is_token(TokenLeftBrackets {}) {
+                    let mut args = Vec::new();
                     args.push(Box::new(self.parse_expr().unwrap()));
-                }
-                self.expect_token(TokenRightBrackets {});
-                expr = Some(CallExpr {
-                    expr: Box::new(expr.unwrap()),
-                    num_args: args.len(),
-                    args,
-                })
-            } else if self.is_token(TokenLeftSquareBrackets {}) {
-                let index = self.parse_expr();
-                self.expect_token(TokenRightSquareBrackets {});
-                expr = Some(IndexExpr {
-                    expr: Box::new(expr.unwrap()),
-                    index: Box::new(index.unwrap()),
-                });
-            } else {
-                let _token = self.next_token();
-                match &self.current_token {
-                    Ok(token) => match token {
-                        TokenName { name } => {
-                            expr = Some(FieldExpr {
-                                expr: Box::new(expr.unwrap()),
-                                name: name.to_string(),
-                            })
-                        }
+                    while self.is_token_comma(&self.current_token.clone().unwrap()) {
+                        args.push(Box::new(self.parse_expr().unwrap()));
+                    }
+                    self.expect_token(TokenRightBrackets {});
+                    expr = Some(CallExpr {
+                        expr: Box::new(expr.unwrap()),
+                        num_args: args.len(),
+                        args,
+                    })
+                } else if self.is_token(TokenLeftSquareBrackets {}) {
+                    let index = self.parse_expr();
+                    self.expect_token(TokenRightSquareBrackets {});
+                    expr = Some(IndexExpr {
+                        expr: Box::new(expr.unwrap()),
+                        index: Box::new(index.unwrap()),
+                    });
+                } else {
+                    let _token = self.next_token();
+                    match &self.current_token {
+                        Ok(token) => match token {
+                            TokenName { name } => {
+                                expr = Some(FieldExpr {
+                                    expr: Box::new(expr.unwrap()),
+                                    name: name.to_string(),
+                                })
+                            }
+                            _ => {
+                                self.errors.push(UnexpectedTokenError {
+                                    token: self.current_token.clone().unwrap(),
+                                    line: 0,
+                                });
+                                return None;
+                            }
+                        },
                         _ => {
                             self.errors.push(UnexpectedTokenError {
                                 token: self.current_token.clone().unwrap(),
@@ -390,17 +400,9 @@ impl<'a> Parser<'a> {
                             });
                             return None;
                         }
-                    },
-                    _ => {
-                        self.errors.push(UnexpectedTokenError {
-                            token: self.current_token.clone().unwrap(),
-                            line: 0,
-                        });
-                        return None;
                     }
                 }
             }
-        }
         return expr;
     }
 
@@ -556,14 +558,12 @@ impl<'a> Parser<'a> {
                     });
                 }
                 TokenColon {} => {
-                    self.next_token();
                     let type_spec = self.parse_type_spec();
                     let mut expr = None;
-                    if self.match_token(TokenAssign {}) {
+                    if self.is_token(TokenAssign {}) {
                         self.next_token();
                         expr = self.parse_expr();
                     }
-
                     self.expect_token(TokenSemiColon {});
                     return Some(VarDecl {
                         name: name.unwrap(),
@@ -585,7 +585,46 @@ impl<'a> Parser<'a> {
         return None;
     }
 
-    fn parse_decl_const(&self) -> Option<Decl> {
+    fn parse_decl_const(&mut self) -> Option<Decl> {
+        let name = self.parse_name();
+        let token = self.next_token();
+        match token {
+            Ok(token) => match token {
+                TokenAssign {} => {
+                    self.next_token();
+                    let expr = self.parse_expr();
+                    self.expect_token(TokenSemiColon {});
+                    return Some(ConstDecl {
+                        name: name.unwrap(),
+                        type_spec: None,
+                        expr,
+                    });
+                }
+                TokenColon {} => {
+                    let type_spec = self.parse_type_spec();
+                    let mut expr = None;
+                    if self.is_token(TokenAssign {}) {
+                        self.next_token();
+                        expr = self.parse_expr();
+                    }
+                    self.expect_token(TokenSemiColon {});
+                    return Some(ConstDecl {
+                        name: name.unwrap(),
+                        type_spec,
+                        expr,
+                    });
+                }
+                _ => {
+                    self.errors.push(UnexpectedTokenError { token, line: 0 });
+                }
+            },
+            _ => {
+                self.errors.push(UnexpectedTokenError {
+                    token: token.unwrap(),
+                    line: 0,
+                });
+            }
+        }
         return None;
     }
 
@@ -601,6 +640,12 @@ impl<'a> Parser<'a> {
         match self.next_token() {
             Ok(keyword) => match keyword {
                 TokenKeyword { keyword } => match keyword {
+                    KeywordVar { name } => {
+                        return self.parse_decl_var();
+                    }
+                    KeywordConst { name } => {
+                        return self.parse_decl_const();
+                    }
                     KeywordEnum { name } => {
                         return self.parse_decl_enum();
                     }
@@ -609,12 +654,6 @@ impl<'a> Parser<'a> {
                     }
                     KeywordStruct { name } => {
                         return self.parse_decl_struct();
-                    }
-                    KeywordVar { name } => {
-                        return self.parse_decl_var();
-                    }
-                    KeywordConst { name } => {
-                        return self.parse_decl_const();
                     }
                     KeywordFunc { name } => {
                         return self.parse_decl_func();

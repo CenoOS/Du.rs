@@ -81,7 +81,8 @@ pub enum Decl {
     },
     ConstDecl {
         name: String,
-        expr: Expr,
+        type_spec: Option<TypeSpec>,
+        expr: Option<Expr>,
     },
 }
 
