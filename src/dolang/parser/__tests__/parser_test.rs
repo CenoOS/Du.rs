@@ -5,9 +5,9 @@
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::dolang::ast::decl::Decl::{VarDecl, ConstDecl};
+    use crate::dolang::ast::decl::Decl::{ConstDecl, VarDecl};
     use crate::dolang::ast::expr::Expr::{BinaryExpr, IntExpr, NameExpr, UnaryExpr};
-    use crate::dolang::ast::type_spec::TypeSpec::{NameTypeSpec, PtrTypeSpec, ArrayTypeSpec};
+    use crate::dolang::ast::type_spec::TypeSpec::{ArrayTypeSpec, NameTypeSpec, PtrTypeSpec};
     use crate::dolang::lexer::int::Int;
     use crate::dolang::lexer::int::Int::{IntBin, IntHex, IntOct};
     use crate::dolang::lexer::keyword::Keyword::KeywordVar;
@@ -371,32 +371,32 @@ pub mod tests {
         );
     }
 
-//    #[test]
-//    fn should_parse_var_add_variable_binary_decl_with_type_spec_ptr() {
-//        let mut lexer = Lexer::new("let a:*int = a + b;");
-//        let mut parser = Parser::new(&mut lexer);
-//        let decl = parser.parse_decl();
-//        assert_eq!(
-//            decl.unwrap(),
-//            VarDecl {
-//                name: "a".to_string(),
-//                type_spec: Some(PtrTypeSpec {
-//                    ptr_type: Box::new(NameTypeSpec {
-//                        name_spec: "int".to_string()
-//                    }),
-//                }),
-//                expr: Some(BinaryExpr {
-//                    op: TokenAdd {},
-//                    left: Box::new(NameExpr {
-//                        name: "a".to_string(),
-//                    }),
-//                    right: Box::new(NameExpr {
-//                        name: "b".to_string()
-//                    }),
-//                }),
-//            }
-//        );
-//    }
+    //    #[test]
+    //    fn should_parse_var_add_variable_binary_decl_with_type_spec_ptr() {
+    //        let mut lexer = Lexer::new("let a:*int = a + b;");
+    //        let mut parser = Parser::new(&mut lexer);
+    //        let decl = parser.parse_decl();
+    //        assert_eq!(
+    //            decl.unwrap(),
+    //            VarDecl {
+    //                name: "a".to_string(),
+    //                type_spec: Some(PtrTypeSpec {
+    //                    ptr_type: Box::new(NameTypeSpec {
+    //                        name_spec: "int".to_string()
+    //                    }),
+    //                }),
+    //                expr: Some(BinaryExpr {
+    //                    op: TokenAdd {},
+    //                    left: Box::new(NameExpr {
+    //                        name: "a".to_string(),
+    //                    }),
+    //                    right: Box::new(NameExpr {
+    //                        name: "b".to_string()
+    //                    }),
+    //                }),
+    //            }
+    //        );
+    //    }
 
     #[test]
     fn should_parse_var_add_variable_binary_decl_with_type_spec_array() {
@@ -408,16 +408,12 @@ pub mod tests {
             VarDecl {
                 name: "a".to_string(),
                 type_spec: Some(ArrayTypeSpec {
-                    size: Box::from(
-                        IntExpr {
-                            value: IntOct { value: 3 }
-                        }
-                    ),
-                    elem_type: Box::from(
-                        NameTypeSpec {
-                            name_spec: "int".to_string()
-                        }
-                    ),
+                    size: Box::from(IntExpr {
+                        value: IntOct { value: 3 }
+                    }),
+                    elem_type: Box::from(NameTypeSpec {
+                        name_spec: "int".to_string()
+                    }),
                 }),
                 expr: Some(BinaryExpr {
                     op: TokenAdd {},

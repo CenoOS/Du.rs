@@ -125,7 +125,11 @@ impl Display for Decl {
             } => {
                 return f.write_str(&format!("VarDecl({} {:?} {:?})", name, type_spec, expr));
             }
-            ConstDecl { ref name, ref type_spec, ref expr } => {
+            ConstDecl {
+                ref name,
+                ref type_spec,
+                ref expr,
+            } => {
                 return f.write_str(&format!("ConstDecl({} {:?} {:?})", name, type_spec, expr));
             }
             _ => {

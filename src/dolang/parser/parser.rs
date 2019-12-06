@@ -3,7 +3,7 @@
  */
 use crate::assembler::assembler_error::AssemblerError::ParseError;
 use crate::dolang::ast::decl::Decl;
-use crate::dolang::ast::decl::Decl::{VarDecl, ConstDecl};
+use crate::dolang::ast::decl::Decl::{ConstDecl, VarDecl};
 use crate::dolang::ast::expr::Expr;
 use crate::dolang::ast::expr::Expr::{
     BinaryExpr, CallExpr, FieldExpr, FloatExpr, IndexExpr, IntExpr, NameExpr, StringExpr,
@@ -355,44 +355,36 @@ impl<'a> Parser<'a> {
         while self.is_token_left_bracket(&self.current_token.clone().unwrap())
             || self.is_token_left_square_bracket(&self.current_token.clone().unwrap())
             || self.is_token_dot(&self.current_token.clone().unwrap())
-            {
-                if self.is_token(TokenLeftBrackets {}) {
-                    let mut args = Vec::new();
+        {
+            if self.is_token(TokenLeftBrackets {}) {
+                let mut args = Vec::new();
+                args.push(Box::new(self.parse_expr().unwrap()));
+                while self.is_token_comma(&self.current_token.clone().unwrap()) {
                     args.push(Box::new(self.parse_expr().unwrap()));
-                    while self.is_token_comma(&self.current_token.clone().unwrap()) {
-                        args.push(Box::new(self.parse_expr().unwrap()));
-                    }
-                    self.expect_token(TokenRightBrackets {});
-                    expr = Some(CallExpr {
-                        expr: Box::new(expr.unwrap()),
-                        num_args: args.len(),
-                        args,
-                    })
-                } else if self.is_token(TokenLeftSquareBrackets {}) {
-                    let index = self.parse_expr();
-                    self.expect_token(TokenRightSquareBrackets {});
-                    expr = Some(IndexExpr {
-                        expr: Box::new(expr.unwrap()),
-                        index: Box::new(index.unwrap()),
-                    });
-                } else {
-                    let _token = self.next_token();
-                    match &self.current_token {
-                        Ok(token) => match token {
-                            TokenName { name } => {
-                                expr = Some(FieldExpr {
-                                    expr: Box::new(expr.unwrap()),
-                                    name: name.to_string(),
-                                })
-                            }
-                            _ => {
-                                self.errors.push(UnexpectedTokenError {
-                                    token: self.current_token.clone().unwrap(),
-                                    line: 0,
-                                });
-                                return None;
-                            }
-                        },
+                }
+                self.expect_token(TokenRightBrackets {});
+                expr = Some(CallExpr {
+                    expr: Box::new(expr.unwrap()),
+                    num_args: args.len(),
+                    args,
+                })
+            } else if self.is_token(TokenLeftSquareBrackets {}) {
+                let index = self.parse_expr();
+                self.expect_token(TokenRightSquareBrackets {});
+                expr = Some(IndexExpr {
+                    expr: Box::new(expr.unwrap()),
+                    index: Box::new(index.unwrap()),
+                });
+            } else {
+                let _token = self.next_token();
+                match &self.current_token {
+                    Ok(token) => match token {
+                        TokenName { name } => {
+                            expr = Some(FieldExpr {
+                                expr: Box::new(expr.unwrap()),
+                                name: name.to_string(),
+                            })
+                        }
                         _ => {
                             self.errors.push(UnexpectedTokenError {
                                 token: self.current_token.clone().unwrap(),
@@ -400,9 +392,17 @@ impl<'a> Parser<'a> {
                             });
                             return None;
                         }
+                    },
+                    _ => {
+                        self.errors.push(UnexpectedTokenError {
+                            token: self.current_token.clone().unwrap(),
+                            line: 0,
+                        });
+                        return None;
                     }
                 }
             }
+        }
         return expr;
     }
 
