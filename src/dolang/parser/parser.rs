@@ -254,7 +254,7 @@ impl<'a> Parser<'a> {
     pub(crate) fn parse_type_spec(&mut self) -> Option<TypeSpec> {
         self.next_token();
         let mut type_spec = self.parse_type_base();
-//        self.next_token();
+        self.next_token();
         while self.is_token(TokenLeftSquareBrackets {}) || self.is_token(TokenMul {}) {
             match self.current_token {
                 Ok(ref token) => match token {
