@@ -531,6 +531,8 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_decl_enum(&self) -> Option<Decl> {
+
+
         return None;
     }
 
